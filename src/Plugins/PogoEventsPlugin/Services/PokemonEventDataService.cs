@@ -3,6 +3,7 @@
 using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
+using DSharpPlus.SlashCommands;
 using Microsoft.Extensions.Options;
 
 using ChuckDeviceController.Extensions.Json;
@@ -12,6 +13,8 @@ using ChuckDeviceController.Plugin;
 using Configuration;
 using Extensions;
 using Models;
+using Services.Discord;
+using Services.Discord.Commands;
 
 /*
  * 'active':
@@ -36,19 +39,18 @@ public class PokemonEventDataService : IPokemonEventDataService
 {
     #region Variables
 
-    private static readonly ILogger<IPokemonEventDataService> _logger =
-        new Logger<IPokemonEventDataService>(LoggerFactory.Create(x => x.AddConsole()));
+    private readonly ILogger<IPokemonEventDataService> _logger;
+    private readonly DiscordConfig _config;
+    private readonly IDiscordClientService _discordClientService = null!;
+    private readonly DiscordClient _discordClient = null!;
+    private readonly ILocalizationHost _localeHost;
+    private readonly EventChangeWatcher _eventWatcher;
+
     private static List<ActiveEvent> _activeEvents = new();
     private static Dictionary<ushort, List<EventRaidItem>> _activeRaids = new();
     private static Dictionary<QuestsType, List<EventQuestItem>> _activeQuests = new();
     private static Dictionary<string, List<uint>> _activeNestPokemon = new();
     private static Dictionary<uint, EventGruntItem> _activeGrunts = new();
-
-    private readonly DiscordConfig _config;
-    private readonly IDiscordClientService _discordClientService = null!;
-    private readonly DiscordClient _discordClient = null!;
-    private readonly EventChangeWatcher _eventWatcher;
-    private readonly ILocalizationHost _localeHost;
 
     #endregion
 
@@ -56,15 +58,29 @@ public class PokemonEventDataService : IPokemonEventDataService
 
     public IReadOnlyList<IActiveEvent> ActiveEvents => _activeEvents;
 
+    public IReadOnlyDictionary<ushort, IReadOnlyList<IEventRaidItem>> ActiveRaids =>
+        _activeRaids.ToDictionary(x => x.Key, x => (IReadOnlyList<IEventRaidItem>)x.Value);
+
+    public IReadOnlyDictionary<QuestsType, IReadOnlyList<IEventQuestItem>> ActiveQuests =>
+        _activeQuests.ToDictionary(x => x.Key, x => (IReadOnlyList<IEventQuestItem>)x.Value);
+
+    public IReadOnlyDictionary<string, IReadOnlyList<uint>> ActiveNestPokemon =>
+        _activeNestPokemon.ToDictionary(x => x.Key, x => (IReadOnlyList<uint>)x.Value);
+
+    public IReadOnlyDictionary<uint, IEventGruntItem> ActiveGrunts =>
+        _activeGrunts.ToDictionary(x => x.Key, x => (IEventGruntItem)x.Value);
+
     #endregion
 
     #region Constructors
 
     public PokemonEventDataService(
+        ILogger<IPokemonEventDataService> logger,
         IOptions<DiscordConfig> options,
         IDiscordClientService discordClientService,
         ILocalizationHost localeHost)
     {
+        _logger = logger;
         _config = options.Value;
         _localeHost = localeHost;
 
@@ -77,17 +93,117 @@ public class PokemonEventDataService : IPokemonEventDataService
             _discordClientService = discordClientService;
             _discordClient = _discordClientService.CreateClientAsync(connect: false).Result;
             _discordClient.Ready += OnClientReady;
-            _discordClient.MessageCreated += OnClientMessageCreated;
 
-            var activity = new DiscordActivity(Strings.DiscordBotActivity, ActivityType.Playing);
-            Task.Run(async () => await _discordClient.ConnectAsync(activity, UserStatus.Online)).Wait();
+            var services = new ServiceCollection()
+                .AddSingleton<IPokemonEventDataService>(this)
+                .AddSingleton<ILocalizationHost>(_localeHost)
+                .BuildServiceProvider();
+            var slash = _discordClient.UseSlashCommands(new() { Services = services });
+            slash.RegisterCommands<SlashCommands>();
+        }
+    }
+
+    #endregion
+
+    #region Public Methods
+
+    public async Task StartAsync()
+    {
+        if (!_eventWatcher.Enabled)
+        {
+            _eventWatcher.Start();
         }
 
-        Task.Run(FetchActiveEventsAsync).Wait();
-        Task.Run(FetchActiveRaidsAsync).Wait();
-        Task.Run(FetchActiveQuestsAsync).Wait();
-        Task.Run(FetchActiveNestPokemonAsync).Wait();
-        Task.Run(FetchActiveGruntsAsync).Wait();
+        if (_config.Enabled)
+        {
+            var activity = new DiscordActivity(Strings.DiscordBotActivity, ActivityType.Playing);
+            await _discordClient.ConnectAsync(activity, UserStatus.Online);
+        }
+
+        await RefreshAsync();
+    }
+
+    public async Task StopAsync()
+    {
+        if (_eventWatcher.Enabled)
+        {
+            _eventWatcher.Stop();
+        }
+        await Task.CompletedTask;
+    }
+
+    public async Task RefreshAsync()
+    {
+        await FetchActiveEventsAsync();
+        await FetchActiveRaidsAsync();
+        await FetchActiveQuestsAsync();
+        await FetchActiveNestPokemonAsync();
+        await FetchActiveGruntsAsync();
+    }
+
+    #endregion
+
+    #region Private Methods
+
+    private async void OnEventChanged(object? sender, EventChangeWatcher.EventChangedEventArgs e)
+    {
+        _activeEvents = e.Events
+            .Cast<ActiveEvent>()
+            .ToList();
+        if (_config.Enabled)
+        {
+            // Update voice channels
+            await CreateChannelsAsync();
+
+            // TODO: Create sort by End/Start extensions
+            var events = ActiveEvents.ToList();
+            events.Sort((a, b) => DateTime.Parse(a.End).CompareTo(DateTime.Parse(b.End)));
+
+            // Post new events
+            foreach (var activeEvent in events)
+            {
+                var embed = CreateActiveEventEmbed(activeEvent);
+
+                foreach (var (guildId, guildConfig) in _config.Guilds)
+                {
+                    var guild = await _discordClient.GetGuildAsync(guildId);
+                    if (guild == null)
+                    {
+                        continue;
+                    }
+
+                    var channel = guild.GetChannel(guildConfig.EventsChannelId);
+                    if (guildConfig.DeletePreviousEvents)
+                    {
+                        var messages = await channel.GetMessagesAsync();
+                        foreach (var message in messages)
+                        {
+                            try
+                            {
+                                await message.DeleteAsync();
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError($"Error: {ex}");
+                            }
+                        }
+                    }
+
+                    // Send Discord embed
+                    var content = string.IsNullOrEmpty(guildConfig.Mention)
+                        ? $"<{guildConfig.Mention}>"
+                        : null;
+                    await channel.SendMessageAsync(content, embed);
+
+                    // Send Discord DM 
+                    foreach (var userId in guildConfig.UserIds)
+                    {
+                        var member = await guild.GetMemberAsync(userId, updateCache: true);
+                        await member.SendMessageAsync(content, embed);
+                    }
+                }
+            }
+        }
     }
 
     #endregion
@@ -119,7 +235,7 @@ public class PokemonEventDataService : IPokemonEventDataService
         _activeGrunts = await FetchDataAsync<Dictionary<uint, EventGruntItem>>(Strings.GruntsEndpoint);
     }
 
-    private static async Task<T> FetchDataAsync<T>(string endpointUrl)
+    private async Task<T> FetchDataAsync<T>(string endpointUrl)
     {
         var data = await NetUtils.GetAsync(endpointUrl);
         if (string.IsNullOrEmpty(data))
@@ -153,7 +269,7 @@ public class PokemonEventDataService : IPokemonEventDataService
 
     private async Task CreateChannelsAsync()
     {
-        var activeEvents = _activeEvents.Filter(active: true, sorted: true);
+        var activeEvents = ActiveEvents.Filter(active: true, sorted: true);
         foreach (var (guildId, guildConfig) in _config.Guilds)
         {
             await CreateVoiceChannelsAsync(guildId, guildConfig, activeEvents);
@@ -228,7 +344,7 @@ public class PokemonEventDataService : IPokemonEventDataService
         return channel;
     }
 
-    private static async Task DeleteExpiredEventsAsync(DiscordChannel categoryChannel, DiscordGuildConfig guildConfig, IEnumerable<IActiveEvent> activeEvents)
+    private async Task DeleteExpiredEventsAsync(DiscordChannel categoryChannel, DiscordGuildConfig guildConfig, IEnumerable<IActiveEvent> activeEvents)
     {
         // Check if channels in category exists in active events, if so keep it, otherwise delete it.
         var activeEventNames = activeEvents.Select(evt => evt.FormatEventName(guildConfig.ChannelNameFormat));
@@ -291,68 +407,22 @@ public class PokemonEventDataService : IPokemonEventDataService
 
     #endregion
 
-    private async void OnEventChanged(object? sender, EventChangeWatcher.EventChangedEventArgs e)
-    {
-        // Loop events, delete previous embeds, post embeds, DM users
-        var events = (e.Events as IEnumerable<ActiveEvent>).ToList();
-        _activeEvents = events;
+    #region Discord Client Events
 
-        if (!_config.Enabled)
-        {
-            return;
-        }
+    private async Task OnClientReady(DiscordClient sender, ReadyEventArgs e)
+    {
+        _logger.LogInformation($"Logged in as {sender.CurrentUser.Username}#{sender.CurrentUser.Discriminator} ({sender.CurrentUser.Id})");
 
         await CreateChannelsAsync();
-
-        events.Sort((a, b) => DateTime.Parse(a.End).CompareTo(DateTime.Parse(b.End)));
-        foreach (var activeEvent in e.Events)
-        {
-            var embed = CreateActiveEventEmbed(activeEvent);
-
-            foreach (var (guildId, guildConfig) in _config.Guilds)
-            {
-                var guild = await _discordClient.GetGuildAsync(guildId);
-                if (guild == null)
-                {
-                    continue;
-                }
-
-                var channel = guild.GetChannel(guildConfig.EventsChannelId);
-                if (guildConfig.DeletePreviousEvents)
-                {
-                    var messages = await channel.GetMessagesAsync();
-                    foreach (var message in messages)
-                    {
-                        try
-                        {
-                            await message.DeleteAsync();
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError($"Error: {ex}");
-                        }
-                    }
-                }
-
-                // Send Discord embed
-                var content = string.IsNullOrEmpty(guildConfig.Mention)
-                    ? $"<{guildConfig.Mention}>"
-                    : null;
-                await channel.SendMessageAsync(content, embed);
-
-                // Send Discord DM 
-                foreach (var userId in guildConfig.UserIds)
-                {
-                    var member = await guild.GetMemberAsync(userId, updateCache: true);
-                    await member.SendMessageAsync(content, embed);
-                }
-            }
-        }
     }
+
+    #endregion
+
+    #region Helper Methods
 
     private DiscordEmbed CreateActiveEventEmbed(IActiveEvent @event)
     {
-        var availableRaids = _activeRaids.Keys.Select(level => $"Level {level}: " + string.Join(", ", _activeRaids[level].Select(id => _localeHost.GetPokemonName(id.Id))));
+        var availableRaids = ActiveRaids.Keys.Select(level => $"Level {level}: " + string.Join(", ", ActiveRaids[level].Select(id => _localeHost.GetPokemonName(id.Id))));
         var description = $"**Name:** {@event.Name}\n";
         if (@event.Start == null)
         {
@@ -399,21 +469,6 @@ public class PokemonEventDataService : IPokemonEventDataService
 
         var embed = embedBuilder.Build();
         return embed;
-    }
-
-    #region Discord Client Events
-
-    private async Task OnClientReady(DiscordClient sender, ReadyEventArgs e)
-    {
-        _logger.LogInformation($"Logged in as {sender.CurrentUser.Username}#{sender.CurrentUser.Discriminator} ({sender.CurrentUser.Id})");
-
-        await CreateChannelsAsync();
-    }
-
-    private async Task OnClientMessageCreated(DiscordClient sender, MessageCreateEventArgs e)
-    {
-        // TODO: Add Discord commands
-        await Task.CompletedTask;
     }
 
     #endregion

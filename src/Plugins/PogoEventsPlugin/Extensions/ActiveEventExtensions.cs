@@ -8,29 +8,21 @@ public static class ActiveEventExtensions
 {
     public static IEnumerable<IActiveEvent> Filter(this IEnumerable<IActiveEvent> events, bool active = false, bool sorted = false)
     {
-        var results = new List<IActiveEvent>();
+        var results = new List<IActiveEvent>(events);
         if (active)
         {
             // Now timestamp in seconds
             var now = DateTime.UtcNow.ToTotalSeconds();
             // Filter for only active evnets within todays date
-            results = events
+            results = results
                 .Where(evt => DateTime.Parse(evt.Start).ToTotalSeconds() <= now && now < DateTime.Parse(evt.End).ToTotalSeconds())
                 .ToList();
-
-            // Check if no active events available
-            if (!results.Any())
-            {
-                // No active events, return empty list instead of all events
-                // because 'active' param was true.
-                return results;
-            }
         }
 
         if (sorted)
         {
             // Sort active events by end date
-            results.Sort((a, b) => DateTime.Parse(a.End).CompareTo(DateTime.Parse(b.End)));
+            results.Sort((a, b) => a.End.CompareTo(b.End));
         }
         return results;
     }

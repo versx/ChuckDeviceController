@@ -15,7 +15,7 @@ public class AccountStatusHostedService : IHostedService, IAccountStatusHostedSe
     private const uint CooldownPeriodS = 7200;
     private const string FailedGprRedWarning = "GPR_RED_WARNING";
     private const string FailedSuspended = "suspended";
-    private const uint IntervalM = 1; // 10 minutes
+    private const uint IntervalM = 10; // 10 minutes
 
     #endregion
 

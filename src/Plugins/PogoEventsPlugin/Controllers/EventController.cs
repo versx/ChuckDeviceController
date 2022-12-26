@@ -3,6 +3,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
+using Extensions;
+using Models;
 using Services;
 
 [Authorize(Roles = PogoEventsPlugin.PogoEventsRole)]
@@ -21,7 +23,10 @@ public class EventController : Controller
 
     public IActionResult Index()
     {
-        var events = _pokemonEventService.ActiveEvents;
+        var events = _pokemonEventService.ActiveEvents
+            .Filter(active: false, sorted: true)
+            .Cast<ActiveEvent>()
+            .ToList();
         return View(events);
     }
 

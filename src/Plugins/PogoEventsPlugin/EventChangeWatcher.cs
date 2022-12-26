@@ -17,6 +17,12 @@ public class EventChangeWatcher
 
     #endregion
 
+    #region Properties
+
+    public bool Enabled => _timer?.Enabled ?? false;
+
+    #endregion
+
     #region Events
 
     public event EventHandler<EventChangedEventArgs>? Changed;

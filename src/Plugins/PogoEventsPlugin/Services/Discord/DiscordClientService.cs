@@ -1,4 +1,4 @@
-﻿namespace PogoEventsPlugin.Services;
+﻿namespace PogoEventsPlugin.Services.Discord;
 
 using DSharpPlus;
 

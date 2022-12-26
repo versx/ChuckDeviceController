@@ -51,6 +51,9 @@
                 @Html.DisplayNameFor(model => model[0].End)
             </th>
             <th>
+                @Html.DisplayNameFor(model => model[0].HasSpawnpoints)
+            </th>
+            <th>
                 @Html.DisplayNameFor(model => model[0].IsActive)
             </th>
             <th width="5%">Action</th>
@@ -71,6 +74,9 @@
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.End)
+                </td>
+                <td>
+                    @Html.Raw(Utils.FormatBoolean(item.HasSpawnpoints, html: true))
                 </td>
                 <td>
                     @Html.Raw(Utils.FormatBoolean(item.IsActive, html: true))
@@ -99,7 +105,8 @@
                     { responsivePriority: 0, targets: 0 },
                     { responsivePriority: 2, targets: 1 },
                     { responsivePriority: 3, targets: 2 },
-                    { responsivePriority: 4, targets: 3 },
+                    { responsivePriority: 5, targets: 3 },
+                    { responsivePriority: 4, targets: 4 },
                     { responsivePriority: 1, targets: -1, orderable: false },
                 ],
                 order: [[2, 'asc']],
@@ -113,7 +120,8 @@
                 },
                 rowGroup: {
                     dataSrc: function (row) {
-                        return row[4].includes('Yes')
+                        console.log('row:', row);
+                        return row[5].includes('Yes')
                             ? 'Active Events'
                             : 'Upcoming Events';
                     }

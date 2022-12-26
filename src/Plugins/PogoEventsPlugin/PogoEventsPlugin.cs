@@ -9,6 +9,7 @@ using ChuckDeviceController.Plugin;
 
 using Configuration;
 using Services;
+using Services.Discord;
 
 // TODO: Integrate with main application, allow setting active event to adjust IV lists and such
 
@@ -54,8 +55,10 @@ public class PogoEventsPlugin : IPlugin
 
     #region ASP.NET Methods
 
-    public void Configure(WebApplication appBuilder)
+    public async void Configure(WebApplication appBuilder)
     {
+        var eventDataService = appBuilder.Services.GetRequiredService<IPokemonEventDataService>();
+        await eventDataService.StartAsync();
     }
 
     public void ConfigureServices(IServiceCollection services)
