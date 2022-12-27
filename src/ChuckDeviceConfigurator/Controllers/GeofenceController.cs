@@ -16,7 +16,6 @@ using ChuckDeviceController.Data.Extensions;
 using ChuckDeviceController.Data.Repositories;
 using ChuckDeviceController.Extensions.Json;
 using ChuckDeviceController.Geometry.Converters;
-using ChuckDeviceController.Geometry.Models;
 
 [Authorize(Roles = RoleConsts.GeofencesRole)]
 public class GeofenceController : Controller
@@ -45,14 +44,6 @@ public class GeofenceController : Controller
     public async Task<ActionResult> Index()
     {
         var geofences = await _uow.Geofences.FindAllAsync();
-        foreach (var geofence in geofences)
-        {
-            string area = Convert.ToString(geofence.Data.Area);
-            var areasCount = geofence.Type == GeofenceType.Circle
-                ? area?.FromJson<List<Coordinate>>()?.Count ?? 0
-                : area?.FromJson<List<List<Coordinate>>>()?.Count ?? 0;
-            geofence.AreasCount = (uint)areasCount;
-        }
         return View(new ViewModelsModel<Geofence>
         {
             Items = geofences.ToList(),
@@ -89,6 +80,7 @@ public class GeofenceController : Controller
     [ValidateAntiForgeryToken]
     public async Task<ActionResult> Create(IFormCollection collection)
     {
+        Geofence? geofence = null;
         try
         {
             var name = Convert.ToString(collection["Name"]);
@@ -96,7 +88,7 @@ public class GeofenceController : Controller
             var data = Convert.ToString(collection["Data.Area"]);
             var lines = data.Replace("<br>", "\r\n").Replace("\r\n", "\n");
 
-            dynamic area = type == GeofenceType.Circle
+            object area = type == GeofenceType.Circle
                 ? AreaConverters.AreaStringToCoordinates(lines)
                 : AreaConverters.AreaStringToMultiPolygon(lines);
 
@@ -104,9 +96,9 @@ public class GeofenceController : Controller
             {
                 // Geofence already exists by name
                 ModelState.AddModelError("Geofence", $"Geofence with name '{name}' already exists.");
-                return View();
+                return View(geofence);
             }
-            var geofence = new Geofence
+            geofence = new Geofence
             {
                 Name = name,
                 Type = type,
@@ -124,10 +116,14 @@ public class GeofenceController : Controller
 
             return RedirectToAction(nameof(Index));
         }
-        catch
+        catch (Exception ex)
         {
             ModelState.AddModelError("Geofence", $"Unknown error occurred while creating new geofence.");
-            return View();
+
+            var geofenceNames = (await _uow.Geofences.FindAllAsync()).Select(x => x.Name);
+            ViewData["GeofenceNames"] = geofenceNames;
+            ViewData["MapConfig"] = _mapConfig.ToJson();
+            return View(geofence);
         }
     }
 
@@ -140,7 +136,7 @@ public class GeofenceController : Controller
         {
             // Failed to retrieve geofence from database, does it exist?
             ModelState.AddModelError("Geofence", $"Geofence does not exist with id '{id}'.");
-            return View();
+            return View(geofence);
         }
 
         geofence.Data ??= new();
@@ -160,16 +156,16 @@ public class GeofenceController : Controller
     [ValidateAntiForgeryToken]
     public async Task<ActionResult> Edit(string id, IFormCollection collection)
     {
+        var geofence = await _uow.Geofences.FindByIdAsync(id);
+        if (geofence == null)
+        {
+            // Failed to retrieve geofence from database, does it exist?
+            ModelState.AddModelError("Geofence", $"Geofence does not exist with id '{id}'.");
+            return View(geofence);
+        }
+
         try
         {
-            var geofence = await _uow.Geofences.FindByIdAsync(id);
-            if (geofence == null)
-            {
-                // Failed to retrieve geofence from database, does it exist?
-                ModelState.AddModelError("Geofence", $"Geofence does not exist with id '{id}'.");
-                return View();
-            }
-
             var name = Convert.ToString(collection["Name"]);
             var type = (GeofenceType)Convert.ToUInt16(collection["Type"]);
             var data = Convert.ToString(collection["Data.Area"]);
@@ -181,8 +177,12 @@ public class GeofenceController : Controller
 
             geofence.Name = name;
             geofence.Type = type;
-            geofence.Data ??= new();
-            geofence.Data.Area = area;
+            if (geofence.Data == null)
+            {
+                geofence.Data ??= new();
+            }
+            //geofence.Data.Area = area;
+            geofence.Data["area"] = area;
 
             // Update geofence in database
             await _uow.Geofences.UpdateAsync(geofence);
@@ -202,8 +202,12 @@ public class GeofenceController : Controller
         }
         catch (Exception ex)
         {
-            ModelState.AddModelError("Geofence", $"Unknown error occurred while editing geofence '{id}': {ex.Message}");
-            return View();
+            ModelState.AddModelError("Geofence", $"Unknown error occurred while editing geofence '{id}'.");
+
+            var geofenceNames = (await _uow.Geofences.FindAllAsync()).Select(x => x.Name);
+            ViewData["GeofenceNames"] = geofenceNames;
+            ViewData["MapConfig"] = _mapConfig.ToJson();
+            return View(geofence);
         }
     }
 
@@ -215,7 +219,7 @@ public class GeofenceController : Controller
         {
             // Failed to retrieve geofence from database, does it exist?
             ModelState.AddModelError("Geofence", $"Geofence does not exist with id '{id}'.");
-            return View();
+            return View(geofence);
         }
 
         return View(geofence);
@@ -226,16 +230,16 @@ public class GeofenceController : Controller
     [ValidateAntiForgeryToken]
     public async Task<ActionResult> Delete(string id, IFormCollection collection)
     {
+        var geofence = await _uow.Geofences.FindByIdAsync(id);
+        if (geofence == null)
+        {
+            // Failed to retrieve geofence from database, does it exist?
+            ModelState.AddModelError("Geofence", $"Geofence does not exist with id '{id}'.");
+            return View(geofence);
+        }
+
         try
         {
-            var geofence = await _uow.Geofences.FindByIdAsync(id);
-            if (geofence == null)
-            {
-                // Failed to retrieve geofence from database, does it exist?
-                ModelState.AddModelError("Geofence", $"Geofence does not exist with id '{id}'.");
-                return View(geofence);
-            }
-
             // Delete geofence from database
             await _uow.Geofences.RemoveAsync(geofence);
             await _uow.CommitAsync();
@@ -243,11 +247,11 @@ public class GeofenceController : Controller
             _geofenceService.Delete(id);
 
             // Get list of instances that have geofence
+            // TODO: Fix geofences error
             var instancesWithGeofence = await _uow.Instances.FindAsync(instance => instance.Geofences.Contains(geofence.Name));
             foreach (var instance in instancesWithGeofence)
             {
                 instance.Geofences.Remove(geofence.Name);
-                await _uow.CommitAsync();
 
                 // Reload instance so removed geofence is not ignored
                 await _jobControllerService.ReloadInstanceAsync(instance, instance.Name);
@@ -255,10 +259,10 @@ public class GeofenceController : Controller
 
             return RedirectToAction(nameof(Index));
         }
-        catch
+        catch (Exception ex)
         {
             ModelState.AddModelError("Geofence", $"Unknown error occurred while deleting geofence '{id}'.");
-            return View();
+            return View(geofence);
         }
     }
 }

@@ -120,7 +120,6 @@
                 },
                 rowGroup: {
                     dataSrc: function (row) {
-                        console.log('row:', row);
                         return row[5].includes('Yes')
                             ? 'Active Events'
                             : 'Upcoming Events';
