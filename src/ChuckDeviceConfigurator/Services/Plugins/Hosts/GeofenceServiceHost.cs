@@ -14,14 +14,24 @@ using ChuckDeviceController.Plugin;
 
 public class GeofenceServiceHost : IGeofenceServiceHost
 {
+    #region Variables
+
     private static readonly ILogger<IGeofenceServiceHost> _logger =
         new Logger<IGeofenceServiceHost>(LoggerFactory.Create(x => x.AddConsole()));
     private readonly string _connectionString;
+
+    #endregion
+
+    #region Constructors
 
     public GeofenceServiceHost(string connectionString)
     {
         _connectionString = connectionString;
     }
+
+    #endregion
+
+    #region Geofence Methods
 
     public async Task CreateGeofenceAsync(IGeofence options)
     {
@@ -54,18 +64,25 @@ public class GeofenceServiceHost : IGeofenceServiceHost
         return geofence;
     }
 
-    public (IReadOnlyList<IMultiPolygon>, IReadOnlyList<IReadOnlyList<ICoordinate>>) ConvertToMultiPolygons(IGeofence geofence)
+    #endregion
+
+    #region Geofence Converter Methods
+
+    public (IReadOnlyList<IMultiPolygon>, IReadOnlyList<IReadOnlyList<ICoordinate>>) GetMultiPolygons(IGeofence geofence)
     {
         var (multiPolygons, coords) = geofence.ConvertToMultiPolygons();
         return (multiPolygons, coords);
     }
 
-    public IReadOnlyList<ICoordinate>? ConvertToCoordinates(IGeofence geofence)
+    public IReadOnlyList<ICoordinate>? GetCoordinates(IGeofence geofence)
     {
         var coords = geofence.ConvertToCoordinates();
         return coords;
     }
 
+    #endregion
+
+    #region Point In Polygon Methods
 
     public bool IsPointInMultiPolygons(ICoordinate coord, IEnumerable<IMultiPolygon> multiPolygons)
     {
@@ -90,4 +107,6 @@ public class GeofenceServiceHost : IGeofenceServiceHost
             coordinates.ToList()
         );
     }
+
+    #endregion
 }
