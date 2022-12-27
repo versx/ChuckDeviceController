@@ -86,8 +86,38 @@ public class ObjectDataConverter<T> : JsonConverter<T>
         // Don't do that, you will lose performance because of the cast needed below.
         // Cast to avoid infinite loop: https://github.com/dotnet/docs/issues/19268
 
-        var obj = FlattenDictionary(value);
-        JsonSerializer.Serialize(writer, obj);
+        if (value is null)
+        {
+            writer.WriteNullValue();
+        }
+        else
+        {
+            //writer.WriteStartObject();
+            //foreach (var (key, val) in value)
+            //{
+            //    writer.WritePropertyName(key);
+            //    JsonSerializer.Serialize(writer, val, options);
+            //}
+            //writer.WriteEndObject();
+
+            // .NET's System.Text.Json.JsonSerializer class will only serialize
+            // and or deserialize dictionary key/values for classes that inherit
+            // from dictionaries. Any custom properties set in the custom class
+            // will not be populated or used.
+            // 
+            // We work around this by creating a new dictionary and adding the
+            // custom properties values set as well as including any key/value
+            // pairs set in the base dictionary class.
+            // 
+            // Not the best solution, although it works. Issues can and will occur
+            // if there is a key and property declared as the same name.
+            // 
+            // TODO: Potentially just use `JsonExtensionData` attribute, although
+            // some refactoring will need to be done.
+
+            var obj = FlattenDictionary(value);
+            JsonSerializer.Serialize(writer, obj);
+        }
     }
 
     private object? ExtractValue(ref Utf8JsonReader reader, JsonSerializerOptions options)
@@ -138,16 +168,22 @@ public class ObjectDataConverter<T> : JsonConverter<T>
         // Loop through explicit properties of entity
         foreach (var prop in properties)
         {
+            // Only check properties with the `JsonPropertyName`
+            // attribute set.
             var jsonName = prop.GetJsonPropertyAttr()?.Name;
             if (jsonName == null)
                 continue;
 
+            // Retrieve the property value from the 
             var value = prop.GetValue(data);
-            result[jsonName] = value;
-            //result[prop.Name] = value;
+            // Set the properties as their `JsonPropertyName` attribute
+            // description since we are writing the object.
+            result[jsonName] = value; // i.e. `area`
+            //result[prop.Name] = value; // i.e. `Area`
         }
 
-        // Loop through key/value pairs for entity
+        // Loop through inherited key/value pair dictionary and set
+        // the property name and values in the flat dictionary.
         foreach (var (key, value) in data)
         {
             result[key] = value;
