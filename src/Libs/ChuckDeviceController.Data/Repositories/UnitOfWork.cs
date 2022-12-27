@@ -109,7 +109,7 @@ public class UnitOfWork<TDbContext> : IUnitOfWork
 
     public async Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken stoppingToken = default)
     {
-        return await _context.Database.BeginTransactionAsync();
+        return await _context.Database.BeginTransactionAsync(stoppingToken);
     }
 
     public bool Commit()
@@ -129,12 +129,13 @@ public class UnitOfWork<TDbContext> : IUnitOfWork
     {
         try
         {
-            //await _context.Database.CommitTransactionAsync();
-            var rowsAffected = await _context.SaveChangesAsync();
+            //await _context.Database.CommitTransactionAsync(stoppingToken);
+            //return true;
+            var rowsAffected = await _context.SaveChangesAsync(stoppingToken);
             var result = rowsAffected > 0;
             return result;
         }
-        catch
+        catch (Exception ex)
         {
             return false;
         }
@@ -147,7 +148,7 @@ public class UnitOfWork<TDbContext> : IUnitOfWork
 
     public async Task RollbackAsync(CancellationToken stoppingToken = default)
     {
-        await _context.Database.RollbackTransactionAsync();
+        await _context.Database.RollbackTransactionAsync(stoppingToken);
     }
 
     public void Dispose()
