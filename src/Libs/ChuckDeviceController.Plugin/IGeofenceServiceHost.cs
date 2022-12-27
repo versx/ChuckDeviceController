@@ -24,6 +24,20 @@ public interface IGeofenceServiceHost
     /// <summary>
     /// 
     /// </summary>
+    /// <param name="geofence"></param>
+    /// <returns></returns>
+    (IReadOnlyList<IMultiPolygon>, IReadOnlyList<IReadOnlyList<ICoordinate>>) ConvertToMultiPolygons(IGeofence geofence);
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="geofence"></param>
+    /// <returns></returns>
+    IReadOnlyList<ICoordinate>? ConvertToCoordinates(IGeofence geofence);
+
+    /// <summary>
+    /// 
+    /// </summary>
     /// <param name="coord"></param>
     /// <param name="multiPolygons"></param>
     /// <returns></returns>

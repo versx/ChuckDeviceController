@@ -3,7 +3,9 @@
 using System.Threading.Tasks;
 
 using ChuckDeviceController.Data.Abstractions;
+using ChuckDeviceController.Data.Common;
 using ChuckDeviceController.Data.Entities;
+using ChuckDeviceController.Data.Extensions;
 using ChuckDeviceController.Data.Factories;
 using ChuckDeviceController.Geometry;
 using ChuckDeviceController.Geometry.Models;
@@ -51,6 +53,19 @@ public class GeofenceServiceHost : IGeofenceServiceHost
         var geofence = await context.Geofences.FindAsync(name);
         return geofence;
     }
+
+    public (IReadOnlyList<IMultiPolygon>, IReadOnlyList<IReadOnlyList<ICoordinate>>) ConvertToMultiPolygons(IGeofence geofence)
+    {
+        var (multiPolygons, coords) = geofence.ConvertToMultiPolygons();
+        return (multiPolygons, coords);
+    }
+
+    public IReadOnlyList<ICoordinate>? ConvertToCoordinates(IGeofence geofence)
+    {
+        var coords = geofence.ConvertToCoordinates();
+        return coords;
+    }
+
 
     public bool IsPointInMultiPolygons(ICoordinate coord, IEnumerable<IMultiPolygon> multiPolygons)
     {
