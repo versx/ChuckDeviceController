@@ -7,6 +7,7 @@ using System.Text.Json.Serialization;
 
 using ChuckDeviceController.Data.Abstractions;
 using ChuckDeviceController.Data.Common;
+using ChuckDeviceController.Extensions.Json.Converters;
 
 [Table("instance")]
 public class Instance : BaseEntity, IInstance
@@ -58,6 +59,7 @@ public class Instance : BaseEntity, IInstance
         Column("data"),
         JsonPropertyName("data"),
         //JsonExtensionData,
+        JsonConverter(typeof(ObjectDataConverter<InstanceData>)),
     ]
     public InstanceData? Data { get; set; }
 

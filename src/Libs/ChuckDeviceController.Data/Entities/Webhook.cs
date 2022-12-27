@@ -7,6 +7,7 @@ using System.Text.Json.Serialization;
 
 using ChuckDeviceController.Data.Abstractions;
 using ChuckDeviceController.Data.Common;
+using ChuckDeviceController.Extensions.Json.Converters;
 using ChuckDeviceController.Geometry.Models;
 
 [Table("webhook")]
@@ -61,6 +62,7 @@ public class Webhook : BaseEntity, IWebhook
         DisplayName("Data"),
         Column("data"),
         JsonPropertyName("data"),
+        JsonConverter(typeof(ObjectDataConverter<WebhookData>)),
     ]
     public WebhookData? Data { get; set; }
 

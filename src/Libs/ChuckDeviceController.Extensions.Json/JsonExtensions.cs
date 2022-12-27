@@ -6,57 +6,37 @@ using System.Text.Json.Serialization;
 
 public static class JsonExtensions
 {
-    private static readonly JsonSerializerOptions _jsonOptions = new()
-    {
-        PropertyNameCaseInsensitive = true,
-        AllowTrailingCommas = true,
-        WriteIndented = true,
-        ReadCommentHandling = JsonCommentHandling.Skip,
-        //ReferenceHandler = ReferenceHandler.Preserve,
-        //PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        //IgnoreReadOnlyProperties = true,
-        //DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-    };
+    private static readonly JsonSerializerOptions _jsonOptions = GetDefaultOptions(prettyPrint: false, converters: null);
 
     public static T? FromJson<T>(this string json) =>
         JsonSerializer.Deserialize<T>(json, _jsonOptions);
 
     public static T? FromJson<T>(this string json, IEnumerable<JsonConverter>? converters = null)
     {
-        var jsonOptions = new JsonSerializerOptions
+        try
         {
-            PropertyNameCaseInsensitive = true,
-            AllowTrailingCommas = true,
-            WriteIndented = true,
-            ReadCommentHandling = JsonCommentHandling.Skip,
-            //ReferenceHandler = ReferenceHandler.Preserve,
-            //PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            //IgnoreReadOnlyProperties = true,
-            //DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        };
-        if (converters != null)
-        {
-            foreach (var converter in converters)
-            {
-                jsonOptions.Converters.Add(converter);
-            }
+            var options = GetDefaultOptions(prettyPrint: true, converters);
+            var obj = JsonSerializer.Deserialize<T>(json, options);
+            return obj;
         }
-        var obj = JsonSerializer.Deserialize<T>(json, jsonOptions);
-        return obj;
+        catch (Exception ex)
+        {
+            return default;
+        }
     }
 
-    public static string ToJson<T>(this T obj, bool pretty = false)
+    public static string? ToJson<T>(this T obj, bool pretty = false, IEnumerable<JsonConverter>? converters = null)
     {
-        var options = new JsonSerializerOptions
+        try
         {
-            PropertyNameCaseInsensitive = true,
-            AllowTrailingCommas = true,
-            WriteIndented = pretty,
-            ReadCommentHandling = JsonCommentHandling.Skip,
-            //ReferenceHandler = ReferenceHandler.Preserve,
-        };
-        var json = JsonSerializer.Serialize(obj, options);
-        return json;
+            var options = GetDefaultOptions(prettyPrint: pretty, converters);
+            var json = JsonSerializer.Serialize(obj, options);
+            return json;
+        }
+        catch (Exception ex)
+        {
+            return default;
+        }
     }
 
     public static T? LoadFromFile<T>(this string filePath)
@@ -74,5 +54,30 @@ public static class JsonExtensions
         }
 
         return data.FromJson<T>();
+    }
+
+    public static JsonSerializerOptions GetDefaultOptions(bool prettyPrint = false, IEnumerable<JsonConverter>? converters = null)
+    {
+        var options = new JsonSerializerOptions
+        {
+            AllowTrailingCommas = true,
+            IncludeFields = true,
+            PropertyNameCaseInsensitive = true,
+            ReadCommentHandling = JsonCommentHandling.Skip,
+            WriteIndented = prettyPrint,
+            ReferenceHandler = ReferenceHandler.IgnoreCycles,
+            //DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            //IgnoreReadOnlyProperties = true,
+            //PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            //ReferenceHandler = ReferenceHandler.Preserve,
+        };
+        if (converters != null)
+        {
+            foreach (var converter in converters)
+            {
+                options.Converters.Add(converter);
+            }
+        }
+        return options;
     }
 }

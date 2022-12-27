@@ -1,12 +1,19 @@
 ﻿namespace ChuckDeviceController.Extensions.Json.Extensions;
 
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Reflection;
 using System.Text.Json.Serialization;
 
 public static class PropertyExtensions
 {
-    public static void SetPropertyValue<T>(this PropertyInfo property, T instanceData, object? value)
+    //private static readonly IEnumerable<string> _ignoreProperties = new[]
+    //{
+    //    "Area",
+    //    "Data",
+    //};
+
+    public static void SetPropertyValue<T>(this PropertyInfo property, T instance, object? value)
     {
         try
         {
@@ -16,18 +23,27 @@ public static class PropertyExtensions
 
             if (propertyDescriptor.PropertyType == typeof(object))
             {
-                property.SetValue(instanceData, value);
+                // Data / Area
+                //if (value?.GetType() == typeof(string))
+                //if (property.Name == "Area")
+                //{
+                //    // Don't double serialize JSON string
+                //    property.SetValue(instance, value.ToJson());
+                //    return;
+                //}
+
+                property.SetValue(instance, value.ToJson());
             }
             else
             {
                 var strValue = Convert.ToString(value);
                 var converted = propertyDescriptor.Converter.ConvertFromString(strValue!);
-                property.SetValue(instanceData, converted);
+                property.SetValue(instance, converted);
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error: {ex}");
+            Debug.WriteLine($"Error: {ex}");
         }
     }
 

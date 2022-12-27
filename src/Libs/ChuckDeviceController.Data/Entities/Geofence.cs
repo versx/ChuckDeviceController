@@ -7,6 +7,9 @@ using System.Text.Json.Serialization;
 
 using ChuckDeviceController.Data.Abstractions;
 using ChuckDeviceController.Data.Common;
+using ChuckDeviceController.Extensions.Json;
+using ChuckDeviceController.Extensions.Json.Converters;
+using ChuckDeviceController.Geometry.Models;
 
 [Table("geofence")]
 public class Geofence : BaseEntity, IGeofence
@@ -35,6 +38,7 @@ public class Geofence : BaseEntity, IGeofence
         //Required,
         JsonPropertyName("data"),
         //JsonExtensionData,
+        JsonConverter(typeof(ObjectDataConverter<GeofenceData>)),
     ]
     public GeofenceData? Data { get; set; }
 
@@ -43,7 +47,20 @@ public class Geofence : BaseEntity, IGeofence
         NotMapped,
         JsonIgnore,
     ]
-    public uint AreasCount { get; set; }
+    public uint AreasCount
+    {
+        get
+        {
+            string area = Convert.ToString(Data?.Area);
+            if (string.IsNullOrEmpty(area))
+                return 0;
+
+            var count = Type == GeofenceType.Circle
+                ? area?.FromJson<List<Coordinate>>()?.Count ?? 0
+                : area?.FromJson<List<List<Coordinate>>>()?.Count ?? 0;
+            return (uint)count;
+        }
+    }
 
     #endregion
 

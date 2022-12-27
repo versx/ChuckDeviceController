@@ -36,6 +36,9 @@ public static class DbContextFactory
 
             var ctx = new DbContext(optionsBuilder.Options);
             ctx.ChangeTracker.AutoDetectChangesEnabled = autoDetectChanges;
+            ctx.ChangeTracker.QueryTrackingBehavior = autoDetectChanges
+                ? QueryTrackingBehavior.TrackAll
+                : QueryTrackingBehavior.NoTracking;
             return (T)ctx;
         }
         catch (Exception ex)
@@ -84,12 +87,12 @@ public static class DbContextFactory
         return null;
     }
 
-    public static ValueConverter<T, string?> CreateJsonValueConverter<T>()
+    public static ValueConverter<T, string?> CreateJsonValueConverter<T>(IEnumerable<JsonConverter>? jsonConverters = null)
     {
         return new ValueConverter<T, string?>
         (
-            v => v.ToJson(true),
-            v => v!.FromJson<T>(JsonDictionaryConverters)!
+            v => v.ToJson(true, jsonConverters),// JsonDictionaryConverters),
+            v => v!.FromJson<T>(jsonConverters)// JsonDictionaryConverters)!
         );
     }
 

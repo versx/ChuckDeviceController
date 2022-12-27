@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using ChuckDeviceController.Data.Common;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Factories;
+using ChuckDeviceController.Extensions.Json.Converters;
 
 public class ControllerDbContext : DbContext
 {
@@ -44,6 +45,7 @@ public class ControllerDbContext : DbContext
     {
         Interlocked.Increment(ref _instanceCount);
 
+        base.ChangeTracker.AutoDetectChangesEnabled = false;
         base.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
     }
 
@@ -150,7 +152,7 @@ public class ControllerDbContext : DbContext
                        x => Geofence.StringToGeofenceType(x)
                    );
             entity.Property(p => p.Data)
-                  .HasConversion(DbContextFactory.CreateJsonValueConverter<GeofenceData?>());
+                  .HasConversion(DbContextFactory.CreateJsonValueConverter<GeofenceData?>(new[] { new ObjectDataConverter<GeofenceData>() }));
         });
 
         modelBuilder.Entity<Instance>(entity =>
@@ -161,7 +163,7 @@ public class ControllerDbContext : DbContext
                        x => Instance.StringToInstanceType(x)
                    );
             entity.Property(p => p.Data)
-                  .HasConversion(DbContextFactory.CreateJsonValueConverter<InstanceData?>());
+                  .HasConversion(DbContextFactory.CreateJsonValueConverter<InstanceData?>(new[] { new ObjectDataConverter<InstanceData>() }));
             entity.Property(p => p.Geofences)
                   .HasConversion(
                        DbContextFactory.CreateJsonValueConverter<List<string>>(),
@@ -196,7 +198,7 @@ public class ControllerDbContext : DbContext
                        DbContextFactory.CreateValueComparer<WebhookType>()
                    );
             entity.Property(p => p.Data)
-                  .HasConversion(DbContextFactory.CreateJsonValueConverter<WebhookData?>());
+                  .HasConversion(DbContextFactory.CreateJsonValueConverter<WebhookData?>(new[] { new ObjectDataConverter<WebhookData>() }));
             entity.Property(nameof(Webhook.Geofences))
                   .HasConversion(
                        DbContextFactory.CreateJsonValueConverter<List<string>>(),
