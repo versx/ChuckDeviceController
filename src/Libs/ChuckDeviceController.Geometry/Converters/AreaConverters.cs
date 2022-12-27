@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 
+using ChuckDeviceController.Extensions.Json;
 using ChuckDeviceController.Geometry.Models;
 
 /// <summary>
@@ -19,15 +20,18 @@ public static class AreaConverters
     /// <returns>Returns JSON coordinates as text value</returns>
     public static string CoordinatesToAreaString(dynamic area)
     {
-        var coords = string.Empty;
+        //var coords = string.Empty;
         var nfi = new CultureInfo("en-US").NumberFormat;
         nfi.NumberDecimalSeparator = ".";
-        foreach (var coord in area.EnumerateArray())
-        {
-            var latitude = double.Parse(Convert.ToString(coord.GetProperty("lat")), nfi);
-            var longitude = double.Parse(Convert.ToString(coord.GetProperty("lon")), nfi);
-            coords += $"{latitude},{longitude}\n";
-        }
+        List<Coordinate> obj = JsonExtensions.FromJson<List<Coordinate>>(area);
+        var coordsArray = obj.Select(coord => $"{coord.Latitude},{coord.Longitude}");
+        var coords = string.Join('\n', coordsArray);
+        //foreach (var coord in area.EnumerateArray())
+        //{
+        //    var latitude = double.Parse(Convert.ToString(coord.GetProperty("lat")), nfi);
+        //    var longitude = double.Parse(Convert.ToString(coord.GetProperty("lon")), nfi);
+        //    coords += $"{latitude},{longitude}\n";
+        //}
         return coords;
     }
 
@@ -43,13 +47,25 @@ public static class AreaConverters
         var coords = string.Empty;
         var nfi = new CultureInfo("en-US").NumberFormat;
         nfi.NumberDecimalSeparator = ".";
-        foreach (var fence in area.EnumerateArray())
+        List<List<Coordinate>> obj = JsonExtensions.FromJson<List<List<Coordinate>>>(area);
+        //foreach (var fence in area.EnumerateArray())
+        //{
+        //    coords += $"[Geofence {index}]\n";
+        //    foreach (var coord in fence.EnumerateArray())
+        //    {
+        //        var latitude = double.Parse(Convert.ToString(coord.GetProperty("lat")), nfi);
+        //        var longitude = double.Parse(Convert.ToString(coord.GetProperty("lon")), nfi);
+        //        coords += $"{latitude},{longitude}\n";
+        //    }
+        //    index++;
+        //}
+        foreach (var geofence in obj)
         {
             coords += $"[Geofence {index}]\n";
-            foreach (var coord in fence.EnumerateArray())
+            foreach (var coord in geofence)
             {
-                var latitude = double.Parse(Convert.ToString(coord.GetProperty("lat")), nfi);
-                var longitude = double.Parse(Convert.ToString(coord.GetProperty("lon")), nfi);
+                var latitude = double.Parse(Convert.ToString(coord.Latitude), nfi);
+                var longitude = double.Parse(Convert.ToString(coord.Longitude), nfi);
                 coords += $"{latitude},{longitude}\n";
             }
             index++;

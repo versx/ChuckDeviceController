@@ -1,14 +1,21 @@
 ﻿namespace ChuckDeviceController.Data.Extensions;
 
+using Microsoft.Extensions.Logging;
+
+using ChuckDeviceController.Data.Abstractions;
 using ChuckDeviceController.Data.Common;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Extensions.Json;
 using ChuckDeviceController.Geometry.Models;
 using ChuckDeviceController.Geometry.Models.Abstractions;
+using ChuckDeviceController.Logging;
 
 public static class GeofenceExtensions
 {
-    public static string? ConvertToIni(this Geofence geofence)
+    private static readonly ILogger<Geofence> _logger =
+        GenericLoggerFactory.CreateLogger<Geofence>();
+
+    public static string? ConvertToIni(this IGeofence geofence)
     {
         var sb = new System.Text.StringBuilder();
         switch (geofence.Type)
@@ -18,7 +25,7 @@ public static class GeofenceExtensions
                     var coords = geofence.ConvertToCoordinates();
                     if (coords == null)
                     {
-                        Console.WriteLine($"Error: Unable to convert coordinates to INI format");
+                        _logger.LogError($"Error: Unable to convert coordinates to INI format");
                         return null;
                     }
 
@@ -46,7 +53,7 @@ public static class GeofenceExtensions
         return sb.ToString();
     }
 
-    public static List<ICoordinate> ConvertToCoordinates(this IReadOnlyList<Geofence> geofences)
+    public static IReadOnlyList<ICoordinate> ConvertToCoordinates(this IReadOnlyList<IGeofence> geofences)
     {
         var coords = new List<ICoordinate>();
         foreach (var geofence in geofences)
@@ -60,29 +67,29 @@ public static class GeofenceExtensions
         return coords;
     }
 
-    public static List<Coordinate>? ConvertToCoordinates(this Geofence geofence)
+    public static IReadOnlyList<ICoordinate>? ConvertToCoordinates(this IGeofence geofence)
     {
         if (geofence == null)
         {
-            Console.WriteLine($"Provided geofence was null, unable to convert to Coordinates list");
+            _logger.LogError($"Provided geofence was null, unable to convert to Coordinates list");
             return default;
         }
 
         var coordsArray = ParseGeofenceArea<List<Coordinate>>(geofence.Name, geofence?.Data?.Area);
         if (coordsArray == null)
         {
-            Console.WriteLine($"Failed to parse Coordinates list from geofence");
+            _logger.LogError($"Failed to parse Coordinates list from geofence");
             return null;
         }
-        var coords = new List<Coordinate>(coordsArray);
+        var coords = new List<ICoordinate>(coordsArray);
         return coords;
     }
 
-    public static (List<IMultiPolygon>, List<List<Coordinate>>) ConvertToMultiPolygons(
-        this IReadOnlyList<Geofence> geofences)
+    public static (IReadOnlyList<IMultiPolygon>, IReadOnlyList<IReadOnlyList<Coordinate>>) ConvertToMultiPolygons(
+        this IReadOnlyList<IGeofence> geofences)
     {
         var multiPolygons = new List<IMultiPolygon>();
-        var coordinates = new List<List<Coordinate>>();
+        var coordinates = new List<IReadOnlyList<Coordinate>>();
         foreach (var geofence in geofences)
         {
             var result = ConvertToMultiPolygons(geofence);
@@ -95,19 +102,19 @@ public static class GeofenceExtensions
         return (multiPolygons, coordinates);
     }
 
-    public static (List<IMultiPolygon>, List<List<Coordinate>>) ConvertToMultiPolygons(
-        this Geofence geofence)
+    public static (IReadOnlyList<IMultiPolygon>, IReadOnlyList<IReadOnlyList<Coordinate>>) ConvertToMultiPolygons(
+        this IGeofence geofence)
     {
         if (geofence == null)
         {
-            Console.WriteLine($"Provided geofence was null, unable to convert to MultiPolygons list");
+            _logger.LogError($"Provided geofence was null, unable to convert to MultiPolygons list");
             return default;
         }
 
         var coordsArray = ParseGeofenceArea<List<List<Coordinate>>>(geofence.Name, geofence?.Data?.Area);
         if (coordsArray == null)
         {
-            Console.WriteLine($"Failed to parse MultiPolygon coordinates from geofence");
+            _logger.LogError($"Failed to parse MultiPolygon coordinates from geofence");
             return default;
         }
 
@@ -147,10 +154,12 @@ public static class GeofenceExtensions
         {
             if (area is null)
             {
-                Console.WriteLine($"Failed to parse coordinates for geofence '{geofenceName}'");
+                _logger.LogError($"Failed to parse coordinates for geofence '{geofenceName}'");
                 return default;
             }
-            string areaJson = Convert.ToString(area);
+            //string areaJson = JsonExtensions.ToJson(area);
+            //string areaJson = Convert.ToString(area.ToJson());
+            string areaJson = area;
             var coordsArray = (T?)
             (
                 area is T
@@ -161,7 +170,7 @@ public static class GeofenceExtensions
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error - ParseGeofenceArea: {ex}");
+            _logger.LogError($"ParseGeofenceArea: {ex}");
             return default;
         }
     }
