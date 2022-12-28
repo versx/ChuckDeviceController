@@ -23,7 +23,7 @@ brew install git
 wget https://packages.microsoft.com/config/ubuntu/{22,20,18}.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
 sudo dpkg -i packages-microsoft-prod.deb
 rm packages-microsoft-prod.deb
-sudo apt-get update- 
+sudo apt-get update
 sudo apt-get install -y apt-transport-https
 sudo apt-get update
 sudo apt-get install -y dotnet-sdk-7.0
@@ -50,10 +50,10 @@ https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/sdk-7.0.101-macos-a
 
 <hr>
 
-## MySQL Database
-[Install](https://dev.mysql.com/downloads/installer)  
+## Install MySQL Database
+[Download Installer](https://dev.mysql.com/downloads/installer)  
 
 or
 
-## MariaDB Database
-[Install](https://mariadb.org/download/?t=mariadb)
+## Install MariaDB Database
+[Download Installer](https://mariadb.org/download/?t=mariadb)

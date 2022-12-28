@@ -1,6 +1,6 @@
 # IDatabaseHost - Available Database Model Contracts
 
-**Controller Types:**  
+**Controller Entity Types:**  
 ```cs
 - IAccount
 - IAssignment
@@ -13,7 +13,7 @@
 - IWebhook
 ```
 
-**Map Data Types:**  
+**Map Entity Types:**  
 ```cs
 - ICell
 - IGym

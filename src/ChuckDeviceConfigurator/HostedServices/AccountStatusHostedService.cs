@@ -6,7 +6,7 @@ using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Repositories;
 using ChuckDeviceController.Extensions;
 
-public class AccountStatusHostedService : IHostedService, IAccountStatusHostedService
+public class AccountStatusHostedService : IHostedService
 {
     #region Constants
 
@@ -21,7 +21,7 @@ public class AccountStatusHostedService : IHostedService, IAccountStatusHostedSe
 
     #region Variables
 
-    private readonly ILogger<IAccountStatusHostedService> _logger;
+    private readonly ILogger<AccountStatusHostedService> _logger;
     private readonly Timer _timer;
 
     #endregion
@@ -35,7 +35,7 @@ public class AccountStatusHostedService : IHostedService, IAccountStatusHostedSe
     #region Constructor
 
     public AccountStatusHostedService(
-        ILogger<IAccountStatusHostedService> logger,
+        ILogger<AccountStatusHostedService> logger,
         IServiceProvider services)
     {
         _logger = logger;

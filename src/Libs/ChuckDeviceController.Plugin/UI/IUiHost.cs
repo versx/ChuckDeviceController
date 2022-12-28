@@ -34,7 +34,7 @@ public interface IUiHost
 
     #endregion
 
-    #region Methods
+    #region Sidebar
 
     /// <summary>
     /// Adds a <seealso cref="SidebarItem"/> item to the main
@@ -49,6 +49,10 @@ public interface IUiHost
     /// </summary>
     /// <param name="headers">List of sidebar items to add.</param>
     Task AddSidebarItemsAsync(IEnumerable<SidebarItem> headers);
+
+    #endregion
+
+    #region Dashboard Statistics
 
     /// <summary>
     /// Adds a custom <seealso cref="IDashboardStatsItem"/> to the
@@ -78,6 +82,10 @@ public interface IUiHost
     /// <param name="stats">List of dashboard statistic items to update.</param>
     Task UpdateDashboardStatisticsAsync(IEnumerable<IDashboardStatsItem> stats);
 
+    #endregion
+
+    #region Dashboard Tiles
+
     /// <summary>
     /// Adds a statistic tile to the front page dashboard.
     /// </summary>
@@ -89,6 +97,10 @@ public interface IUiHost
     /// </summary>
     /// <param name="tiles">List of dashboard statistic tiles to add.</param>
     Task AddDashboardTilesAsync(IEnumerable<IDashboardTile> tiles);
+
+    #endregion
+
+    #region Settings
 
     /// <summary>
     /// 

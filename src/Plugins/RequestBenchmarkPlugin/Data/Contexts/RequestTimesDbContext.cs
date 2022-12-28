@@ -11,6 +11,7 @@ public class RequestTimesDbContext : DbContext
     public RequestTimesDbContext(DbContextOptions<RequestTimesDbContext> options)
         : base(options)
     {
+        base.ChangeTracker.AutoDetectChangesEnabled = false;
         base.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
     }
 }

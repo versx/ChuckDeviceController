@@ -5,9 +5,14 @@
 1. Now you can search for `chuck` when creating a new plugin via Visual Studio from the new project creation screen to select from the different pre-configured ChuckDeviceController plugin project templates.
 1. Once you select the type of plugin project to create, you can refer to the [Plugin API SDK documentation for more in-depth details.](./api.md).
 
-### Plugin Type Selection  
+<hr>
 
-**ASP.NET Core Razor Pages Documentation** (ChuckPluginRazor)  
+## Plugin Template Selection  
+
+<br>
+
+### **ChuckPluginRazor**  
+ASP.NET Core Razor Pages Documentation:  
 
 - [Overview](https://learn.microsoft.com/en-us/aspnet/core/razor-pages/?view=aspnetcore-7.0&tabs=visual-studio)  
 - Tutorials  
@@ -24,7 +29,8 @@
 - [Route and app conventions](https://learn.microsoft.com/en-us/aspnet/core/razor-pages/razor-pages-conventions?view=aspnetcore-7.0)  
 
 
-**ASP.NET Core MVC Web Apps Documentation** (ChuckPluginMvc)  
+### **ChuckPluginMvc**  
+ASP.NET Core MVC (Model-View-Controller) Web Apps Documentation:  
 
 - [Overview](https://docs.microsoft.com/en-us/aspnet/core/mvc/overview?view=aspnetcore-7.0)  
 - [Controllers](https://docs.microsoft.com/en-us/aspnet/core/mvc/controllers/actions?view=aspnetcore-7.0)  
@@ -34,7 +40,7 @@
 - [Tutorial](https://docs.microsoft.com/en-us/aspnet/core/tutorials/first-mvc-app/start-mvc?view=aspnetcore-7.0&tabs=visual-studio)  
 
 
-**ASP.NET Core Web API Apps Documentation** (ChuckPluginMvc)  
+ASP.NET Core Web API Apps Documentation:  
 
 - [Overview](https://docs.microsoft.com/en-us/aspnet/core/web-api/?view=aspnetcore-7.0)  
 - Tutorials  
@@ -42,12 +48,13 @@
     - [Create a minimal web API](https://docs.microsoft.com/en-us/aspnet/core/tutorials/min-web-api?view=aspnetcore-7.0&tabs=visual-studio)  
     - [Create a web API](https://docs.microsoft.com/en-us/aspnet/core/tutorials/first-web-api?view=aspnetcore-7.0&tabs=visual-studio)  
 
-
-**ASP.NET Core Blazor Apps Documentation** (Untested)  
+### **ChuckPluginBlazor** (Untested)  
+ASP.NET Core Blazor Apps Documentation:  
 
 - [Overview](https://learn.microsoft.com/en-us/aspnet/core/blazor/?view=aspnetcore-7.0)  
 
 
-**.NET Core Apps Documentation** (ChuckPlugin)  
+### **ChuckPlugin**  
+.NET Core Apps Documentation:  
 
 - [Create a library](https://learn.microsoft.com/en-us/dotnet/core/tutorials/library-with-visual-studio?pivots=dotnet-7-0)  

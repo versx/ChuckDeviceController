@@ -178,6 +178,7 @@ public class ClearFortsHostedService : TimedHostedService
         foreach (var fort in forts)
         {
             fort.IsDeleted = true;
+            fort.IsEnabled = false;
             fortsToDelete.Add(fort);
         }
         return fortsToDelete;

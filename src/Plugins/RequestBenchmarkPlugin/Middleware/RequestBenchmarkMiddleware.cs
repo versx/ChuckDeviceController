@@ -13,7 +13,10 @@ public sealed class RequestBenchmarkMiddleware
     private readonly IRequestBenchmarkService _benchmarkService;
     private readonly RequestBenchmarkConfig _config;
 
-    public RequestBenchmarkMiddleware(RequestDelegate next, IRequestBenchmarkService benchmarkService, IOptions<RequestBenchmarkConfig> options)
+    public RequestBenchmarkMiddleware(
+        RequestDelegate next,
+        IRequestBenchmarkService benchmarkService,
+        IOptions<RequestBenchmarkConfig> options)
     {
         _next = next ?? throw new ArgumentNullException(nameof(next));
         _benchmarkService = benchmarkService ?? throw new ArgumentNullException(nameof(benchmarkService));
@@ -29,7 +32,7 @@ public sealed class RequestBenchmarkMiddleware
             return;
         }
 
-        // TODO: Add config option to ignore static assets. i.e. /lib, /js, /css paths and custom defined paths
+        // TODO: Add config option to ignore custom defined paths
 
         var route = context.Request.Path.ToString();
         var benchmark = _benchmarkService.Benchmarks.ContainsKey(route)

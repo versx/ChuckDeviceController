@@ -20,12 +20,44 @@ nav:
         - Screenshots: screenshots.md
         - Requirements: requirements.md
         - Getting Started: getting-started.md
+    - Applications:
+        - ChuckDeviceConfigurator: applications/configurator.md
+        - ChuckDeviceController: applications/controller.md
+        - ChuckDeviceCommunicator: applications/communicator.md
+        - ChuckDeviceProxy: applications/proxy.md
+    - Configuration:
+        - Configurator: configs/configurator.md
+        - Controller: configs/controller.md
+        - Communicator: configs/communicator.md
+        - Proxy: configs/proxy.md
     - Plugin System:
         - Visual Studio Templates: plugin-system/project-templates.md
         - Plugins: plugin-system/index.md
         - API Documentation: plugin-system/api.md
         - Plugin Host Interfaces: plugin-system/interfaces.md
+        - Plugins Included: plugin-system/plugins-included.md
         - Examples: plugin-system/examples.md
+    - Plugins Included:
+        - BitbucketAuthProviderPlugin: plugins/BitbucketAuthProviderPlugin.md
+        - DeviceAuthPlugin: plugins/DeviceAuthPlugin.md
+        - Example.DotNetCorePlugin: plugins/Example.DotNetCorePlugin.md
+        - FindyJumpyPlugin: plugins/FindyJumpyPlugin.md
+        - GitLabAuthProviderPlugin: plugins/GitLabAuthProviderPlugin.md
+        - HealthChecksPlugin: plugins/HealthChecksPlugin.md
+        - MemoryBenchmarkPlugin: plugins/MemoryBenchmarkPlugin.md
+        - MicrosoftAuthProviderPlugin: plugins/MicrosoftAuthProviderPlugin.md
+        - MiniProviderPlugin: plugins/MiniProviderPlugin.md
+        - PogoEventsPlugin: plugins/PogoEventsPlugin.md
+        - RazorTestPlugin: plugins/RazorTestPlugin.md
+        - RedditAuthProviderPlugin: plugins/RedditAuthProviderPlugin.md
+        - RequestBenchmarkPlugin: plugins/RequestBenchmarkPlugin.md
+        - RobotsPlugin: plugins/RobotsPlugin.md
+        - TestPlugin: plugins/TestPlugin.md
+        - TodoPlugin: plugins/TodoPlugin.md
+        - VisualStudioAuthProviderPlugin: plugins/VisualStudioAuthProviderPlugin.md
+    - Miscellaneous:
+        - 3rd Party Authentication: other/3rd-party-auth.md
+        - Custom Settings: other/custom-settings.md
     - About:
         - Dedication: dedication.md
 

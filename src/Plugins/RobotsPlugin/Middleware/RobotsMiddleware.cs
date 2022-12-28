@@ -4,11 +4,11 @@ using System.Text;
 
 using Microsoft.Extensions.Options;
 
+using ChuckDeviceController.Extensions.Http;
+
 using Configuration;
 using Data.Abstractions;
 using Services;
-
-using ChuckDeviceController.Extensions.Http;
 
 /// <summary>
 /// Web crawler robot middleware, serves robots.txt on request and denies access to
