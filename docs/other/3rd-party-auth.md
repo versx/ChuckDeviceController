@@ -10,10 +10,11 @@ Modify the below configuration file `auth_providers.json` to customize the displ
 
 ### Configuration  
 
-#### Location  
+#### **Location**  
+The 3rd party OAuth authentication providers styling configuration file is located:  
 `src/ChuckDeviceConfigurator/bin/Debug/wwwroot/data/auth_providers.json`  
 
-#### Example  
+#### **Example**  
 ```json
 {
   "Discord": {
