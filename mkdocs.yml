@@ -58,6 +58,8 @@ nav:
         - Dedication: about/dedication.md
         - Credits: about/credits.md
         - TODO: about/todo.md
+        - GitHub: https://github.com/versx/ChuckDeviceController
+        - Author: https://github.com/versx
 
 
 markdown_extensions:
