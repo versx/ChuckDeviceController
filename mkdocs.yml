@@ -28,13 +28,13 @@ nav:
         - ChuckDeviceProxy: applications/proxy.md
     - Plugin System:
         - Create a Plugin: plugin-system/create-a-plugin.md
-        - Visual Studio Templates: plugin-system/project-templates.md
         - API Documentation: plugin-system/api.md
-        - Plugin Host Interfaces: plugin-system/interfaces.md
-        - Plugin Entity Interfaces: plugin-system/entity-interfaces.md
-        - Plugin Examples: plugin-system/examples.md
-        - Plugins Included: plugin-system/plugins-included.md
+        - Examples: plugin-system/examples.md
+        - Host Interfaces: plugin-system/host-interfaces.md
+        - Entity Interfaces: plugin-system/entity-interfaces.md
+        - Visual Studio Templates: plugin-system/project-templates.md
     - Plugins Included:
+        - Overview: plugins/overview.md
         - BitbucketAuthProviderPlugin: plugins/BitbucketAuthProviderPlugin.md
         - DeviceAuthPlugin: plugins/DeviceAuthPlugin.md
         - Example.DotNetCorePlugin: plugins/Example.DotNetCorePlugin.md

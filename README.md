@@ -115,7 +115,7 @@ Splits and proxies requests from Atlas devices to separate endpoints in order to
 
 <hr>
 
-## [Plugins Included](https://cdc.rtfd.io/en/latest/plugin-system/plugins-included)  
+## [Plugins Included](https://cdc.rtfd.io/en/latest/plugins/overview)  
 - **BitbucketAuthProviderPlugin:**  
 Adds `Bitbucket.org` user authentication support    
 - **DeviceAuthPlugin:**  
