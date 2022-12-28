@@ -81,11 +81,9 @@ Splits and proxies requests from Atlas devices to separate endpoints in order to
 [https://cdc.rtfd.io/en/latest/getting-started](https://cdc.rtfd.io/en/latest/getting-started)  
 
 ### Plugins  
-#### Documentation  
-- [https://cdc.rtfd.io/en/latest/plugin-system/create-a-plugin](https://cdc.rtfd.io/en/latest/plugin-system/create-a-plugin)  
-
-#### API Reference  
-- [https://cdc.rtfd.io/en/latest/plugin-system/api](https://cdc.rtfd.io/en/latest/plugin-system/api)  
+- [Create a Plugin](https://cdc.rtfd.io/en/latest/plugin-system/create-a-plugin)  
+- [API Reference](https://cdc.rtfd.io/en/latest/plugin-system/api)  
+- [Templates](https://cdc.rtfd.io/en/latest/plugin-system/project-templates)  
 
 <hr>
 
