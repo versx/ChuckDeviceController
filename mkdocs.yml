@@ -27,7 +27,7 @@ nav:
         - ChuckDeviceCommunicator: applications/communicator.md
         - ChuckDeviceProxy: applications/proxy.md
     - Plugin System:
-        - Plugins: plugin-system/index.md
+        - Create a Plugin: plugin-system/create-a-plugin.md
         - Visual Studio Templates: plugin-system/project-templates.md
         - API Documentation: plugin-system/api.md
         - Plugin Host Interfaces: plugin-system/interfaces.md

@@ -2,7 +2,7 @@
 
 All available database entity model interface contracts.  
 
-## Controller Entity Types:  
+## Controller Entity Types  
 - [IAccount](#iaccount)
 - [IAssignment](#iassignment)
 - [IAssignmentGroup](#iassignmentgroup)
@@ -13,7 +13,7 @@ All available database entity model interface contracts.
 - [IIvList](#iivlist)
 - [IWebhook](#iwebhook)
 
-## Map Entity Types:  
+## Map Entity Types  
 - [ICell](#icell)
 - [IGym](#igym)
 - [IGymDefender](#igymdefender)
