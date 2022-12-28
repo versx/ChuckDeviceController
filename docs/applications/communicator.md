@@ -1,5 +1,10 @@
 # ChuckDeviceCommunicator  
 
+## Description  
+Relays new and changed data entities to outgoing webhook endpoints that are received from the ChuckDeviceController via gRPC.  
+
+<hr>
+
 ## Configuration  
 ```json
 {

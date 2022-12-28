@@ -1,5 +1,10 @@
 # ChuckDeviceProxy  
 
+## Description  
+Splits and proxies requests from Atlas devices to separate endpoints in order to add support for ChuckDeviceController until Atlas is updated.  
+
+<hr>
+
 ## Configuration  
 ```json
 {

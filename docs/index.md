@@ -12,21 +12,21 @@ ChuckDeviceController is a .NET based frontend and backend written in C# 11.0 us
 
 <br>
 
-**ChuckDeviceConfigurator:**  
+**ChuckDeviceConfigurator**  
 Controls devices that request jobs as well as includes a dashboard interface to configure job controllers and other required entity types.  
 
 - Dashboard management UI  
 - Device controller  
 - Plugin system  
 
-**ChuckDeviceController:**  
-Parses raw proto data received and inserts/upserts data entities into a MySQL type database.  
+**ChuckDeviceController**  
+Parses raw proto data received and inserts/upserts data entities into a MySQL compatible database.  
 
-**ChuckDeviceCommunicator:**  
+**ChuckDeviceCommunicator**  
 Relays new and changed data entities to outgoing webhook endpoints that are received from the ChuckDeviceController via gRPC.  
 
-**ChuckProxy:**  
-Splits and proxies requests from Atlas devices to separate endpoints in order to add support for ChuckDeviceController until Atlas is updated.
+**ChuckDeviceProxy**  
+Splits and proxies requests from Atlas devices to separate endpoints in order to add support for ChuckDeviceController until Atlas is updated.  
 
 <hr>
 

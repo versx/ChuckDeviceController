@@ -1,5 +1,14 @@
 # ChuckDeviceConfigurator  
 
+## Description  
+Controls devices that request jobs as well as includes a dashboard interface to configure job controllers and other required entity types.  
+
+- Dashboard management UI  
+- Device controller  
+- Plugin system  
+
+<hr>
+
 ## User Identity 
 
 ### QR Code Generation  

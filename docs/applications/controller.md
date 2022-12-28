@@ -1,5 +1,10 @@
 # ChuckDeviceController  
 
+## Description  
+Parses raw proto data received and inserts/upserts data entities into a MySQL compatible database.  
+
+<hr>
+
 ## Hosted Services  
 
 ### ClearFortsHostedService  

@@ -12,21 +12,21 @@ ChuckDeviceController is a .NET based frontend and backend written in C# 11.0 us
 
 <br>
 
-**ChuckDeviceConfigurator:**  
+**ChuckDeviceConfigurator**  
 Controls devices that request jobs as well as includes a dashboard interface to configure job controllers and other required entity types.  
 
 - Dashboard management UI  
 - Device controller  
 - Plugin system  
 
-**ChuckDeviceController:**  
-Parses raw proto data received and inserts/upserts data entities into a MySQL type database.  
+**ChuckDeviceController**  
+Parses raw proto data received and inserts/upserts data entities into a MySQL compatible database.  
 
-**ChuckDeviceCommunicator:**  
+**ChuckDeviceCommunicator**  
 Relays new and changed data entities to outgoing webhook endpoints that are received from the ChuckDeviceController via gRPC.  
 
-**ChuckDeviceProxy:**  
-Splits and proxies requests from Atlas devices to separate endpoints in order to add support for ChuckDeviceController until Atlas is updated.
+**ChuckDeviceProxy**  
+Splits and proxies requests from Atlas devices to separate endpoints in order to add support for ChuckDeviceController until Atlas is updated.  
 
 <hr>
 
@@ -101,17 +101,20 @@ Splits and proxies requests from Atlas devices to separate endpoints in order to
 
 - [Preparation](https://cdc.rtfd.io/en/latest/getting-started/#preparation)  
 - [ChuckDeviceConfigurator](https://cdc.rtfd.io/en/latest/getting-started/#chuckdeviceconfigurator)  
+    - [Description](https://cdc.rtfd.io/en/latest/applications/configurator#description)  
+    - [Configuration](https://cdc.rtfd.io/en/latest/applications/configurator#configuration)  
+    - [User Identity](https://cdc.rtfd.io/en/latest/applications/configurator#user-identity)  
+    - [Hosted Services](https://cdc.rtfd.io/en/latest/applications/configurator#hosted-services)  
 - [ChuckDeviceController](https://cdc.rtfd.io/en/latest/getting-started/#chuckdevicecontroller)  
+    - [Description](https://cdc.rtfd.io/en/latest/applications/controller#description)  
+    - [Configuration](https://cdc.rtfd.io/en/latest/applications/controller#configuration)  
+    - [Hosted Services](https://cdc.rtfd.io/en/latest/applications/controller#hosted-services)  
 - [ChuckDeviceCommunicator](https://cdc.rtfd.io/en/latest/getting-started/#chuckdevicecommunicator)  
+    - [Description](https://cdc.rtfd.io/en/latest/applications/communicator#description)  
+    - [Configuration](https://cdc.rtfd.io/en/latest/applications/communicator#configuration)  
 - [ChuckDeviceProxy](https://cdc.rtfd.io/en/latest/getting-started/#chuckdeviceproxy)  
-
-<hr>
-
-## Configuration
-- [ChuckDeviceConfigurator](https://cdc.rtfd.io/en/latest/applications/configurator#configuration)  
-- [ChuckDeviceController](https://cdc.rtfd.io/en/latest/applications/controller#configuration)  
-- [ChuckDeviceCommunicator](https://cdc.rtfd.io/en/latest/applications/communicator#configuration)  
-- [ChuckDeviceProxy](https://cdc.rtfd.io/en/latest/applications/proxy#configuration)  
+    - [Description](https://cdc.rtfd.io/en/latest/applications/proxy#description)  
+    - [Configuration](https://cdc.rtfd.io/en/latest/applications/proxy#configuration)  
 
 <hr>
 
