@@ -8,10 +8,12 @@ Modify the below configuration file `auth_providers.json` to customize the displ
 ### Fontawesome Icons  
 [https://fontawesome.com/search?m=free](https://fontawesome.com/search?m=free)  
 
-### Configuration Location  
+### Configuration  
+
+#### Location  
 `src/ChuckDeviceConfigurator/bin/Debug/wwwroot/data/auth_providers.json`  
 
-### Example  
+#### Example  
 ```json
 {
   "Discord": {
