@@ -1,9 +1,9 @@
-﻿namespace ChuckDeviceConfigurator.Services.Icons;
+﻿namespace ChuckDeviceController.Plugin;
 
 /// <summary>
-/// UIcons service to retrieve icon url endpoints.
+/// UIcons standard host handler to retrieve icon url endpoints for plugins.
 /// </summary>
-public interface IUIconsService
+public interface IUIconsHost
 {
     /// <summary>
     /// Gets an icon image url based on the provided Pokemon details.

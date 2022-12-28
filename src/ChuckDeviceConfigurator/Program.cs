@@ -13,6 +13,7 @@ using ChuckDeviceConfigurator.Localization;
 using ChuckDeviceConfigurator.HostedServices;
 using ChuckDeviceConfigurator.Services.Assignments;
 using ChuckDeviceConfigurator.Services.Geofences;
+using ChuckDeviceConfigurator.Services.Icons;
 using ChuckDeviceConfigurator.Services.IvLists;
 using ChuckDeviceConfigurator.Services.Jobs;
 using ChuckDeviceConfigurator.Services.Net.Mail;
@@ -278,6 +279,7 @@ builder.Services.AddSingleton<IGeofenceServiceHost>(geofenceServiceHost);
 builder.Services.AddSingleton<IRoutingHost>(routeGeneratorHost);
 builder.Services.AddSingleton<IEventAggregatorHost>(eventAggregatorHost);
 builder.Services.AddSingleton<IMemoryCacheHost>(memCacheHost);
+builder.Services.AddSingleton<IUIconsHost>(UIconsService.Instance);
 builder.Services.AddScoped<IPublisher, PluginPublisher>();
 builder.Services.AddScoped<IAuthorizeHost, AuthorizeHost>();
 
@@ -311,6 +313,7 @@ var sharedServiceHosts = new Dictionary<Type, object>
     { typeof(IRoutingHost), routeGeneratorHost },
     { typeof(IEventAggregatorHost), eventAggregatorHost },
     { typeof(IMemoryCacheHost), memCacheHost },
+    { typeof(IUIconsHost), UIconsService.Instance },
 };
 
 var getApiKeysFunc = new Func<List<ApiKey>>(() =>

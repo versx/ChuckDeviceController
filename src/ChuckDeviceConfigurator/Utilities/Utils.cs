@@ -177,7 +177,7 @@ public static partial class Utils
 
     public static string GetPokemonIcon(uint pokemonId, uint formId = 0, Gender gender = Gender.Unset, uint costumeId = 0, string width = "32", string height = "32", bool html = false)
     {
-        var url = UIconsService.Instance.GetPokemonIcon(pokemonId, formId, 0, gender, costumeId);
+        var url = UIconsService.Instance.GetPokemonIcon(pokemonId, formId, 0, (uint)gender, costumeId);
         return html
             ? $"<img src='{url}' width='{width}' height='{height}' />"
             : url;

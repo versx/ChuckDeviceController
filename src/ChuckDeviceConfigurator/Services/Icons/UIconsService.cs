@@ -1,14 +1,13 @@
 ﻿namespace ChuckDeviceConfigurator.Services.Icons;
 
-using static POGOProtos.Rpc.PokemonDisplayProto.Types;
-
 using ChuckDeviceController.Extensions.Json;
 using ChuckDeviceController.Net.Utilities;
+using ChuckDeviceController.Plugin;
 
 /// <summary>
 /// 
 /// </summary>
-public class UIconsService : IUIconsService
+public class UIconsService : IUIconsService, IUIconsHost
 {
     private const string DefaultIconFormat = "png";
     private const string IndexJson = "index.json";
@@ -23,8 +22,8 @@ public class UIconsService : IUIconsService
 
     #region Singleton
 
-    private static IUIconsService? _instance;
-    public static IUIconsService Instance =>
+    private static IUIconsHost? _instance;
+    public static IUIconsHost Instance =>
         _instance ??= new UIconsService(
             DefaultIconUrl,
             DefaultIconFormat
@@ -70,7 +69,7 @@ public class UIconsService : IUIconsService
     /// <param name="costumeId"></param>
     /// <param name="shiny"></param>
     /// <returns></returns>
-    public string GetPokemonIcon(uint pokemonId, uint formId = 0, uint evolutionId = 0, Gender gender = 0, uint costumeId = 0, bool shiny = false)
+    public string GetPokemonIcon(uint pokemonId, uint formId = 0, uint evolutionId = 0, uint gender = 0, uint costumeId = 0, bool shiny = false)
     {
         var evolutionSuffixes = (evolutionId > 0 ? new[] { "_e" + evolutionId, string.Empty } : new[] { string.Empty }).ToList();
         var formSuffixes = (formId > 0 ? new[] { "_f" + formId, string.Empty } : new[] { string.Empty }).ToList();
