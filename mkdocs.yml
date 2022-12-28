@@ -18,6 +18,7 @@ nav:
     - General:
         - Home: index.md
         - Screenshots: screenshots.md
+        - Features: features.md
         - Requirements: requirements.md
         - Getting Started: getting-started.md
     - Applications:
@@ -26,15 +27,17 @@ nav:
         - ChuckDeviceCommunicator: applications/communicator.md
         - ChuckDeviceProxy: applications/proxy.md
     - Configuration:
-        - Configurator: configs/configurator.md
-        - Controller: configs/controller.md
-        - Communicator: configs/communicator.md
-        - Proxy: configs/proxy.md
+        - Configuration: configs/index.md
+        - ChuckDeviceConfigurator: configs/configurator.md
+        - ChuckDeviceController: configs/controller.md
+        - ChuckDeviceCommunicator: configs/communicator.md
+        - ChuckDeviceProxy: configs/proxy.md
     - Plugin System:
-        - Visual Studio Templates: plugin-system/project-templates.md
         - Plugins: plugin-system/index.md
+        - Visual Studio Templates: plugin-system/project-templates.md
         - API Documentation: plugin-system/api.md
         - Plugin Host Interfaces: plugin-system/interfaces.md
+        - Plugin Entity Interfaces: plugin-system/entity-interfaces.md
         - Plugins Included: plugin-system/plugins-included.md
         - Examples: plugin-system/examples.md
     - Plugins Included:

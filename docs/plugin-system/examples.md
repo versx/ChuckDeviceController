@@ -1,33 +1,6 @@
-# IDatabaseHost - Available Database Model Contracts
+# Plugin Examples
 
-**Controller Entity Types:**  
-```cs
-- IAccount
-- IAssignment
-- IAssignmentGroup
-- IDevice
-- IDeviceGroup
-- IGeofence
-- IInstance
-- IIvList
-- IWebhook
-```
-
-**Map Entity Types:**  
-```cs
-- ICell
-- IGym
-- IGymDefender
-- IGymTrainer
-- IIncident
-- IPokemon
-- IPokestop
-- ISpawnpoint
-- IWeather
-```
-
-
-## Explanation
+## Explanation:  
 ```cs
 namespace TestPlugin
 {

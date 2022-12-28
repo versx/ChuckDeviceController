@@ -16,5 +16,5 @@ public interface IAssignment : IBaseEntity
 
     string? DeviceGroupName { get; }
 
-    public bool Enabled { get; }
+    bool Enabled { get; }
 }

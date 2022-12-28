@@ -1,4 +1,4 @@
-# Plugin Interface Contracts  
+# Plugin Host Interface Contracts  
 
 ## Job Controllers (IJobControllerServiceHost)  
 - Register new custom job controller instance types

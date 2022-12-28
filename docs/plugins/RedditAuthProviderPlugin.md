@@ -1,7 +1,7 @@
 # RedditAuthProviderPlugin  
 
 **Configuration Setup:**  
-https://www.reddit.com/prefs/apps   
+[https://www.reddit.com/prefs/apps](https://www.reddit.com/prefs/apps)   
 
 **Callback:**  
 `http(s)://127.0.0.1:8881/signin-reddit`  

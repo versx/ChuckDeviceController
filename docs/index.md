@@ -72,6 +72,22 @@ Splits and proxies requests from Atlas devices to separate endpoints in order to
 
 <hr>
 
+## Documentation  
+
+### Overview  
+https://cdc.rtfd.io
+
+### Getting Started  
+https://cdc.rtfd.io/en/latest/getting-started
+
+### Plugin Development  
+https://cdc.rtfd.io/en/latest/plugin-system
+
+### Plugin API Reference  
+https://cdc.rtfd.io/en/latest/plugin-system/api  
+
+<hr>
+
 ## Requirements
 - [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)  
 - [.NET 7 SDK](https://dotnet.microsoft.com/download/dotnet/7.0)  

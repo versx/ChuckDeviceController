@@ -21,7 +21,7 @@ Microsoft's ASP.NET Core MVC Views and Razor Pages are very similar to Mustache,
 
 <br>
 
-**Library References:**  
+## Library References  
 You may reference any of the existing `ChuckDeviceController.*.dll` project libaries in your plugins. When building and deploying plugins you've developed, do not copy any `ChuckDeviceController.*.dll` libraries to the `src/ChuckDeviceConfigurator/bin/debug/plugins/%PluginFolderName%/` plugin folder. Any 3rd party libraries are fine to copy.  
 
 The included plugin build scripts located in the `./scripts` folder will exclude any `ChuckDeviceController.*.dll` libraries automatically.  

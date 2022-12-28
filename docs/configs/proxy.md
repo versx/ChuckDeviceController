@@ -1,4 +1,4 @@
-# ChuckProxy  
+# ChuckDeviceProxy  
 
 ```json
 {
@@ -10,9 +10,7 @@
   // ChuckDeviceConfigurator device controller endpoint to proxy.
   "ControllerEndpoint": "http://127.0.0.1:8881/controler",
   // ChuckDeviceController proto data endpoint to proxy.
-  "RawEndpoints": [
-    "http://127.0.0.1:8882/raw"
-  ],
+  "RawEndpoint": "http://127.0.0.1:8882/raw",
   "Logging": {
     "LogLevel": {
       "Default": "Information",

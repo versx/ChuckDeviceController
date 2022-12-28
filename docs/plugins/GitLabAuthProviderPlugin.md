@@ -1,7 +1,7 @@
 # GitLabAuthProviderPlugin  
 
 **Configuration Setup:**  
-https://gitlab.com/-/profile/applications  
+[https://gitlab.com/-/profile/applications](https://gitlab.com/-/profile/applications)  
 
 **Callback:**  
 `http(s)://127.0.0.1:8881/signin-gitlab`  
