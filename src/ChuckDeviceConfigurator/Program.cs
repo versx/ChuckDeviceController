@@ -11,6 +11,7 @@ using ChuckDeviceConfigurator.Data;
 using ChuckDeviceConfigurator.Extensions;
 using ChuckDeviceConfigurator.Localization;
 using ChuckDeviceConfigurator.HostedServices;
+using ChuckDeviceConfigurator.Middleware;
 using ChuckDeviceConfigurator.Services.Assignments;
 using ChuckDeviceConfigurator.Services.Geofences;
 using ChuckDeviceConfigurator.Services.Icons;
@@ -392,6 +393,8 @@ pluginManager.Configure(app);
 //app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
+
+app.UseMiddleware<PageLoadTimeMiddleware>();
 
 // User authentication
 app.UseAuthentication();
