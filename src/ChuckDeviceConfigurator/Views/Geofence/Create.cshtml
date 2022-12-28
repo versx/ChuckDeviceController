@@ -12,17 +12,17 @@
 
 <h4>Geofence</h4>
 <hr />
-<form asp-action="Create">
+<form asp-action="Create" class="pb-1">
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
     <div class="row">
-        <div class="col col-5">
+        <div class="col col-6 col-12">
             <div class="form-floating mb-3">
                 <input asp-for="Name" class="form-control" placeholder="Geofence name" />
                 <label asp-for="Name"></label>
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
         </div>
-        <div class="col col-5">
+        <div class="col col-6 col-12">
             <div class="form-floating mb-3">
                 <select asp-for="Type" class="form-control" asp-items="Html.GetEnumSelectList<GeofenceType>()" placeholder="Geofence type">
                 </select>
@@ -30,7 +30,7 @@
                 <span asp-validation-for="Type" class="text-danger"></span>
             </div>
         </div>
-        <div class="col col-2">
+        <div class="col col-2 col-12">
             <input type="submit" value="Create" class="btn btn-primary float-end" />
         </div>
     </div>
@@ -40,7 +40,6 @@
         <span asp-validation-for="Data.Area" class="text-danger"></span>
     </div>
 </form>
-<br />
 
 @await Html.PartialAsync("_GeofenceRouteGeneratorPartial", new { MapConfig = ViewData["MapConfig"], GeofenceNames = ViewData["GeofenceNames"] })
 

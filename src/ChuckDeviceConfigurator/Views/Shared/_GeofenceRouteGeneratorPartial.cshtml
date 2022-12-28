@@ -7,29 +7,31 @@
 <link rel="stylesheet" href="~/lib/leaflet-locatecontrol/L.Control.Locate.min.css" />
 <link rel="stylesheet" href="~/lib/easy-button/easy-button.css" />
 
-<div>
-    <div class="form-group float-start">
+<div class="mb-4">
+    <div class="float-start">
         <div class="input-group">
-            <select id="geofences" class="form-select form-select-sm">
-                @foreach (var geofenceName in geofenceNames)
-                {
-                    <option value="@geofenceName">@geofenceName</option>
-                }
-            </select>
+            <div class="form-floating">
+                <select id="geofences" class="form-select" style="width: 250px;">
+                    @foreach (var geofenceName in geofenceNames)
+                    {
+                        <option value="@geofenceName">@geofenceName</option>
+                    }
+                </select>
+                <label for="geofences">Import Geofence</label>
+            </div>
             <button type="button" class="btn btn-primary btn-sm" onclick="getGeofenceData();">
                 Import
             </button>
         </div>
     </div>
-    <div class="form-group float-end">
-        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#exportModal">
+    <div class="float-end mt-2">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exportModal">
             Export Geofence
         </button>
     </div>
 </div>
 <br />
 <br />
-
 <div id="map" style="height: 600px;"></div>
 
 @*
