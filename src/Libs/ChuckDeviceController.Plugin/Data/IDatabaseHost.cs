@@ -18,7 +18,7 @@ public interface IDatabaseHost
     /// </summary>
     /// <typeparam name="TEntity">Database entity contract type.</typeparam>
     /// <returns>Returns a list of database entities.</returns>
-    Task<IReadOnlyList<TEntity>> GetAllAsync<TEntity>();
+    Task<IReadOnlyList<TEntity>> FindAllAsync<TEntity>();
 
     /// <summary>
     /// Gets a database entity by primary key.

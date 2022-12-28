@@ -3,13 +3,13 @@
 Modify the below configuration file to customize the displayed login buttons for each 3rd party authentication provider.  
 
 **Microsoft Documentation:**  
-https://learn.microsoft.com/en-us/aspnet/core/security/authentication/social
+[https://learn.microsoft.com/en-us/aspnet/core/security/authentication/social](https://learn.microsoft.com/en-us/aspnet/core/security/authentication/social)  
 
 **Fontawesome Icons:**  
-https://fontawesome.com/search?m=free
+[https://fontawesome.com/search?m=free](https://fontawesome.com/search?m=free)  
 
 **Configuration Location:**  
-`./src/ChuckDeviceConfigurator/bin/Debug/wwwroot/data/auth_providers.json`  
+`src/ChuckDeviceConfigurator/bin/Debug/wwwroot/data/auth_providers.json`  
 
 **Example:**  
 ```json

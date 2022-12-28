@@ -108,7 +108,7 @@ https://cdc.rtfd.io/en/latest/plugin-system/api
 
 <hr>
 
-## Previews
+## Screenshots
 ![Dashboard](./images/dashboard.png)
 
 <hr>

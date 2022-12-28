@@ -26,20 +26,14 @@ nav:
         - ChuckDeviceController: applications/controller.md
         - ChuckDeviceCommunicator: applications/communicator.md
         - ChuckDeviceProxy: applications/proxy.md
-    - Configuration:
-        - Configuration: configs/index.md
-        - ChuckDeviceConfigurator: configs/configurator.md
-        - ChuckDeviceController: configs/controller.md
-        - ChuckDeviceCommunicator: configs/communicator.md
-        - ChuckDeviceProxy: configs/proxy.md
     - Plugin System:
         - Plugins: plugin-system/index.md
         - Visual Studio Templates: plugin-system/project-templates.md
         - API Documentation: plugin-system/api.md
         - Plugin Host Interfaces: plugin-system/interfaces.md
         - Plugin Entity Interfaces: plugin-system/entity-interfaces.md
+        - Plugin Examples: plugin-system/examples.md
         - Plugins Included: plugin-system/plugins-included.md
-        - Examples: plugin-system/examples.md
     - Plugins Included:
         - BitbucketAuthProviderPlugin: plugins/BitbucketAuthProviderPlugin.md
         - DeviceAuthPlugin: plugins/DeviceAuthPlugin.md
@@ -62,7 +56,8 @@ nav:
         - 3rd Party Authentication: other/3rd-party-auth.md
         - Custom Settings: other/custom-settings.md
     - About:
-        - Dedication: dedication.md
+        - Dedication: about/dedication.md
+        - TODO: about/todo.md
 
 
 markdown_extensions:

@@ -3,15 +3,26 @@
 All available database entity model interface contracts.  
 
 ## Controller Entity Types:  
-- IAccount
-- IAssignment
-- IAssignmentGroup
-- IDevice
-- IDeviceGroup
-- IGeofence
-- IInstance
-- IIvList
-- IWebhook
+- [IAccount](#iaccount)
+- [IAssignment](#iassignment)
+- [IAssignmentGroup](#iassignmentgroup)
+- [IDevice](#idevice)
+- [IDeviceGroup](#idevicegroup)
+- [IGeofence](#igeofence)
+- [IInstance](#iinstance)
+- [IIvList](#iivlist)
+- [IWebhook](#iwebhook)
+
+## Map Entity Types:  
+- [ICell](#icell)
+- [IGym](#igym)
+- [IGymDefender](#igymdefender)
+- [IGymTrainer](#igymtrainer)
+- [IIncident](#iincident)
+- [IPokemon](#ipokemon)
+- [IPokestop](#ipokestop)
+- [ISpawnpoint](#ispawnpoint)
+- [IWeather](#iweather)
 
 ### IAccount  
 Properties:  
@@ -117,17 +128,6 @@ WebhookData? Data
 ```
 
 <hr>
-
-## Map Entity Types:  
-- ICell
-- IGym
-- IGymDefender
-- IGymTrainer
-- IIncident
-- IPokemon
-- IPokestop
-- ISpawnpoint
-- IWeather
 
 ### ICell  
 Properties:  

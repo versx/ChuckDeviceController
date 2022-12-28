@@ -1,11 +1,11 @@
 # Getting Started
 
-## [Requirements](./requirements.md)
+## [Requirements](./requirements.md)  
 Ensure all requirements are installed and met before proceeding below.  
 
 <hr>
 
-### **Preparation**  
+## Preparation  
 1. Clone repository:  
 ```git clone https://github.com/versx/ChuckDeviceController```  
 1. Change directory:  
@@ -14,35 +14,35 @@ Ensure all requirements are installed and met before proceeding below.
 ```dotnet build```  
 
 
-### **ChuckDeviceConfigurator**  
+## ChuckDeviceConfigurator  
 1. Change directory:  
 ```cd ChuckDeviceConfigurator/bin/debug```  
-1. Fill out [`appsettings.json`](./configs/configurator.md) config  
+1. Fill out [`appsettings.json`](./applications/configurator.md#configuration) config  
 1. Start ChuckDeviceConfigurator:
 ```dotnet ChuckDeviceConfigurator.dll```  
 1. Visit `http://127.0.0.1:8881` (default, change accordingly based on your config options) to begin configuring your devices.  
 1. Default username is `root` and password is `123Pa$$word.`  
 
 
-### **ChuckDeviceController**  
+## ChuckDeviceController  
 1. Change directory:  
 ```cd src/ChuckDeviceController/bin/debug```  
-1. Fill out [`appsettings.json`](./configs/controller.md) config  
+1. Fill out [`appsettings.json`](./applications/controller.md#configuration) config  
 1. Start ChuckDeviceController:  
 ```dotnet ChuckDeviceController.dll```  
 
 
-### **ChuckDeviceCommunicator**  
+## ChuckDeviceCommunicator  
 1. Change directory:  
 ```cd src/ChuckDeviceCommunicator/bin/debug```  
-1. Fill out [`appsettings.json`](./configs/communicator.md) config  
+1. Fill out [`appsettings.json`](./applications/communicator.md#configuration) config  
 1. Start ChuckDeviceCommunicator:  
 ```dotnet ChuckDeviceCommunicator.dll```  
 
 
-### **ChuckDeviceProxy**  
+## ChuckDeviceProxy  
 1. Change directory:  
 ```cd src/ChuckDeviceProxy/bin/debug```  
-1. Fill out [`appsettings.json`](./configs/proxy.md) config  
+1. Fill out [`appsettings.json`](./applications/proxy.md#configuration) config  
 1. Start ChuckDeviceProxy:  
 ```dotnet ChuckDeviceProxy.dll```  

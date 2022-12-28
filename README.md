@@ -30,7 +30,6 @@ Splits and proxies requests from Atlas devices to separate endpoints in order to
 
 <hr>
 
-
 ## Features  
 - Plugin system  
     * Create new job controller instances  
@@ -109,11 +108,11 @@ https://cdc.rtfd.io/en/latest/plugin-system/api
 
 <hr>
 
-## [Configuration](https://cdc.rtfd.io/en/latest/configs)  
-- [ChuckDeviceConfigurator](https://cdc.rtfd.io/en/latest/configs/configurator)  
-- [ChuckDeviceController](https://cdc.rtfd.io/en/latest/configs/controller)  
-- [ChuckDeviceCommunicator](https://cdc.rtfd.io/en/latest/configs/communicator)  
-- [ChuckDeviceProxy](https://cdc.rtfd.io/en/latest/configs/proxy)  
+## Configuration
+- [ChuckDeviceConfigurator](https://cdc.rtfd.io/en/latest/applications/configurator#configuration)  
+- [ChuckDeviceController](https://cdc.rtfd.io/en/latest/applications/controller#configuration)  
+- [ChuckDeviceCommunicator](https://cdc.rtfd.io/en/latest/applications/communicator#configuration)  
+- [ChuckDeviceProxy](https://cdc.rtfd.io/en/latest/applications/proxy#configuration)  
 
 <hr>
 
@@ -155,7 +154,7 @@ Adds `VisualStudioOnline.com` user authentication support
 
 <hr>
 
-## Previews:  
+## Screenshots:  
 ![Dashboard](docs/images/dashboard.png)  
 
 <hr>
@@ -167,6 +166,7 @@ Adds `VisualStudioOnline.com` user authentication support
 - [ ] Finish documentation  
 - [ ] Finish plugin service event callbacks  
 - [ ] Add more helper methods to ChuckDeviceController.Plugin.Helpers library  
+- [ ] Move most ChuckDeviceConfigurator services to plugins  
 
 <hr>
 
