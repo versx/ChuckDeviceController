@@ -13,17 +13,6 @@ All available database entity model interface contracts.
 - [IIvList](#iivlist)
 - [IWebhook](#iwebhook)
 
-## Map Entity Types  
-- [ICell](#icell)
-- [IGym](#igym)
-- [IGymDefender](#igymdefender)
-- [IGymTrainer](#igymtrainer)
-- [IIncident](#iincident)
-- [IPokemon](#ipokemon)
-- [IPokestop](#ipokestop)
-- [ISpawnpoint](#ispawnpoint)
-- [IWeather](#iweather)
-
 ### IAccount  
 Properties:  
 ```cs
@@ -128,6 +117,17 @@ WebhookData? Data
 ```
 
 <hr>
+
+## Map Entity Types  
+- [ICell](#icell)
+- [IGym](#igym)
+- [IGymDefender](#igymdefender)
+- [IGymTrainer](#igymtrainer)
+- [IIncident](#iincident)
+- [IPokemon](#ipokemon)
+- [IPokestop](#ipokestop)
+- [ISpawnpoint](#ispawnpoint)
+- [IWeather](#iweather)
 
 ### ICell  
 Properties:  
