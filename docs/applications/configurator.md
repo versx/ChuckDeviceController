@@ -23,21 +23,21 @@ Checks all accounts with any of the following status and marks the interested co
 {
   // Hosts allowed to access.
   "AllowedHosts": "*",
-  // 3rd party authentication options.
+  // Default 3rd party authentication options.
   "Authentication": {
-    // Discord user authentication.
+    // Discord user account authentication.
     "Discord": {
       "Enabled": false,
       "ClientId": "",
       "ClientSecret": ""
     },
-    // GitHub user authentication.
+    // GitHub user account authentication.
     "GitHub": {
       "Enabled": false,
       "ClientId": "",
       "ClientSecret": ""
     },
-    // Google user authentication.
+    // Google user account authentication.
     "Google": {
       "Enabled": false,
       "ClientId": "",
