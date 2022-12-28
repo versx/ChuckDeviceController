@@ -16,7 +16,6 @@ using ChuckDeviceController.Extensions;
 public class AccountController : Controller
 {
     private readonly ILogger<AccountController> _logger;
-    //private readonly ControllerDbContext _context;
     private readonly IUnitOfWork _uow;
 
     public AccountController(
@@ -40,23 +39,10 @@ public class AccountController : Controller
     // GET: AccountController
     public async Task<ActionResult> Index(string? accountGroup = null)
     {
-        var onlyGroups = accountGroup == "all_groups";
-        var onlyNoGroups = accountGroup == "no_groups";
         var allAccounts = await _uow.Accounts.FindAllAsync();
-        var accounts = allAccounts
-            .Where(x =>
-                // All accounts with and without groups
-                (!onlyGroups && !onlyNoGroups && string.IsNullOrEmpty(accountGroup)) ||
-                // Only accounts with a group
-                (onlyGroups && x.GroupName != null) ||
-                // Only accounts without a group
-                (onlyNoGroups && x.GroupName == null) ||
-                // All matching accounts with a group
-                (!string.IsNullOrEmpty(x.GroupName) && accountGroup == x.GroupName)
-            )
-            .ToList();
-        //var devices = await _uow.Devices.FindAllAsync();
+        var accounts = FilterByGroup(allAccounts, accountGroup);
         var devices = await _uow.Devices.FindAsync(x => x.AccountUsername != null);
+        var deviceAccounts = devices.Select(x => x.AccountUsername).ToList();
         var accountsInUse = devices
             .Where(device => device.AccountUsername != null)
             .Select(device => device.AccountUsername)
@@ -67,16 +53,13 @@ public class AccountController : Controller
             .Where(x => !string.IsNullOrEmpty(x))
             .ToList();
 
-        var sw = new System.Diagnostics.Stopwatch();
-        sw.Start();
-
-        var total = accounts.Count;
-        var cleanAccounts = accounts.Where(x => x.IsAccountClean);
+        var total = accounts.Count();
+        var cleanAccounts = accounts.Where(x => x.IsAccountClean).ToList();
         var accountLevelStatistics = accounts.GroupBy(account => account.Level, (level, levelAccounts) => new AccountLevelStatisticsViewModel
         {
             Level = level,
             Total = (ulong)levelAccounts.LongCount(),
-            InUse = (ulong)levelAccounts.LongCount(acc => devices.Any(dev => dev.AccountUsername == acc.Username && acc.Level == level)),
+            InUse = (ulong)levelAccounts.LongCount(acc => deviceAccounts.Contains(acc.Username) && acc.Level == level),
             Good = (ulong)levelAccounts.LongCount(acc => acc.IsAccountClean),
             Banned = (ulong)levelAccounts.LongCount(acc => acc.IsAccountBanned),
             Warning = (ulong)levelAccounts.LongCount(acc => acc.IsAccountWarned),
@@ -133,11 +116,6 @@ public class AccountController : Controller
             },
         };
 
-        sw.Stop();
-        var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
-        _logger.LogDebug($"Account stats took {totalSeconds}s");
-        // Time: 0.1302 - So it's not the query, it's Razor being slow in the frontend :(
-
         ViewBag.AccountGroups = accountGroups;
         ViewBag.SelectedGroup = accountGroup;
         return View(model);
@@ -147,21 +125,8 @@ public class AccountController : Controller
     [Produces("application/json")]
     public async Task<ActionResult> GetAccounts(string? accountGroup = null, bool? formatted = false)
     {
-        var onlyGroups = accountGroup == "all_groups";
-        var onlyNoGroups = accountGroup == "no_groups";
         var allAccounts = await _uow.Accounts.FindAllAsync();
-        var accounts = allAccounts
-            .Where(x =>
-                // All accounts with and without groups
-                (!onlyGroups && !onlyNoGroups && string.IsNullOrEmpty(accountGroup)) ||
-                // Only accounts with a group
-                (onlyGroups && x.GroupName != null) ||
-                // Only accounts without a group
-                (onlyNoGroups && x.GroupName == null) ||
-                // All matching accounts with a group
-                (!string.IsNullOrEmpty(x.GroupName) && accountGroup == x.GroupName)
-            )
-            .ToList();
+        var accounts = FilterByGroup(allAccounts, accountGroup);
 
         if (!(formatted ?? false))
         {
@@ -193,6 +158,7 @@ public class AccountController : Controller
                 action = "",
             });
         }
+
         return new JsonResult(new { accounts = formattedAccounts });
     }
 
@@ -374,5 +340,24 @@ public class AccountController : Controller
             ModelState.AddModelError("Account", $"Unknown error occurred while deleting account '{id}'.");
             return View();
         }
+    }
+
+    private static IEnumerable<Account> FilterByGroup(IEnumerable<Account> allAccounts, string? accountGroup = null)
+    {
+        var onlyGroups = accountGroup == "all_groups";
+        var onlyNoGroups = accountGroup == "no_groups";
+        var accounts = allAccounts
+            .Where(x =>
+                // All accounts with and without groups
+                (!onlyGroups && !onlyNoGroups && string.IsNullOrEmpty(accountGroup)) ||
+                // Only accounts with a group
+                (onlyGroups && x.GroupName != null) ||
+                // Only accounts without a group
+                (onlyNoGroups && x.GroupName == null) ||
+                // All matching accounts with a group
+                (!string.IsNullOrEmpty(x.GroupName) && accountGroup == x.GroupName)
+            )
+            .ToList();
+        return accounts;
     }
 }

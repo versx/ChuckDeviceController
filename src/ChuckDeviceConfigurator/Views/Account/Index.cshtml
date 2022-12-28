@@ -6,11 +6,14 @@
 <h1>Accounts</h1>
 <br />
 
-<p>
-    <a class="btn btn-success btn-sm" asp-action="Add">Import Accounts</a>
-</p>
-
-@await Html.PartialAsync("_AccountGroupSelector")
+<div class="row">
+    <div class="col">
+        @await Html.PartialAsync("_AccountGroupSelector")
+    </div>
+    <div class="col">
+        <a class="btn btn-success btn-sm float-end" asp-action="Add">Import Accounts</a>
+    </div>
+</div>
 
 <ul class="nav nav-pills nav-justified mb-3" id="pills-tab" role="tablist">
     <li class="nav-item" role="presentation">
@@ -27,7 +30,7 @@
             <div class="card-body">
                 <div class="container">
                     <div class="row">
-                        <div class="col-md-3 p-1">
+                        <div class="col-lg-3 col-md-6 col-sm-12 p-1">
                             <div class="list-group">
                                 <div class="list-group-item">
                                     <h4 class="list-group-item-heading">@Html.DisplayFor(model => model.TotalAccounts)</h4>
@@ -35,7 +38,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-3 p-1">
+                        <div class="col-lg-3 col-md-6 col-sm-12 p-1">
                             <div class="list-group">
                                 <div class="list-group-item">
                                     <h4 class="list-group-item-heading">@Html.DisplayFor(model => model.Level40OrHigher)</h4>
@@ -43,7 +46,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-3 p-1">
+                        <div class="col-lg-3 col-md-6 col-sm-12 p-1">
                             <div class="list-group">
                                 <div class="list-group-item">
                                     <h4 class="list-group-item-heading">@Html.DisplayFor(model => model.Level30OrHigher)</h4>
@@ -51,7 +54,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-3 p-1">
+                        <div class="col-lg-3 col-md-6 col-sm-12 p-1">
                             <div class="list-group">
                                 <div class="list-group-item">
                                     <h4 class="list-group-item-heading account-inuse">@Html.DisplayFor(model => model.AccountsInUse)</h4>
@@ -61,7 +64,7 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-md-3 p-1">
+                        <div class="col-lg-3 col-md-6 col-sm-12 p-1">
                             <div class="list-group">
                                 <div class="list-group-item">
                                     <h4 class="list-group-item-heading account-new">@Html.DisplayFor(model => model.FreshAccounts)</h4>
@@ -69,7 +72,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-3 p-1">
+                        <div class="col-lg-3 col-md-6 col-sm-12 p-1">
                             <div class="list-group">
                                 <div class="list-group-item">
                                     <h4 class="list-group-item-heading account-good">@Html.DisplayFor(model => model.CleanAccounts)</h4>
@@ -77,7 +80,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-3 p-1">
+                        <div class="col-lg-3 col-md-6 col-sm-12 p-1">
                             <div class="list-group">
                                 <div class="list-group-item">
                                     <h4 class="list-group-item-heading account-good">@Html.DisplayFor(model => model.CleanLevel40s)</h4>
@@ -85,7 +88,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-3 p-1">
+                        <div class="col-lg-3 col-md-6 col-sm-12 p-1">
                             <div class="list-group">
                                 <div class="list-group-item">
                                     <h4 class="list-group-item-heading account-good">@Html.DisplayFor(model => model.CleanLevel30s)</h4>
@@ -95,7 +98,7 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-md-4 p-1">
+                        <div class="col-lg-4 col-md-6 col-sm-12 p-1">
                             <div class="list-group">
                                 <div class="list-group-item">
                                     <h4 class="list-group-item-heading account-suspended">@Html.DisplayFor(model => model.SuspendedAccounts)</h4>
@@ -103,7 +106,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-4 p-1">
+                        <div class="col-lg-4 col-md-6 col-sm-12 p-1">
                             <div class="list-group">
                                 <div class="list-group-item">
                                     <h4 class="list-group-item-heading account-cooldown">@Html.DisplayFor(model => model.InCooldown)</h4>
@@ -111,7 +114,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-4 p-1">
+                        <div class="col-lg-4 col-md-6 col-sm-12 p-1">
                             <div class="list-group">
                                 <div class="list-group-item">
                                     <h4 class="list-group-item-heading account-spinlimit">@Html.DisplayFor(model => model.OverSpinLimit)</h4>
@@ -130,7 +133,7 @@
             <div class="card-body">
                 <div class="container">
                     <dl class="row">
-                        <div class="col col-md-4 p-1">
+                        <div class="col-lg-4 col-sm-12 col-xs-12 p-1">
                             <h4 class="fw-bold account-banned">Bans</h4>
                             <dt>@Html.DisplayNameFor(model => model.Bans.Last24Hours)</dt>
                             <dd>@Html.DisplayFor(model => model.Bans.Last24Hours)</dd>
@@ -141,7 +144,7 @@
                             <dt>@Html.DisplayNameFor(model => model.Bans.Total)</dt>
                             <dd>@Html.DisplayFor(model => model.Bans.Total)</dd>
                         </div>
-                        <div class="col col-md-4 p-1">
+                        <div class="col-lg-4 col-sm-12 col-xs-12 p-1">
                             <h4 class="fw-bold account-suspended">Suspensions</h4>
                             <dt>@Html.DisplayNameFor(model => model.Suspensions.Last24Hours)</dt>
                             <dd>@Html.DisplayFor(model => model.Suspensions.Last24Hours)</dd>
@@ -152,7 +155,7 @@
                             <dt>@Html.DisplayNameFor(model => model.Suspensions.Total)</dt>
                             <dd>@Html.DisplayFor(model => model.Suspensions.Total)</dd>
                         </div>
-                        <div class="col col-md-4 p-1">
+                        <div class="col-lg-4 col-sm-12 col-xs-12 p-1">
                             <h4 class="fw-bold account-warning">Warnings</h4>
                             <dt>@Html.DisplayNameFor(model => model.Warnings.Last24Hours)</dt>
                             <dd>@Html.DisplayFor(model => model.Warnings.Last24Hours)</dd>
@@ -175,7 +178,7 @@
             <div class="card-body">
                 <div class="container">
                     <div class="row">
-                        <div class="col-md-3 p-1">
+                        <div class="col-lg-3 col-md-6 col-sm-12 p-1">
                             <div class="list-group">
                                 <div class="list-group-item">
                                     <h4 class="list-group-item-heading account-banned">@Html.DisplayFor(model => model.Bans.Last24Hours)</h4>
@@ -183,7 +186,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-3 p-1">
+                        <div class="col-lg-3 col-md-6 col-sm-12 p-1">
                             <div class="list-group">
                                 <div class="list-group-item">
                                     <h4 class="list-group-item-heading account-banned">@Html.DisplayFor(model => model.Bans.Last7Days)</h4>
@@ -191,7 +194,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-3 p-1">
+                        <div class="col-lg-3 col-md-6 col-sm-12 p-1">
                             <div class="list-group">
                                 <div class="list-group-item">
                                     <h4 class="list-group-item-heading account-banned">@Html.DisplayFor(model => model.Bans.Last30Days)</h4>
@@ -199,7 +202,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-3 p-1">
+                        <div class="col-lg-3 col-md-6 col-sm-12 p-1">
                             <div class="list-group">
                                 <div class="list-group-item">
                                     <h4 class="list-group-item-heading account-banned">@Html.DisplayFor(model => model.Bans.Total)</h4>
@@ -218,7 +221,7 @@
             <div class="card-body">
                 <div class="container">
                     <div class="row">
-                        <div class="col-md-3 p-1">
+                        <div class="col-lg-3 col-md-6 col-sm-12 p-1">
                             <div class="list-group">
                                 <div class="list-group-item">
                                     <h4 class="list-group-item-heading account-suspended">@Html.DisplayFor(model => model.Suspensions.Last24Hours)</h4>
@@ -226,7 +229,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-3 p-1">
+                        <div class="col-lg-3 col-md-6 col-sm-12 p-1">
                             <div class="list-group">
                                 <div class="list-group-item">
                                     <h4 class="list-group-item-heading account-suspended">@Html.DisplayFor(model => model.Suspensions.Last7Days)</h4>
@@ -234,7 +237,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-3 p-1">
+                        <div class="col-lg-3 col-md-6 col-sm-12 p-1">
                             <div class="list-group">
                                 <div class="list-group-item">
                                     <h4 class="list-group-item-heading account-suspended">@Html.DisplayFor(model => model.Suspensions.Last30Days)</h4>
@@ -242,7 +245,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-3 p-1">
+                        <div class="col-lg-3 col-md-6 col-sm-12 p-1">
                             <div class="list-group">
                                 <div class="list-group-item">
                                     <h4 class="list-group-item-heading account-suspended">@Html.DisplayFor(model => model.Suspensions.Total)</h4>
@@ -261,7 +264,7 @@
             <div class="card-body">
                 <div class="container">
                     <div class="row">
-                        <div class="col-md-3 p-1">
+                        <div class="col-lg-3 col-md-6 col-sm-12 p-1">
                             <div class="list-group">
                                 <div class="list-group-item">
                                     <h4 class="list-group-item-heading account-warning">@Html.DisplayFor(model => model.Warnings.Last24Hours)</h4>
@@ -269,7 +272,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-3 p-1">
+                        <div class="col-lg-3 col-md-6 col-sm-12 p-1">
                             <div class="list-group">
                                 <div class="list-group-item">
                                     <h4 class="list-group-item-heading account-warning">@Html.DisplayFor(model => model.Warnings.Last7Days)</h4>
@@ -277,7 +280,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-3 p-1">
+                        <div class="col-lg-3 col-md-6 col-sm-12 p-1">
                             <div class="list-group">
                                 <div class="list-group-item">
                                     <h4 class="list-group-item-heading account-warning">@Html.DisplayFor(model => model.Warnings.Last30Days)</h4>
@@ -285,7 +288,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-3 p-1">
+                        <div class="col-lg-3 col-md-6 col-sm-12 p-1">
                             <div class="list-group">
                                 <div class="list-group-item">
                                     <h4 class="list-group-item-heading account-warning">@Html.DisplayFor(model => model.Warnings.Total)</h4>

@@ -1,8 +1,9 @@
 ﻿namespace RequestBenchmarkPlugin.Middleware;
 
+using Microsoft.Extensions.Options;
+
 using Data.Contexts;
 using Data.Entities;
-using Microsoft.Extensions.Options;
 using Services;
 using Utilities;
 
@@ -27,6 +28,8 @@ public sealed class RequestBenchmarkMiddleware
             await _next(context);
             return;
         }
+
+        // TODO: Add config option to ignore static assets. i.e. /lib, /js, /css paths and custom defined paths
 
         var route = context.Request.Path.ToString();
         var benchmark = _benchmarkService.Benchmarks.ContainsKey(route)
