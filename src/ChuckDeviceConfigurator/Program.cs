@@ -263,6 +263,7 @@ var fileStorageHost = new FileStorageHost(Strings.PluginsFolder);
 var configurationProviderHost = new ConfigurationHost(Strings.PluginsFolder);
 var geofenceServiceHost = new GeofenceServiceHost(connectionString);
 var routeGeneratorHost = new RouteGenerator();
+var memCacheHost = new MemoryCacheHost();
 var eventAggregatorHost = new EventAggregatorHost();
 eventAggregatorHost.Subscribe(new PluginObserver());
 
@@ -276,6 +277,7 @@ builder.Services.AddSingleton<IUiHost>(uiHost);
 builder.Services.AddSingleton<IGeofenceServiceHost>(geofenceServiceHost);
 builder.Services.AddSingleton<IRoutingHost>(routeGeneratorHost);
 builder.Services.AddSingleton<IEventAggregatorHost>(eventAggregatorHost);
+builder.Services.AddSingleton<IMemoryCacheHost>(memCacheHost);
 builder.Services.AddScoped<IPublisher, PluginPublisher>();
 builder.Services.AddScoped<IAuthorizeHost, AuthorizeHost>();
 
@@ -308,6 +310,7 @@ var sharedServiceHosts = new Dictionary<Type, object>
     { typeof(IInstanceServiceHost), jobControllerService },
     { typeof(IRoutingHost), routeGeneratorHost },
     { typeof(IEventAggregatorHost), eventAggregatorHost },
+    { typeof(IMemoryCacheHost), memCacheHost },
 };
 
 var getApiKeysFunc = new Func<List<ApiKey>>(() =>
