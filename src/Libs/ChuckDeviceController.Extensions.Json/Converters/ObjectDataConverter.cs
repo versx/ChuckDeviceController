@@ -1,5 +1,9 @@
 ﻿namespace ChuckDeviceController.Extensions.Json.Converters;
 
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Formats.Asn1;
+using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -93,7 +97,8 @@ public class ObjectDataConverter<T> : JsonConverter<T>
         else
         {
             //writer.WriteStartObject();
-            //foreach (var (key, val) in value)
+            //var obj = FlattenDictionary(value);
+            //foreach (var (key, val) in obj)
             //{
             //    writer.WritePropertyName(key);
             //    JsonSerializer.Serialize(writer, val, options);
@@ -111,10 +116,9 @@ public class ObjectDataConverter<T> : JsonConverter<T>
             // 
             // Not the best solution, although it works. Issues can and will occur
             // if there is a key and property declared as the same name.
-            // 
+
             // TODO: Potentially just use `JsonExtensionData` attribute, although
             // some refactoring will need to be done.
-
             var obj = FlattenDictionary(value);
             JsonSerializer.Serialize(writer, obj);
         }

@@ -124,8 +124,10 @@ builder.Services.AddDbContext<MapDbContext>(options =>
 builder.Services.AddScoped<MySqlConnection>(options =>
 {
     var connection = new MySqlConnection(connectionString);
-    //Task.Run(async () => await connection.OpenAsync()).Wait();
+    //Task.Run(connection.OpenAsync).Wait();
     connection.Open();
+
+    // TODO: EntityRepository - Interlocked.Increment(ref _instanceCount);
     return connection;
 });
 

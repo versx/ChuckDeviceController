@@ -181,7 +181,7 @@ public class GeofenceController : Controller
             {
                 geofence.Data ??= new();
             }
-            //geofence.Data.Area = area;
+            // TODO: geofence.Data.Area = area;
             geofence.Data["area"] = area;
 
             // Update geofence in database

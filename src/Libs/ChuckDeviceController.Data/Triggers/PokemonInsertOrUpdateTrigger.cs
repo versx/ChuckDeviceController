@@ -8,9 +8,7 @@ using EntityFrameworkCore.Triggered;
 using ChuckDeviceController.Data.Contexts;
 using ChuckDeviceController.Data.Entities;
 
-// TODO: Update first_seen, updated, changed, last_modified etc properties using triggers (if there is any benifit vs explicitly setting them via database entity models.
-// TODO: Make triggers configurable since they will almost 100% likely add extra load. Need to profile, test, and benchmark the extra load % and make note.
-// NOTE: Only triggers when .SaveChanges/Async is called, which we absolutely never, ever, ever use that absolutely incredibly slow method to insert/upsert our precious map data. Sooo... see what else can trigger them lol.
+// TODO: Update first_seen, updated, changed, last_modified etc properties using triggers
 
 public class PokemonInsertOrUpdateTrigger : IBeforeSaveTrigger<Pokemon>
 {
@@ -103,7 +101,6 @@ public class PokemonInsertOrUpdateTrigger : IBeforeSaveTrigger<Pokemon>
 
         // If stat exists (updating) the row entry, only update the 'Count' column,
         // otherwise insert all of the entity's properties.
-        // TODO: Implement Dapper alternative for pokemon_stats upsert
         //await _context.SingleMergeAsync(pokemonStat, options =>
         //    options.OnMergeUpdateInputExpression = p => new { p.Count }
         //, cancellationToken);

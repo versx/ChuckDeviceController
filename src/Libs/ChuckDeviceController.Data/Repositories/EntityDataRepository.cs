@@ -3,7 +3,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data;
 
-using Dapper;
+using global::Dapper;
 using Microsoft.Extensions.Logging;
 using MySqlConnector;
 

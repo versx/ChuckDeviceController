@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore.Storage;
 using MySqlConnector;
 
 using ChuckDeviceController.Data.Entities;
+using ChuckDeviceController.Data.Repositories.Dapper;
+using ChuckDeviceController.Data.Repositories.EntityFrameworkCore;
 
 // Reference: https://github.com/timschreiber/DapperUnitOfWork
 // Reference: https://c-sharpcorner.com/article/implement-unit-of-work-and-generic-repository-pattern-in-a-web-api-net-core-pro/
@@ -48,7 +50,7 @@ public class UnitOfWork<TDbContext> : IUnitOfWork
     //public IIncidentRepository Incidents { get; }
 
     //public IGymRepository Gyms { get; }
-    
+
     //public IGymDefenderRepository GymDefenders { get; }
 
     //public IGymTrainerRepository GymTrainers { get; }

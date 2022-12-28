@@ -198,7 +198,7 @@ public static partial class Utils
         var stopwatch = new System.Diagnostics.Stopwatch();
         stopwatch.Start();
         action();
-        stopwatch.Start();
+        stopwatch.Stop();
 
         var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, precision);
         Console.WriteLine($"Benchmark took {totalSeconds}s for {action.Method.Name} (Target: {action.Target})");

@@ -3,6 +3,7 @@
 using MySqlConnector;
 
 using ChuckDeviceController.Data.Entities;
+using ChuckDeviceController.Data.Repositories.EntityFrameworkCore;
 
 public interface IUnitOfWorkDapper : IBaseUnitOfWork<MySqlTransaction>
 {

@@ -2,7 +2,7 @@
 
 using System.Data;
 
-using Dapper;
+using global::Dapper;
 using Microsoft.Extensions.Logging;
 using MySqlConnector;
 
@@ -358,7 +358,7 @@ public class EntityRepository
         bool runLeakWatcher = true,
         uint waitTimeS = EntityDataRepository.DefaultConnectionWaitTimeS)
     {
-        var task = Task.Run(async () =>  await CreateConnectionAsync(name, openConnection, runLeakWatcher, waitTimeS));
+        var task = Task.Run(async () => await CreateConnectionAsync(name, openConnection, runLeakWatcher, waitTimeS));
         task.Wait();
         return task.Result;
     }

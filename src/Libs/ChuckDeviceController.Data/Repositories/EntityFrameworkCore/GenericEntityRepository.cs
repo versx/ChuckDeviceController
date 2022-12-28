@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceController.Data.Repositories;
+﻿namespace ChuckDeviceController.Data.Repositories.EntityFrameworkCore;
 
 using Microsoft.EntityFrameworkCore;
 
@@ -10,7 +10,7 @@ public interface IGenericEntityRepository<TEntity> : IGenericRepository<TEntity>
 }
 
 public class GenericEntityRepository<TDbContext, TEntity> : GenericRepository<TDbContext, TEntity>, IGenericEntityRepository<TEntity>
-    where TDbContext: DbContext
+    where TDbContext : DbContext
     where TEntity : BaseEntity
 {
     public GenericEntityRepository(TDbContext context)
