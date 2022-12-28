@@ -1,6 +1,6 @@
 # RequestBenchmarkPlugin  
 
-**Example `appsettings.json`:**  
+### Example `appsettings.json`  
 ```json
 {
   // Determines whether or not to include gRPC requests in benchmarks

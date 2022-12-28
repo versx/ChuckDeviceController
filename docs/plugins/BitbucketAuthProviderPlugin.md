@@ -1,12 +1,12 @@
 # BitbucketAuthProviderPlugin  
 
-**Configuration Setup:**  
+### Configuration Setup  
 [https://bitbucket.org/{your-workplace}/workspace/settings/oauth-consumers](https://bitbucket.org/{your-workplace}/workspace/settings/oauth-consumers)  
 
-**Callback:**  
+### Callback  
 `http(s)://127.0.0.1:8881/signin-bitbucket`  
 
-**Example `appsettings.json:`**  
+### Example `appsettings.json`  
 ```json
 {
   "BitBucket": {

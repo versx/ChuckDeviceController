@@ -1,6 +1,6 @@
 # PogoEventsPlugin  
 
-**Example `appsettings.json:`**  
+### Example `appsettings.json`  
 ```json
 {
   "Discord": {

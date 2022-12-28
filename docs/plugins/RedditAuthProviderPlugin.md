@@ -1,12 +1,12 @@
 # RedditAuthProviderPlugin  
 
-**Configuration Setup:**  
+### Configuration Setup  
 [https://www.reddit.com/prefs/apps](https://www.reddit.com/prefs/apps)   
 
-**Callback:**  
+### Callback  
 `http(s)://127.0.0.1:8881/signin-reddit`  
 
-**Example `appsettings.json:`**  
+### Example `appsettings.json`  
 ```json
 {
   "Reddit": {

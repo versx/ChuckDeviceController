@@ -1,6 +1,6 @@
 # DeviceAuthPlugin  
 
-**Example `appsettings.json:`**  
+### Example `appsettings.json`  
 ```json
 {
   "IpAuth": {
