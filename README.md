@@ -87,18 +87,15 @@ Splits and proxies requests from Atlas devices to separate endpoints in order to
 
 <hr>
 
-## [Requirements](https://cdc.rtfd.io/en/latest/requirements)
-- [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)  
-- [.NET 7 SDK](https://dotnet.microsoft.com/download/dotnet/7.0)  
-- [MySQL](https://dev.mysql.com/downloads/mysql/) or [MariaDB](https://mariadb.org/download/?t=mariadb&p=mariadb)  
-    Supported Databases  
-    - MySQL 5.7 and MySQL 8.0  
-    - MariaDB 10.3-10.10  
-
-<hr>
-
-## [Getting Started](https://cdc.rtfd.io/en/latest/getting-started)  
-
+## Getting Started  
+- [Overview](https://cdc.rtfd.io/en/latest/getting-started)  
+- [Requirements](https://cdc.rtfd.io/en/latest/requirements)
+    - [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)  
+    - [.NET 7 SDK](https://dotnet.microsoft.com/download/dotnet/7.0)  
+    - [MySQL](https://dev.mysql.com/downloads/mysql/) or [MariaDB](https://mariadb.org/download/?t=mariadb&p=mariadb)  
+        Supported Databases  
+        - MySQL 5.7 and MySQL 8.0  
+        - MariaDB 10.3-10.10  
 - [Preparation](https://cdc.rtfd.io/en/latest/getting-started/#preparation)  
 - [ChuckDeviceConfigurator](https://cdc.rtfd.io/en/latest/getting-started/#chuckdeviceconfigurator)  
     - [Description](https://cdc.rtfd.io/en/latest/applications/configurator#description)  
