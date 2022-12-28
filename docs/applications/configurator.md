@@ -12,14 +12,16 @@ Controls devices that request jobs as well as includes a dashboard interface to 
 ## User Identity 
 
 ### QR Code Generation  
+- TODO: Make QR code generator configurable  
 ### Account Confirmation and Password Recovery  
+- TODO: Make email sending service configurable  
 
 <hr>
 
 ## Hosted Services  
 
 ### AccountStatusHostedService  
-Checks all accounts with any of the following status and marks the interested columns as `NULL` in the database if the punishment time has lapsed:  
+Checks all accounts with any of the following status and marks the interested columns as `NULL` in the database if the account punishment time has lapsed.  
 
 - `Warning`  
 - `Suspended`  

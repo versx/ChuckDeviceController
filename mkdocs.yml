@@ -18,8 +18,7 @@ nav:
     - General:
         - Home: index.md
         - Screenshots: screenshots.md
-        - Features: features.md
-        - Requirements: requirements.md
+        - Install Requirements: requirements.md
         - Getting Started: getting-started.md
     - Applications:
         - ChuckDeviceConfigurator: applications/configurator.md

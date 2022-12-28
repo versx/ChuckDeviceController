@@ -1,6 +1,6 @@
 # Plugin Examples
 
-## Explanation  
+## TestPlugin  
 ```cs
 namespace TestPlugin
 {
