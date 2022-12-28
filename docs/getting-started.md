@@ -18,9 +18,9 @@ Ensure all requirements are installed and met before proceeding below.
 1. Change directory:  
 ```cd ChuckDeviceConfigurator/bin/debug```  
 1. Fill out [`appsettings.json`](./applications/configurator.md#configuration) config  
-1. Start ChuckDeviceConfigurator:
+1. Start ChuckDeviceConfigurator:  
 ```dotnet ChuckDeviceConfigurator.dll```  
-1. Visit `http://127.0.0.1:8881` (default, change accordingly based on your config options) to begin configuring your devices.  
+1. Visit `http://127.0.0.1:8881` to begin configuring your devices. Change accordingly based on your config options.  
 1. Default username is `root` and password is `123Pa$$word.`  
 
 
