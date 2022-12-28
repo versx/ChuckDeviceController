@@ -738,6 +738,8 @@ public interface IRoutingHost
 <hr>
 
 ## IUIconsHost  
+
+### Description  
 - Retrieve/generate Pokemon icon urls  
 
 ### Class View  
