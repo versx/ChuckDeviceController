@@ -119,7 +119,7 @@ public class DatabaseHost : IDatabaseHost
         return default;
     }
 
-    public async Task<IReadOnlyList<TEntity>> GetAllAsync<TEntity>()
+    public async Task<IReadOnlyList<TEntity>> FindAllAsync<TEntity>()
     {
         if (_controllerEntityTypes.Contains(typeof(TEntity)))
         {
