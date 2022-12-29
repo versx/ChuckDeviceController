@@ -13,11 +13,11 @@ public interface ILoadData
     ///     Type of file data to be loaded.
     /// </typeparam>
     /// <param name="folderName">
-    ///     Sub folder within plugin's folder, optional. If not set,
+    ///     Sub folder within plugin's folder, optional. If not set,<br />
     ///     searches root of plugin's folder.
     /// </param>
     /// <param name="fileName">
-    ///     File name of storage file to load, including extension
+    ///     File name of storage file to load, including extension<br />
     ///     otherwise generic '.dat' extension will be appended.
     /// </param>
     /// <returns>

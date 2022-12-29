@@ -55,7 +55,7 @@ using Microsoft.Extensions.Configuration;
 ///     must be configured to be used in the DI contaner when being initialized.
 /// </summary>
 /// <remarks>
-///     This class can be customised by the host application, if no implementation is provided then
+///     This class can be customized by the host application, if no implementation is provided then
 ///     a default implementation is provided.
 /// </remarks>
 public interface IConfigurationHost

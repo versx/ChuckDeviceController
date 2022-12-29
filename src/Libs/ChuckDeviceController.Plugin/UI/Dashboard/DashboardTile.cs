@@ -47,12 +47,10 @@ public class DashboardTile : IDashboardTile
     ///     Fontawesome icon to display.
     /// </param>
     /// <param name="controllerName">
-    ///     Mvc Controller name the action name should relate
-    ///     to when the tile is clicked.
+    ///     Mvc Controller name the action name should relate to when the tile is clicked.
     /// </param>
     /// <param name="actionName">
-    ///     Mvc controller action name to execute when the
-    ///     navbar header is clicked.
+    ///     Mvc controller action name to execute when the navbar header is clicked.
     /// </param>
     public DashboardTile(string text, string value, string icon = "", string controllerName = "", string actionName = "Index")
     {

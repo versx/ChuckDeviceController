@@ -16,11 +16,11 @@ public interface ISaveData
     ///     File data to be saved.
     /// </param>
     /// <param name="folderName">
-    ///     Sub folder within plugin's folder, optional. If not set,
+    ///     Sub folder within plugin's folder, optional. If not set,<br />
     ///     uses root of plugin's folder.
     /// </param>
     /// <param name="name">
-    ///     File name of storage file to save, including extension
+    ///     File name of storage file to save, including extension<br />
     ///     otherwise generic '.dat' extension will be appended.
     /// </param>
     /// <param name="prettyPrint">

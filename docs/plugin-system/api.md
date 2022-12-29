@@ -366,10 +366,8 @@ Instantiates a new instance of the
 | text | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | The text displayed for the dashboard tile. |
 | value | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | The value for the dashboard tile. |
 | icon | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | Fontawesome icon to display. |
-| controllerName | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | Mvc Controller name the action name should relate
-    to when the tile is clicked. |
-| actionName | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | Mvc controller action name to execute when the
-    navbar header is clicked. |
+| controllerName | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | Mvc Controller name the action name should relate to when the tile is clicked. |
+| actionName | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | Mvc controller action name to execute when the navbar header is clicked. |
 
 <a name='P-ChuckDeviceController-Plugin-DashboardTile-ActionName'></a>
 ### ActionName `property`
@@ -482,8 +480,7 @@ Instantiates a new instance of the [GeofenceTypeAttribute](#T-ChuckDeviceControl
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| type | [ChuckDeviceController.Data.Common.GeofenceType](#T-ChuckDeviceController-Data-Common-GeofenceType 'ChuckDeviceController.Data.Common.GeofenceType') | Expected geofence type required by the custom
-    . |
+| type | [ChuckDeviceController.Data.Common.GeofenceType](#T-ChuckDeviceController-Data-Common-GeofenceType 'ChuckDeviceController.Data.Common.GeofenceType') | Expected geofence type required by the custom . |
 
 <a name='P-ChuckDeviceController-Plugin-GeofenceTypeAttribute-Type'></a>
 ### Type `property`
@@ -541,7 +538,7 @@ This interface contract can be used by all plugin modules to load setting and co
 
 ##### Remarks
 
-This class can be customised by the host application, if no implementation is provided then
+This class can be customized by the host application, if no implementation is provided then
     a default implementation is provided.
 
 <a name='M-ChuckDeviceController-Plugin-IConfigurationHost-GetConfiguration-System-String,System-String-'></a>

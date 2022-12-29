@@ -3,16 +3,16 @@
 using Microsoft.Extensions.Configuration;
 
 /// <summary>
-///     This interface contract can be used by all plugin modules to load setting and configuration data.
+///     This interface contract can be used by all plugin modules to load setting and configuration data.<br />
 /// 
 ///     The default implementation which is loaded if no other plugin registers an instance uses 
-///     appsettings.json to store configuration data to be used by Plugins.
+///     appsettings.json to store configuration data to be used by Plugins.<br />
 /// 
 ///     An instance of this interface is available via the DI container, any custom implementations
 ///     must be configured to be used in the DI contaner when being initialized.
 /// </summary>
 /// <remarks>
-///     This class can be customised by the host application, if no implementation is provided then
+///     This class can be customized by the host application, if no implementation is provided then
 ///     a default implementation is provided.
 /// </remarks>
 public interface IConfigurationHost
@@ -21,7 +21,7 @@ public interface IConfigurationHost
     ///     Retrieves a configuration instance.
     /// </summary>
     /// <param name="jsonFileName">
-    ///     Name of the JSON file name to be used. If a JSON cofiguration file is not provided, the default
+    ///     Name of the JSON file name to be used. If a JSON cofiguration file is not provided, the default<br />
     ///     'appsettings.json' will be loaded from the calling plugin's root folder.
     /// </param>
     /// <param name="sectionName">

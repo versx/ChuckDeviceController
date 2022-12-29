@@ -20,8 +20,7 @@ public sealed class GeofenceTypeAttribute : Attribute
     ///     attribute class.
     /// </summary>
     /// <param name="type">
-    ///     Expected geofence type required by the custom
-    ///     <seealso cref="IJobController"/>.
+    ///     Expected geofence type required by the custom <seealso cref="IJobController"/>.
     /// </param>
     public GeofenceTypeAttribute(GeofenceType type)
     {
