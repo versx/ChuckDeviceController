@@ -47,9 +47,9 @@
     - [OnEntityModified\`\`1(oldEntity,newEntity)](#M-ChuckDeviceController-Plugin-IDatabaseEvents-OnEntityModified``1-``0,``0- 'ChuckDeviceController.Plugin.IDatabaseEvents.OnEntityModified``1(``0,``0)')
     - [OnStateChanged(state)](#M-ChuckDeviceController-Plugin-IDatabaseEvents-OnStateChanged-ChuckDeviceController-Plugin-DatabaseConnectionState- 'ChuckDeviceController.Plugin.IDatabaseEvents.OnStateChanged(ChuckDeviceController.Plugin.DatabaseConnectionState)')
 - [IDatabaseHost](#T-ChuckDeviceController-Plugin-IDatabaseHost 'ChuckDeviceController.Plugin.IDatabaseHost')
+    - [FindAllAsync\`\`1()](#M-ChuckDeviceController-Plugin-IDatabaseHost-FindAllAsync``1 'ChuckDeviceController.Plugin.IDatabaseHost.FindAllAsync``1')
     - [FindAsync\`\`2(id)](#M-ChuckDeviceController-Plugin-IDatabaseHost-FindAsync``2-``1- 'ChuckDeviceController.Plugin.IDatabaseHost.FindAsync``2(``1)')
     - [FindAsync\`\`2(predicate,order,sortDirection,limit)](#M-ChuckDeviceController-Plugin-IDatabaseHost-FindAsync``2-System-Linq-Expressions-Expression{System-Func{``0,System-Boolean}},System-Linq-Expressions-Expression{System-Func{``0,``1}},ChuckDeviceController-Data-Common-SortOrderDirection,System-Int32- 'ChuckDeviceController.Plugin.IDatabaseHost.FindAsync``2(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Linq.Expressions.Expression{System.Func{``0,``1}},ChuckDeviceController.Data.Common.SortOrderDirection,System.Int32)')
-    - [GetAllAsync\`\`1()](#M-ChuckDeviceController-Plugin-IDatabaseHost-GetAllAsync``1 'ChuckDeviceController.Plugin.IDatabaseHost.GetAllAsync``1')
 - [IEvent](#T-ChuckDeviceController-Plugin-EventBus-IEvent 'ChuckDeviceController.Plugin.EventBus.IEvent')
     - [Payload](#P-ChuckDeviceController-Plugin-EventBus-IEvent-Payload 'ChuckDeviceController.Plugin.EventBus.IEvent.Payload')
 - [IEventAggregatorHost](#T-ChuckDeviceController-Plugin-EventBus-IEventAggregatorHost 'ChuckDeviceController.Plugin.EventBus.IEventAggregatorHost')
@@ -299,16 +299,15 @@ ChuckDeviceController.Plugin
 
 ##### Summary
 
-Dashboard statistics item for displaying information
-on the front page.
+[IDashboardStatsItem](#T-ChuckDeviceController-Plugin-IDashboardStatsItem 'ChuckDeviceController.Plugin.IDashboardStatsItem') class implementation
+for displaying information on the front page.
 
 <a name='M-ChuckDeviceController-Plugin-DashboardStatsItem-#ctor-System-String,System-String,System-Boolean-'></a>
 ### #ctor(name,value,isHtml) `constructor`
 
 ##### Summary
 
-Instantiates a new dashboard statistics item using
-the provided property values.
+Instantiates a new instance of the [DashboardStatsItem](#T-ChuckDeviceController-Plugin-DashboardStatsItem 'ChuckDeviceController.Plugin.DashboardStatsItem') class.
 
 ##### Parameters
 
@@ -316,14 +315,14 @@ the provided property values.
 | ---- | ---- | ----------- |
 | name | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | Name of the statistic. |
 | value | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | Value of the statistic. |
-| isHtml | [System.Boolean](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Boolean 'System.Boolean') | Whether the name or value contain raw HTML. |
+| isHtml | [System.Boolean](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Boolean 'System.Boolean') | Whether or not the name or value contains raw HTML. |
 
 <a name='P-ChuckDeviceController-Plugin-DashboardStatsItem-IsHtml'></a>
 ### IsHtml `property`
 
 ##### Summary
 
-Gets or sets a value determining whether the name
+Gets a value determining whether the name
 and value properties include raw HTML or not.
 
 <a name='P-ChuckDeviceController-Plugin-DashboardStatsItem-Name'></a>
@@ -331,14 +330,14 @@ and value properties include raw HTML or not.
 
 ##### Summary
 
-Gets or sets the name or title of the statistic.
+Gets the name or title of the statistic.
 
 <a name='P-ChuckDeviceController-Plugin-DashboardStatsItem-Value'></a>
 ### Value `property`
 
 ##### Summary
 
-Gets or sets the value of the statistic.
+Gets the value of the statistic.
 
 <a name='T-ChuckDeviceController-Plugin-DashboardTile'></a>
 ## DashboardTile `type`
@@ -349,31 +348,34 @@ ChuckDeviceController.Plugin
 
 ##### Summary
 
-
+[IDashboardTile](#T-ChuckDeviceController-Plugin-IDashboardTile 'ChuckDeviceController.Plugin.IDashboardTile') class implementation to
+display custom tile-like elements on the dashboard.
 
 <a name='M-ChuckDeviceController-Plugin-DashboardTile-#ctor-System-String,System-String,System-String,System-String,System-String-'></a>
 ### #ctor(text,value,icon,controllerName,actionName) `constructor`
 
 ##### Summary
 
-
+Instantiates a new instance of the class.
 
 ##### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| text | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
-| value | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
-| icon | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
-| controllerName | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
-| actionName | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
+| text | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | The text displayed for the dashboard tile. |
+| value | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | The value for the dashboard tile. |
+| icon | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | Fontawesome icon to display. |
+| controllerName | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | Mvc Controller name the action name
+should relate to when the tile is clicked. |
+| actionName | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | Mvc controller action name to execute
+when the navbar header is clicked. |
 
 <a name='P-ChuckDeviceController-Plugin-DashboardTile-ActionName'></a>
 ### ActionName `property`
 
 ##### Summary
 
-Gets or sets the controller action name to execute
+Gets the Mvc controller action name to execute
 when the navbar header is clicked.
 
 <a name='P-ChuckDeviceController-Plugin-DashboardTile-ControllerName'></a>
@@ -381,7 +383,7 @@ when the navbar header is clicked.
 
 ##### Summary
 
-Gets or sets the controller name the action name
+Gets the Mvc controller name the action name
 should relate to when the tile is clicked.
 
 <a name='P-ChuckDeviceController-Plugin-DashboardTile-Icon'></a>
@@ -389,21 +391,21 @@ should relate to when the tile is clicked.
 
 ##### Summary
 
-Gets or sets the Fontawesome icon to display.
+Gets the Fontawesome icon to display.
 
 <a name='P-ChuckDeviceController-Plugin-DashboardTile-Text'></a>
 ### Text `property`
 
 ##### Summary
 
-Gets or sets the text displayed for the dashboard tile.
+Gets the text displayed for the dashboard tile.
 
 <a name='P-ChuckDeviceController-Plugin-DashboardTile-Value'></a>
 ### Value `property`
 
 ##### Summary
 
-Gets or sets the value for the dashboard tile.
+Gets the value for the dashboard tile.
 
 <a name='T-ChuckDeviceController-Plugin-DatabaseConnectionState'></a>
 ## DatabaseConnectionState `type`
@@ -464,27 +466,29 @@ ChuckDeviceController.Plugin
 
 ##### Summary
 
-
+Sets the expected geofence type for custom
+instances.
 
 <a name='M-ChuckDeviceController-Plugin-GeofenceTypeAttribute-#ctor-ChuckDeviceController-Data-Common-GeofenceType-'></a>
 ### #ctor(type) `constructor`
 
 ##### Summary
 
-
+Instantiates a new instance of the [GeofenceTypeAttribute](#T-ChuckDeviceController-Plugin-GeofenceTypeAttribute 'ChuckDeviceController.Plugin.GeofenceTypeAttribute')
+attribute class.
 
 ##### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| type | [ChuckDeviceController.Data.Common.GeofenceType](#T-ChuckDeviceController-Data-Common-GeofenceType 'ChuckDeviceController.Data.Common.GeofenceType') |  |
+| type | [ChuckDeviceController.Data.Common.GeofenceType](#T-ChuckDeviceController-Data-Common-GeofenceType 'ChuckDeviceController.Data.Common.GeofenceType') | Geofence type to define. |
 
 <a name='P-ChuckDeviceController-Plugin-GeofenceTypeAttribute-Type'></a>
 ### Type `property`
 
 ##### Summary
 
-
+Gets the specified geofence type expected.
 
 <a name='T-ChuckDeviceController-Plugin-IAuthorizeHost'></a>
 ## IAuthorizeHost `type`
@@ -620,8 +624,8 @@ ChuckDeviceController.Plugin
 
 ##### Summary
 
-Dashboard statistics item for displaying information
-on the front page.
+Dashboard statistics item interface contract for
+displaying information on the front page.
 
 <a name='P-ChuckDeviceController-Plugin-IDashboardStatsItem-IsHtml'></a>
 ### IsHtml `property`
@@ -654,14 +658,15 @@ ChuckDeviceController.Plugin
 
 ##### Summary
 
-Dashboard tile interface contract.
+Dashboard tile interface contract to display
+custom tile-like elements on the dashboard.
 
 <a name='P-ChuckDeviceController-Plugin-IDashboardTile-ActionName'></a>
 ### ActionName `property`
 
 ##### Summary
 
-Gets or sets the controller action name to execute
+Gets or sets the Mvc controller action name to execute
 when the navbar header is clicked.
 
 <a name='P-ChuckDeviceController-Plugin-IDashboardTile-ControllerName'></a>
@@ -669,7 +674,7 @@ when the navbar header is clicked.
 
 ##### Summary
 
-Gets or sets the controller name the action name
+Gets or sets the Mvc controller name the action name
 should relate to when the tile is clicked.
 
 <a name='P-ChuckDeviceController-Plugin-IDashboardTile-Icon'></a>
@@ -790,6 +795,27 @@ ChuckDeviceController.Plugin
 
 Plugin host handler contract used to interact with the database entities.
 
+<a name='M-ChuckDeviceController-Plugin-IDatabaseHost-FindAllAsync``1'></a>
+### FindAllAsync\`\`1() `method`
+
+##### Summary
+
+Gets a list of database entities.
+
+##### Returns
+
+Returns a list of database entities.
+
+##### Parameters
+
+This method has no parameters.
+
+##### Generic Types
+
+| Name | Description |
+| ---- | ----------- |
+| TEntity | Database entity contract type. |
+
 <a name='M-ChuckDeviceController-Plugin-IDatabaseHost-FindAsync``2-``1-'></a>
 ### FindAsync\`\`2(id) `method`
 
@@ -839,27 +865,6 @@ Returns a list of database entities.
 | Name | Description |
 | ---- | ----------- |
 | TKey | Entity property type when sorting. |
-| TEntity | Database entity contract type. |
-
-<a name='M-ChuckDeviceController-Plugin-IDatabaseHost-GetAllAsync``1'></a>
-### GetAllAsync\`\`1() `method`
-
-##### Summary
-
-Gets a list of database entities.
-
-##### Returns
-
-Returns a list of database entities.
-
-##### Parameters
-
-This method has no parameters.
-
-##### Generic Types
-
-| Name | Description |
-| ---- | ----------- |
 | TEntity | Database entity contract type. |
 
 <a name='T-ChuckDeviceController-Plugin-EventBus-IEvent'></a>
@@ -966,7 +971,9 @@ ChuckDeviceController.Plugin
 
 ##### Summary
 
-
+Geofence service interface contract used to create new geofences, check
+if coordinate is within a polygon, as well as converting geofence text to
+actual geometry models.
 
 <a name='M-ChuckDeviceController-Plugin-IGeofenceServiceHost-CreateGeofenceAsync-ChuckDeviceController-Data-Abstractions-IGeofence-'></a>
 ### CreateGeofenceAsync(options) `method`
@@ -1095,24 +1102,20 @@ ChuckDeviceController.Plugin
 
 ##### Summary
 
-
+Instance service interface contract used to create new instances.
 
 <a name='M-ChuckDeviceController-Plugin-IInstanceServiceHost-CreateInstanceAsync-ChuckDeviceController-Data-Abstractions-IInstance-'></a>
 ### CreateInstanceAsync(options) `method`
 
 ##### Summary
 
-
-
-##### Returns
-
-
+Creates a new instance in the database.
 
 ##### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| options | [ChuckDeviceController.Data.Abstractions.IInstance](#T-ChuckDeviceController-Data-Abstractions-IInstance 'ChuckDeviceController.Data.Abstractions.IInstance') |  |
+| options | [ChuckDeviceController.Data.Abstractions.IInstance](#T-ChuckDeviceController-Data-Abstractions-IInstance 'ChuckDeviceController.Data.Abstractions.IInstance') | Options used to create the new instance. |
 
 <a name='T-ChuckDeviceController-Plugin-IJobControllerServiceEvents'></a>
 ## IJobControllerServiceEvents `type`
@@ -1206,7 +1209,8 @@ ChuckDeviceController.Plugin
 
 ##### Summary
 
-
+Interface contract used by 
+to load data from the file system.
 
 <a name='M-ChuckDeviceController-Plugin-ILoadData-Load``1-System-String,System-String-'></a>
 ### Load\`\`1(folderName,fileName) `method`
@@ -1243,7 +1247,7 @@ ChuckDeviceController.Plugin
 
 ##### Summary
 
-Plugin host handler contract used to translate strings.
+Plugin host handler contract used to translating strings.
 
 <a name='P-ChuckDeviceController-Plugin-ILocalizationHost-CountryCode'></a>
 ### CountryCode `property`
@@ -1257,7 +1261,7 @@ Gets the two letter ISO country code for the currently set localization.
 
 ##### Summary
 
-Gets or sets the current culture localization to use.
+Gets the current culture localization to use.
 
 <a name='M-ChuckDeviceController-Plugin-ILocalizationHost-GetAlignmentName-System-UInt32-'></a>
 ### GetAlignmentName(alignmentTypeId) `method`
@@ -2044,7 +2048,8 @@ ChuckDeviceController.Plugin
 
 ##### Summary
 
-
+Interface contract used by 
+to save data to the file system.
 
 <a name='M-ChuckDeviceController-Plugin-ISaveData-Save``1-``0,System-String,System-String,System-Boolean-'></a>
 ### Save\`\`1(data,folderName,name,prettyPrint) `method`
@@ -2227,14 +2232,14 @@ created for the properties.
 
 ##### Summary
 
-Gets or sets the unique ID for the settings property group.
+Gets or sets the unique identifier for the settings property group.
 
 <a name='P-ChuckDeviceController-Plugin-ISettingsPropertyGroup-Text'></a>
 ### Text `property`
 
 ##### Summary
 
-Gets or sets the display text for the settings property group.
+Gets or sets the text to display for the settings property group.
 
 <a name='T-ChuckDeviceController-Plugin-ISettingsTab'></a>
 ## ISettingsTab `type`
@@ -2245,7 +2250,8 @@ ChuckDeviceController.Plugin
 
 ##### Summary
 
-Settings tab interface contract to add UI settings for plugins.
+Settings tab interface contract for adding UI settings
+from plugins to separate tabs.
 
 <a name='P-ChuckDeviceController-Plugin-ISettingsTab-Anchor'></a>
 ### Anchor `property`
@@ -2507,41 +2513,41 @@ Adds a list of statistic tiles to the front page dashboard.
 
 ##### Summary
 
-
+Adds a list of settings properties to an existing settings tab.
 
 ##### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| tabId | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
-| properties | [System.Collections.Generic.IEnumerable{ChuckDeviceController.Plugin.SettingsProperty}](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Collections.Generic.IEnumerable 'System.Collections.Generic.IEnumerable{ChuckDeviceController.Plugin.SettingsProperty}') |  |
+| tabId | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | Unique identifier of the destination tab. |
+| properties | [System.Collections.Generic.IEnumerable{ChuckDeviceController.Plugin.SettingsProperty}](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Collections.Generic.IEnumerable 'System.Collections.Generic.IEnumerable{ChuckDeviceController.Plugin.SettingsProperty}') | List of settings properties to add to the destination. |
 
 <a name='M-ChuckDeviceController-Plugin-IUiHost-AddSettingsPropertyAsync-System-String,ChuckDeviceController-Plugin-SettingsProperty-'></a>
 ### AddSettingsPropertyAsync(tabId,property) `method`
 
 ##### Summary
 
-
+Adds a settings property to an existing settings tab.
 
 ##### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| tabId | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
-| property | [ChuckDeviceController.Plugin.SettingsProperty](#T-ChuckDeviceController-Plugin-SettingsProperty 'ChuckDeviceController.Plugin.SettingsProperty') |  |
+| tabId | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | Unique identifier of the destination tab. |
+| property | [ChuckDeviceController.Plugin.SettingsProperty](#T-ChuckDeviceController-Plugin-SettingsProperty 'ChuckDeviceController.Plugin.SettingsProperty') | Settings property to add to the destination tab. |
 
 <a name='M-ChuckDeviceController-Plugin-IUiHost-AddSettingsTabAsync-ChuckDeviceController-Plugin-SettingsTab-'></a>
 ### AddSettingsTabAsync(tab) `method`
 
 ##### Summary
 
-
+Adds a new settings tab.
 
 ##### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| tab | [ChuckDeviceController.Plugin.SettingsTab](#T-ChuckDeviceController-Plugin-SettingsTab 'ChuckDeviceController.Plugin.SettingsTab') |  |
+| tab | [ChuckDeviceController.Plugin.SettingsTab](#T-ChuckDeviceController-Plugin-SettingsTab 'ChuckDeviceController.Plugin.SettingsTab') | Settings tab to add. |
 
 <a name='M-ChuckDeviceController-Plugin-IUiHost-AddSidebarItemAsync-ChuckDeviceController-Plugin-SidebarItem-'></a>
 ### AddSidebarItemAsync(header) `method`
@@ -2576,19 +2582,19 @@ main application's Mvc sidebar.
 
 ##### Summary
 
-
+Gets the value of a settings property by name.
 
 ##### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| name | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
+| name | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | Name of the property to get the value of. |
 
 ##### Generic Types
 
 | Name | Description |
 | ---- | ----------- |
-| T |  |
+| T | Expected return type of the settings property. |
 
 <a name='M-ChuckDeviceController-Plugin-IUiHost-UpdateDashboardStatisticAsync-ChuckDeviceController-Plugin-IDashboardStatsItem-'></a>
 ### UpdateDashboardStatisticAsync(stat) `method`
@@ -2677,14 +2683,15 @@ ChuckDeviceController.Plugin
 
 ##### Summary
 
-
+Defines the API key used by a plugin.
 
 <a name='M-ChuckDeviceController-Plugin-PluginApiKeyAttribute-#ctor-System-String-'></a>
 ### #ctor(apiKey) `constructor`
 
 ##### Summary
 
-
+Instantiates a new instance of the [PluginApiKeyAttribute](#T-ChuckDeviceController-Plugin-PluginApiKeyAttribute 'ChuckDeviceController.Plugin.PluginApiKeyAttribute')
+attribute class.
 
 ##### Parameters
 
@@ -2697,7 +2704,7 @@ ChuckDeviceController.Plugin
 
 ##### Summary
 
-
+Gets the API key string used by the plugin.
 
 <a name='T-ChuckDeviceController-Plugin-Services-PluginBootstrapperServiceAttribute'></a>
 ## PluginBootstrapperServiceAttribute `type`
@@ -3020,15 +3027,15 @@ ChuckDeviceController.Plugin
 
 ##### Summary
 
-Settings property interface contract used by plugins to
-create UI setting elements in the dashboard.
+[ISettingsProperty](#T-ChuckDeviceController-Plugin-ISettingsProperty 'ChuckDeviceController.Plugin.ISettingsProperty') class implementation used by plugins
+to create UI setting elements in the dashboard.
 
 <a name='M-ChuckDeviceController-Plugin-SettingsProperty-#ctor'></a>
 ### #ctor() `constructor`
 
 ##### Summary
 
-
+Instantiates a new instance of the [SettingsProperty](#T-ChuckDeviceController-Plugin-SettingsProperty 'ChuckDeviceController.Plugin.SettingsProperty') class.
 
 ##### Parameters
 
@@ -3039,23 +3046,23 @@ This constructor has no parameters.
 
 ##### Summary
 
-
+Instantiates a new instance of the [SettingsProperty](#T-ChuckDeviceController-Plugin-SettingsProperty 'ChuckDeviceController.Plugin.SettingsProperty') class.
 
 ##### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| text | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
-| name | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
-| type | [ChuckDeviceController.Plugin.SettingsPropertyType](#T-ChuckDeviceController-Plugin-SettingsPropertyType 'ChuckDeviceController.Plugin.SettingsPropertyType') |  |
-| value | [System.Object](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Object 'System.Object') |  |
-| defaultValue | [System.Object](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Object 'System.Object') |  |
-| displayIndex | [System.UInt32](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.UInt32 'System.UInt32') |  |
-| isRequired | [System.Boolean](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Boolean 'System.Boolean') |  |
-| validate | [System.Boolean](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Boolean 'System.Boolean') |  |
-| className | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
-| style | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
-| group | [ChuckDeviceController.Plugin.SettingsPropertyGroup](#T-ChuckDeviceController-Plugin-SettingsPropertyGroup 'ChuckDeviceController.Plugin.SettingsPropertyGroup') |  |
+| text | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | Text displayed for the property, possibly used in a label. |
+| name | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | The ID and name of the element. |
+| type | [ChuckDeviceController.Plugin.SettingsPropertyType](#T-ChuckDeviceController-Plugin-SettingsPropertyType 'ChuckDeviceController.Plugin.SettingsPropertyType') | The type of HTML element to create. |
+| value | [System.Object](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Object 'System.Object') | Sets the initial value of the HTML element. |
+| defaultValue | [System.Object](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Object 'System.Object') | Default value of the HTML element, if it supports it. |
+| displayIndex | [System.UInt32](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.UInt32 'System.UInt32') | Defines the sorting of the HTML element created for the properties. |
+| isRequired | [System.Boolean](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Boolean 'System.Boolean') | Determining whether or not the HTML element value is required. |
+| validate | [System.Boolean](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Boolean 'System.Boolean') | Determines whether or not to validate the value of the HTML element. |
+| className | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | CSS class name to use. |
+| style | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | Raw CSS styling to use. |
+| group | [ChuckDeviceController.Plugin.SettingsPropertyGroup](#T-ChuckDeviceController-Plugin-SettingsPropertyGroup 'ChuckDeviceController.Plugin.SettingsPropertyGroup') | Element group the settings property will be placed in. |
 
 <a name='P-ChuckDeviceController-Plugin-SettingsProperty-Class'></a>
 ### Class `property`
@@ -3149,14 +3156,15 @@ ChuckDeviceController.Plugin
 
 ##### Summary
 
-Interface contract for grouping settings properties.
+[ISettingsPropertyGroup](#T-ChuckDeviceController-Plugin-ISettingsPropertyGroup 'ChuckDeviceController.Plugin.ISettingsPropertyGroup') class implementation
+for grouping .
 
 <a name='M-ChuckDeviceController-Plugin-SettingsPropertyGroup-#ctor'></a>
 ### #ctor() `constructor`
 
 ##### Summary
 
-
+Instantiates a new instance of the [SettingsPropertyGroup](#T-ChuckDeviceController-Plugin-SettingsPropertyGroup 'ChuckDeviceController.Plugin.SettingsPropertyGroup') class.
 
 ##### Parameters
 
@@ -3167,15 +3175,15 @@ This constructor has no parameters.
 
 ##### Summary
 
-
+Instantiates a new instance of the [SettingsPropertyGroup](#T-ChuckDeviceController-Plugin-SettingsPropertyGroup 'ChuckDeviceController.Plugin.SettingsPropertyGroup') class.
 
 ##### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| id | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
-| text | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
-| displayIndex | [System.UInt32](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.UInt32 'System.UInt32') |  |
+| id | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | Unique identifier for the settings property group. |
+| text | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | Text displayed for the settings property group. |
+| displayIndex | [System.UInt32](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.UInt32 'System.UInt32') | Sorting index used with each HTML element created for the grouped properties. |
 
 <a name='P-ChuckDeviceController-Plugin-SettingsPropertyGroup-DisplayIndex'></a>
 ### DisplayIndex `property`
@@ -3190,14 +3198,14 @@ created for the properties.
 
 ##### Summary
 
-Gets or sets the unique ID for the settings property group.
+Gets or sets the unique identifier for the settings property group.
 
 <a name='P-ChuckDeviceController-Plugin-SettingsPropertyGroup-Text'></a>
 ### Text `property`
 
 ##### Summary
 
-Gets or sets the display text for the settings property group.
+Gets or sets the text to display for the settings property group.
 
 <a name='M-ChuckDeviceController-Plugin-SettingsPropertyGroup-Equals-System-Object-'></a>
 ### Equals(obj) `method`
@@ -3257,7 +3265,7 @@ ChuckDeviceController.Plugin
 
 ##### Summary
 
-Determines the type of HTML element to create for
+Defines the type of HTML element to create for
 the settings property.
 
 <a name='F-ChuckDeviceController-Plugin-SettingsPropertyType-CheckBox'></a>
@@ -3304,14 +3312,15 @@ ChuckDeviceController.Plugin
 
 ##### Summary
 
-Settings tab interface contract to add UI settings for plugins.
+[ISettingsTab](#T-ChuckDeviceController-Plugin-ISettingsTab 'ChuckDeviceController.Plugin.ISettingsTab') class implementation for adding
+UI settings from plugins to separate tabs.
 
 <a name='M-ChuckDeviceController-Plugin-SettingsTab-#ctor'></a>
 ### #ctor() `constructor`
 
 ##### Summary
 
-
+Instantiates a new instance of the [SettingsTab](#T-ChuckDeviceController-Plugin-SettingsTab 'ChuckDeviceController.Plugin.SettingsTab') class.
 
 ##### Parameters
 
@@ -3322,18 +3331,18 @@ This constructor has no parameters.
 
 ##### Summary
 
-
+Instantiates a new instance of the [SettingsTab](#T-ChuckDeviceController-Plugin-SettingsTab 'ChuckDeviceController.Plugin.SettingsTab') class.
 
 ##### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| id | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
-| text | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
-| anchor | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
-| displayIndex | [System.UInt32](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.UInt32 'System.UInt32') |  |
-| className | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
-| style | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') |  |
+| id | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | Unique identifier of the tab. |
+| text | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | Text displayed for the tab header. |
+| anchor | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | The HTML anchor tag name of the tab. |
+| displayIndex | [System.UInt32](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.UInt32 'System.UInt32') | Display index of the tab in the tab list. |
+| className | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | CSS class name to use. |
+| style | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | Raw CSS styling to use. |
 
 <a name='P-ChuckDeviceController-Plugin-SettingsTab-Anchor'></a>
 ### Anchor `property`
@@ -3362,7 +3371,7 @@ Gets or sets the display index of the tab in the tab list.
 
 ##### Summary
 
-Gets or sets the unique ID of the tab.
+Gets or sets the unique identifier of the tab.
 
 <a name='P-ChuckDeviceController-Plugin-SettingsTab-Style'></a>
 ### Style `property`
@@ -3536,22 +3545,23 @@ ChuckDeviceController.Plugin
 
 ##### Summary
 
-Determines where the static files (i.e. 'wwwroot' and 'Views') will be located
-relevant to the plugin.
+Defines where the static files (i.e. 'wwwroot' and 'Views') will be located,
+relevant to the plugin's path.
 
 <a name='M-ChuckDeviceController-Plugin-StaticFilesLocationAttribute-#ctor-ChuckDeviceController-Plugin-StaticFilesLocation,ChuckDeviceController-Plugin-StaticFilesLocation-'></a>
 ### #ctor(views,webRoot) `constructor`
 
 ##### Summary
 
-
+Instantiates a new instance of the [StaticFilesLocationAttribute](#T-ChuckDeviceController-Plugin-StaticFilesLocationAttribute 'ChuckDeviceController.Plugin.StaticFilesLocationAttribute')
+attribute class.
 
 ##### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| views | [ChuckDeviceController.Plugin.StaticFilesLocation](#T-ChuckDeviceController-Plugin-StaticFilesLocation 'ChuckDeviceController.Plugin.StaticFilesLocation') |  |
-| webRoot | [ChuckDeviceController.Plugin.StaticFilesLocation](#T-ChuckDeviceController-Plugin-StaticFilesLocation 'ChuckDeviceController.Plugin.StaticFilesLocation') |  |
+| views | [ChuckDeviceController.Plugin.StaticFilesLocation](#T-ChuckDeviceController-Plugin-StaticFilesLocation 'ChuckDeviceController.Plugin.StaticFilesLocation') | Determines where the Views folder is located. |
+| webRoot | [ChuckDeviceController.Plugin.StaticFilesLocation](#T-ChuckDeviceController-Plugin-StaticFilesLocation 'ChuckDeviceController.Plugin.StaticFilesLocation') | Determines where the wwwroot folder is located. |
 
 <a name='P-ChuckDeviceController-Plugin-StaticFilesLocationAttribute-Views'></a>
 ### Views `property`
