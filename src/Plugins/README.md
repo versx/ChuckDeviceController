@@ -49,7 +49,7 @@ Each plugin's project file i.e. `TestPlugin.csproj` needs the following properti
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 +    <EnableDynamicLoading>true</EnableDynamicLoading>

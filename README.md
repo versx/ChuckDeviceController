@@ -48,9 +48,8 @@ Splits and proxies requests from Atlas devices to separate endpoints in order to
     * Much more planned...  
 - Job controller instance types  
     * Bootstrap  
-    * Dynamic Route
-    * Circle Pokemon  
-    * Circle Raid  
+    * Dynamic Routes
+    * Circle Plots (Pokemon and Raids)  
     * Leveling  
     * Pokemon IV  
     * Quests  

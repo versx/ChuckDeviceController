@@ -3,16 +3,27 @@ site_url: https://github.com/versx/ChuckDeviceController
 site_description: ChuckDeviceController
 site_author: versx
 
+docs_dir: docs/
+
 repo_url: https://github.com/versx/chuckdevicecontroller/
 repo_name: GitHub
 
 theme:
     name: readthedocs #mkdocs, bootstrap4, cinder, cosmo, cyborg, flatly, ivory, material, readthedocs, slate, yeti
+    #custom_dir: 'themes/material/'
     nav_style: dark
     locale: en
-    logo: 
+    favicon: img/chuck.gif
+    logo: img/chuck.gif
     analytics:
         gtag: UA-75960523-2
+    font:
+        text: Roboto
+    highlightjs: true
+    hljs_languages:
+        - csharp
+        - json
+    sticky_navigation: False
 
 plugins:
     - search:
