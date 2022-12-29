@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="versx" /><link rel="canonical" href="https://github.com/versx/ChuckDeviceController/plugin-system/examples/" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Examples - ChuckDeviceController</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+        <link href="../../css/base.css" rel="stylesheet" />
+        <link href="../../css/bootstrap-custom.min.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Examples";
+        var mkdocs_page_input_path = "plugin-system\\examples.md";
+        var mkdocs_page_url = "/versx/ChuckDeviceController/plugin-system/examples/";
+      </script>
+    
+    <script src="../../js/jquery-3.6.0.min.js" defer></script>
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/languages/csharp.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/languages/json.min.js"></script>
+      <script>hljs.initHighlightingOnLoad();</script> 
+      <script async src="https://www.googletagmanager.com/gtag/js?id=UA-75960523-2"></script>
+      <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'UA-75960523-2');
+      </script>
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../..">
+          <img src="../../img/chuck.gif" class="logo" alt="Logo"/>
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">General</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../screenshots/">Screenshots</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../requirements/">Install Requirements</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/">Getting Started</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Applications</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../applications/configurator/">ChuckDeviceConfigurator</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../applications/controller/">ChuckDeviceController</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../applications/communicator/">ChuckDeviceCommunicator</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../applications/proxy/">ChuckDeviceProxy</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Plugin System</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../create-a-plugin/">Create a Plugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../api/">API Documentation</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Examples</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#testplugin">TestPlugin</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../host-interfaces/">Host Interfaces</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../entity-interfaces/">Entity Interfaces</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../project-templates/">Visual Studio Templates</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Plugins Included</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/overview/">Overview</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/BitbucketAuthProviderPlugin/">BitbucketAuthProviderPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/DeviceAuthPlugin/">DeviceAuthPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/Example.DotNetCorePlugin/">Example.DotNetCorePlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/FindyJumpyPlugin/">FindyJumpyPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/GitLabAuthProviderPlugin/">GitLabAuthProviderPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/HealthChecksPlugin/">HealthChecksPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/MemoryBenchmarkPlugin/">MemoryBenchmarkPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/MicrosoftAuthProviderPlugin/">MicrosoftAuthProviderPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/MiniProviderPlugin/">MiniProviderPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/PogoEventsPlugin/">PogoEventsPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/RazorTestPlugin/">RazorTestPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/RedditAuthProviderPlugin/">RedditAuthProviderPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/RequestBenchmarkPlugin/">RequestBenchmarkPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/RobotsPlugin/">RobotsPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/TestPlugin/">TestPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/TodoPlugin/">TodoPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/VisualStudioAuthProviderPlugin/">VisualStudioAuthProviderPlugin</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Miscellaneous</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../other/3rd-party-auth/">3rd Party Authentication</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../other/custom-settings/">Custom Settings</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">About</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../about/dedication/">Dedication</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../about/credits/">Credits</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../about/todo/">TODO</a>
+                  </li>
+                  <li class="toctree-l1"><a class="" href="https://github.com/versx/ChuckDeviceController">GitHub</a>
+                  </li>
+                  <li class="toctree-l1"><a class="" href="https://github.com/versx">Author</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">ChuckDeviceController</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" alt="Docs"></a> &raquo;</li>
+          <li>Plugin System &raquo;</li>
+      <li>Examples</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/versx/chuckdevicecontroller/edit/master/docs/plugin-system/examples.md" class="icon icon-github"> Edit on GitHub</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="plugin-examples">Plugin Examples<a class="headerlink" href="#plugin-examples" title="Permanent link"></a></h1>
+<h2 id="testplugin">TestPlugin<a class="headerlink" href="#testplugin" title="Permanent link"></a></h2>
+<pre><code class="language-cs">namespace TestPlugin;
+
+using System.Collections.Generic;
+
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+
+using ChuckDeviceController.Data.Abstractions;
+using ChuckDeviceController.Data.Common;
+using ChuckDeviceController.Extensions.Http;
+using ChuckDeviceController.Extensions.Json;
+using ChuckDeviceController.Geometry.Models;
+using ChuckDeviceController.Plugin;
+using ChuckDeviceController.Plugin.EventBus;
+using ChuckDeviceController.Plugin.EventBus.Events;
+using ChuckDeviceController.Plugin.Services;
+
+using JobControllers;
+
+//http://127.0.0.1:8881/plugin/v1
+//http://127.0.0.1:8881/Test
+
+/// &lt;summary&gt;
+///     Example plugin demonstrating the capabilities
+///     of the plugin system and how it works.
+/// &lt;/summary&gt;
+[
+    // Specifies where the 'wwwroot' folder will be if any are used or needed.
+    // Possible options: embedded resources, local/external, or none.
+    StaticFilesLocation(StaticFilesLocation.Resources, StaticFilesLocation.External),
+    // Specify the plugin API key to authorize with the host application.
+    PluginApiKey(&quot;CDC-328TVvD7o85TNbNhjLE0JysVMbOxjXKT&quot;),
+]
+public class TestPlugin : IPlugin, IDatabaseEvents, IJobControllerServiceEvents, IUiEvents, ISettingsPropertyEvents
+{
+    #region Plugin Host Variables
+
+    // Plugin host variables are interface contracts that are used
+    // to interact with services the host application has registered
+    // and is running. They can be initialized by the constructor
+    // using dependency injection or by decorating the field with
+    // the 'PluginBootstrapperService' attribute. The host application
+    // will look for any fields or properties decorated with the
+    // 'PluginBootstrapperService' and initialize them with the
+    // related service class.
+
+    // Used for logging messages to the host application from the plugin
+    private readonly ILoggingHost _loggingHost;
+
+    // Interacts with the job controller instance service to add new job
+    // controllers.
+    private readonly IJobControllerServiceHost _jobControllerHost;
+
+    // Retrieve data from the database, READONLY.
+    // 
+    // When decorated with the 'PluginBootstrapperService' attribute, the
+    // property will be initalized by the host's service implementation.
+    [PluginBootstrapperService(typeof(IDatabaseHost))]
+    private readonly IDatabaseHost _databaseHost = null!;
+
+    // Translate text based on the set locale in the host application.
+    private readonly ILocalizationHost _localeHost;
+
+    // Expand your plugin implementation by adding user interface elements
+    // and pages to the dashboard.
+    // 
+    // When decorated with the 'PluginBootstrapperService' attribute, the
+    // property will be initalized by the host's service implementation.
+    [PluginBootstrapperService(typeof(IUiHost))]
+    private readonly IUiHost _uiHost = null!;
+
+    // Manage files local to your plugin's folder using saving and loading
+    // implementations.
+    // 
+    // When decorated with the 'PluginBootstrapperService' attribute, the
+    // property will be initalized by the host's service implementation.
+    [PluginBootstrapperService(typeof(IFileStorageHost))]
+    private readonly IFileStorageHost _fileStorageHost = null!;
+
+    [PluginBootstrapperService(typeof(IConfigurationHost))]
+    private readonly IConfigurationHost _configurationHost = null!;
+
+    private readonly IGeofenceServiceHost _geofenceServiceHost;
+
+    private readonly IInstanceServiceHost _instanceServiceHost;
+
+    private readonly IEventAggregatorHost _eventAggregatorHost;
+
+    private readonly IAuthorizeHost _authHost;
+
+    #endregion
+
+    #region Plugin Metadata Properties
+
+    /// &lt;summary&gt;
+    /// Gets the name of the plugin to use.
+    /// &lt;/summary&gt;
+    public string Name =&gt; &quot;TestPlugin&quot;;
+
+    /// &lt;summary&gt;
+    /// Gets a brief description about the plugin explaining how it
+    /// works and what it does.
+    /// &lt;/summary&gt;
+    public string Description =&gt; &quot;Demostrates the capabilities of the plugin system.&quot;;
+
+    /// &lt;summary&gt;
+    /// Gets the name of the author/creator of the plugin.
+    /// &lt;/summary&gt;
+    public string Author =&gt; &quot;versx&quot;;
+
+    /// &lt;summary&gt;
+    /// Gets the current version of the plugin.
+    /// &lt;/summary&gt;
+    public Version Version =&gt; new(1, 0, 0);
+
+    #endregion
+
+    #region Plugin Host Properties
+
+    /// &lt;summary&gt;
+    ///     Gets or sets the UiHost host service implementation. This is
+    ///     initialized separately from the '_uiHost' field that is decorated.
+    /// &lt;/summary&gt;
+    /// &lt;remarks&gt;
+    ///     When decorated with the 'PluginBootstrapperService' attribute, the
+    ///     property will be initalized by the host's service implementation.
+    /// &lt;/remarks&gt;
+    [PluginBootstrapperService(typeof(IUiHost))]
+    public IUiHost UiHost { get; set; } = null!;
+
+    #endregion
+
+    #region Constructor
+
+    /// &lt;summary&gt;
+    ///     Instantiates a new instance of &lt;see cref=&quot;IPlugin&quot;/&gt; with the host
+    ///     application. It is important to only create one constructor for the
+    ///     class that inherits the &lt;see cref=&quot;IPlugin&quot;/&gt; interface contract.
+    ///     Failure to do so will prevent the plugin from loading.
+    /// 
+    ///     This is so the host application knows which constructor to use
+    ///     when it instantiates an instance with the host handlers for each 
+    ///     parameter, essentially dependency injection.
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;loggingHost&quot;&gt;Logging host handler.&lt;/param&gt;
+    /// &lt;param name=&quot;localeHost&quot;&gt;Localization host handler.&lt;/param&gt;
+    /// &lt;param name=&quot;jobControllerServiceHost&quot;&gt;&lt;/param&gt;
+    /// &lt;param name=&quot;instanceServiceHost&quot;&gt;&lt;/param&gt;
+    /// &lt;param name=&quot;geofenceServiceHost&quot;&gt;&lt;/param&gt;
+    /// &lt;param name=&quot;eventAggregatorHost&quot;&gt;&lt;/param&gt;
+    /// &lt;param name=&quot;authHost&quot;&gt;&lt;/param&gt;
+    public TestPlugin(
+        ILoggingHost loggingHost,
+        ILocalizationHost localeHost,
+        IJobControllerServiceHost jobControllerServiceHost,
+        IInstanceServiceHost instanceServiceHost,
+        IGeofenceServiceHost geofenceServiceHost,
+        IEventAggregatorHost eventAggregatorHost,
+        IAuthorizeHost authHost)
+    {
+        _loggingHost = loggingHost;
+        _localeHost = localeHost;
+        _jobControllerHost = jobControllerServiceHost;
+        _instanceServiceHost = instanceServiceHost;
+        _geofenceServiceHost = geofenceServiceHost;
+        _eventAggregatorHost = eventAggregatorHost;
+        _authHost = authHost;
+
+        //_appHost.Restart();
+    }
+
+    #endregion
+
+    #region ASP.NET WebApi Configure Callback Handlers
+
+    /// &lt;summary&gt;
+    ///     Configures the application to set up middlewares, routing rules, etc.
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;appBuilder&quot;&gt;
+    ///     Provides the mechanisms to configure an application's request pipeline.
+    /// &lt;/param&gt;
+    public void Configure(WebApplication appBuilder)
+    {
+        _loggingHost.LogInformation($&quot;Configure called&quot;);
+
+        //var testService = appBuilder.Services.GetService&lt;IPluginService&gt;();
+
+        // We can configure routing here using 'Minimal APIs' or using Mvc Controller classes
+        // Minimal API's Reference: https://docs.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis?view=aspnetcore-6.0
+        appBuilder.Map(&quot;/plugin/v1&quot;, app =&gt;
+        {
+            app.Run(async (httpContext) =&gt;
+            {
+                _loggingHost.LogInformation($&quot;Plugin route called&quot;);
+                await httpContext.Response.WriteAsync($&quot;Hello from plugin {Name}&quot;);
+            });
+        });
+
+        // Add additional endpoints to list on
+        appBuilder.Urls.Add(&quot;http://*:1199&quot;); // listen on all interfaces
+        appBuilder.Urls.Add(&quot;http://+:1199&quot;); // listen on all interfaces
+        appBuilder.Urls.Add(&quot;http://0.0.0.0:1199&quot;); // listen on all interfaces
+        appBuilder.Urls.Add(&quot;http://localhost:1199&quot;);
+        appBuilder.Urls.Add(&quot;http://127.0.0.1:1199&quot;);
+        appBuilder.Urls.Add(&quot;http://10.0.0.2:1199&quot;);
+
+        // Example routing using minimal APIs
+        appBuilder.Map(&quot;example/{name}&quot;, async (httpContext) =&gt;
+        {
+            Console.WriteLine($&quot;Method: {httpContext.Request.Method}&quot;);
+            var routeValues = httpContext.Request.RouteValues;
+            var name = Convert.ToString(routeValues[&quot;name&quot;]);
+            Console.WriteLine($&quot;Name: {name}&quot;);
+            await httpContext.Response.WriteAsync(name!);
+        });
+        appBuilder.MapGet(&quot;example&quot;, () =&gt; &quot;Hi :)&quot;);
+        appBuilder.MapPost(&quot;example&quot;, async (httpContext) =&gt;
+        {
+            var body = await httpContext.Request.ReadBodyAsStringAsync();
+            _loggingHost.LogDebug($&quot;Body: {body}&quot;);
+            var coords = body?.FromJson&lt;List&lt;Coordinate&gt;&gt;();
+            var response = string.Join(&quot;, &quot;, coords ?? new());
+            _loggingHost.LogDebug($&quot;Coords: {response}&quot;);
+            await httpContext.Response.WriteAsync(response);
+        });
+        //appBuilder.MapPut(&quot;example&quot;, async (httpContext) =&gt; { });
+        //appBuilder.MapDelete(&quot;example&quot;, async (httpContext) =&gt; { });
+
+        appBuilder.MapGet(&quot;example/hello/{name}&quot;, async (httpContext) =&gt;
+        {
+            var method = httpContext.Request.Method;
+            var path = httpContext.Request.Path;
+            var queryValues = httpContext.Request.Query;
+            // httpContext.Request.Form will throw an exception if 'Content-Type' is not 'application/application/www-x-form-urlencoded'
+            //var formValues = httpContext.Request.Form;
+            var routeValues = httpContext.Request.RouteValues;
+            var body = httpContext.Request.Body;
+            var userClaims = httpContext.User;
+            await httpContext.Response.WriteAsync($&quot;Hello, {routeValues[&quot;name&quot;]}!&quot;);
+        });
+        appBuilder.MapGet(&quot;example/buenosdias/{name}&quot;, async (httpContext) =&gt;
+            await httpContext.Response.WriteAsync($&quot;Buenos dias, {httpContext.Request.RouteValues[&quot;name&quot;]}!&quot;));
+        appBuilder.MapGet(&quot;example/throw/{message?}&quot;, (httpContext) =&gt;
+            throw new Exception(Convert.ToString(httpContext.Request.RouteValues[&quot;message&quot;]) ?? &quot;Uh oh!&quot;));
+        appBuilder.MapGet(&quot;example/{greeting}/{name}&quot;, async (httpContext) =&gt;
+            await httpContext.Response.WriteAsync($&quot;{httpContext.Request.RouteValues[&quot;greeting&quot;]}, {httpContext.Request.RouteValues[&quot;name&quot;]}!&quot;));
+
+        // NOTE: Uncommenting the below routing map will overwrite the default '/' routing path to the dashboard
+        //appBuilder.MapGet(&quot;&quot;, async (httpContext) =&gt; await httpContext.Response.WriteAsync(&quot;Hello, World!&quot;));
+
+
+        // Register custom middlewares
+        // Built in ASP.NET Core Middlewares: https://docs.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis?view=aspnetcore-6.0#aspnet-core-middleware
+        //appBuilder.Use(async (httpContext, next) =&gt;//(HttpContext httpContext, RequestDelegate req, Task next) =&gt;
+        //{
+        //    // Action before next delegate
+        //    await next.Invoke();
+        //    // Action after called middleware
+        //});
+
+        // Use built in logger from dependency injection
+        appBuilder.Logger.LogInformation($&quot;Logging from the plugin '{Name}'&quot;);
+    }
+
+    /// &lt;summary&gt;
+    ///     Register services into the IServiceCollection to use with Dependency Injection.
+    ///     This method is called first before the 'Configure(IApplicationBuilder)' method.
+    /// 
+    ///     Register service(s) with Mvc using dependency injection. Services can be passed to
+    ///     other services via the constructor. Depending on the service, you can register the
+    ///     service lifetime as 'Singleton', 'Transient', or 'Scoped'.
+    /// 
+    ///
+    ///     - Transient objects are always different.The transient OperationId value is different in the IndexModel and in the middleware.
+    ///     - Scoped objects are the same for a given request but differ across each new request.
+    ///     - Singleton objects are the same for every request.
+    ///     
+    ///     More details: https://docs.microsoft.com/en-us/aspnet/core/fundamentals/dependency-injection?view=aspnetcore-6.0#constructor-injection-behavior
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;services&quot;&gt;
+    ///     Specifies the contract for a collection of service descriptors.
+    /// &lt;/param&gt;
+    public void ConfigureServices(IServiceCollection services)
+    {
+        _loggingHost.LogInformation($&quot;ConfigureServices called&quot;);
+
+        //services.AddDbContext&lt;TodoDbContext&gt;(options =&gt; options.UseInMemoryDatabase(&quot;todo&quot;), ServiceLifetime.Scoped);
+    }
+
+    /// &lt;summary&gt;
+    ///     Provides an opportunity for plugins to configure Mvc Builder.
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;mvcBuilder&quot;&gt;
+    ///     IMvcBuilder instance that can be configured.
+    /// &lt;/param&gt;
+    public void ConfigureMvcBuilder(IMvcBuilder mvcBuilder)
+    {
+        _loggingHost.LogInformation($&quot;ConfigureMvcBuilder called&quot;);
+
+        // Configure localization for Views
+        mvcBuilder
+            .AddViewLocalization(
+                LanguageViewLocationExpanderFormat.Suffix, options =&gt; 
+                    options.ResourcesPath = &quot;Resources&quot;)
+            .AddDataAnnotationsLocalization();
+    }
+
+    #endregion
+
+    #region Plugin Event Handlers
+
+    /// &lt;summary&gt;
+    ///     Called when the plugin is loaded and registered with the host application.
+    ///     Loading UI elements here is the preferred location.
+    /// &lt;/summary&gt;
+    public async void OnLoad()
+    {
+        _loggingHost.LogInformation($&quot;{Name} v{Version} by {Author} initialized!&quot;);
+
+        // Execute IFileStorageHost method tests
+        TestFileStorageHost();
+
+        // Execute IConfigurationHost method tests
+        //TestConfigurationHost();
+
+        // Add dashboard stats
+        var stats = new List&lt;IDashboardStatsItem&gt;
+        {
+            new DashboardStatsItem(&quot;Test&quot;, &quot;100&quot;, isHtml: false),
+            new DashboardStatsItem(&quot;Test2&quot;, &quot;&lt;b&gt;&lt;u&gt;1,000&lt;/u&gt;&lt;/b&gt;&quot;, isHtml: true),
+            //new DashboardStatsItem(&quot;Test3&quot;, &quot;&lt;b&gt;2,000&lt;/b&gt;&quot;, isHtml: false),
+        };
+        await _uiHost.AddDashboardStatisticsAsync(stats);
+
+        // Register new sidebar headers
+        var pluginSidebarItems = new List&lt;SidebarItem&gt;
+        {
+            new(
+                // Dropdown header text that is displayed in the sidebar
+                text: &quot;Test&quot;,
+                // Dropdown header display index in the sidebar
+                displayIndex: 0,
+                // Dropdown header Fontawesome icon
+                icon: &quot;fa-solid fa-fw fa-microscope&quot;,
+                // Yes we want this to be used as a dropdown and not just
+                // a single sidebar entry
+                isDropdown: true,
+                // List of children sidebar item
+                dropdownItems: new List&lt;SidebarItem&gt;
+                {
+                    // Sidebar item #1
+                    new(&quot;Page&quot;, &quot;Test&quot;, &quot;Index&quot;, displayIndex: 0, icon: &quot;fa-solid fa-fw fa-vial&quot;),
+                    // Sidebar item #2
+                    new(
+                        // Text that is displayed in the sidebar
+                        &quot;Details&quot;,
+                        // 'Test' is the MVC view controller 'TestController.cs'
+                        &quot;Test&quot;,
+                        // 'Details' is the controller action (method name) that is executed when the navbar header is clicked
+                        &quot;Details&quot;,
+                        // Display index in the sidebar
+                        displayIndex: 1,
+                        // Fontawesome icon to include (optional)
+                        icon: &quot;fa-solid fa-fw fa-hammer&quot;,
+                        // Whether the sidebar item is disabled and not clickable
+                        isDisabled: true
+                    ),
+                }
+            ),
+            new SidebarItem
+            {
+                Text = &quot;Sep&quot;,
+                DisplayIndex = 998,
+                IsSeparator = true,
+            },
+        };
+        await _uiHost.AddSidebarItemsAsync(pluginSidebarItems);
+
+        // Add/register dashboard tiles
+        var pluginTile = new DashboardTile
+        (
+            text: &quot;Test&quot;,
+            value: &quot;5,000&quot;,
+            icon: &quot;fa-solid fa-fw fa-hammer&quot;,
+            controllerName: &quot;Test&quot;,
+            actionName: &quot;Index&quot;
+        );
+        await _uiHost.AddDashboardTileAsync(pluginTile);
+
+        var settingsTab = new SettingsTab
+        {
+            Id = &quot;test&quot;,
+            Text = &quot;TestPlugin&quot;,
+            Anchor = &quot;test&quot;,
+            DisplayIndex = 0,
+        };
+        await _uiHost.AddSettingsTabAsync(settingsTab);
+
+        var settingsProperties = new List&lt;SettingsProperty&gt;
+        {
+            new(&quot;Enabled&quot;, &quot;test-enabled&quot;, SettingsPropertyType.CheckBox, true),
+            new(&quot;First Name&quot;, &quot;FirstName&quot;, SettingsPropertyType.Text, &quot;Jeremy&quot;, displayIndex: 1),
+            new(&quot;TextAreaTest&quot;, &quot;TextAreaTest&quot;, SettingsPropertyType.TextArea, &quot;Testing&quot;, displayIndex: 2),
+            new()
+            {
+                Text = &quot;Year&quot;,
+                Name = &quot;Year&quot;,
+                Value = 2022,
+                Type = SettingsPropertyType.Number,
+                DisplayIndex = 3,
+            },
+            new()
+            {
+                Text = &quot;Geofences&quot;,
+                Name = &quot;Geofences&quot;,
+                Value = new List&lt;string&gt; { &quot;Paris&quot;, &quot;London&quot;, &quot;Sydney&quot; },
+                Type = SettingsPropertyType.Select,
+                DisplayIndex = 0,
+            },
+        };
+        await _uiHost.AddSettingsPropertiesAsync(settingsTab.Id, settingsProperties);
+
+        TestLocaleHost();
+
+        TestJobControllerServiceHost();
+
+        TestDatabaseHost();
+
+        //_eventAggregatorHost.Subscribe(new PluginObserver());
+        _eventAggregatorHost.Publish(new PluginEvent(&quot;test message from plugin&quot;));
+
+        await TestAuthorizeHost();
+    }
+
+    /// &lt;summary&gt;
+    ///     Called when the plugin has been reloaded by the host application.
+    /// &lt;/summary&gt;
+    public void OnReload()
+    {
+        _loggingHost.LogInformation($&quot;[{Name}] OnReload called&quot;);
+        // TODO: Reload/re-register UI elements that might have been removed
+    }
+
+    /// &lt;summary&gt;
+    ///     Called when the plugin has been stopped by the host application.
+    /// &lt;/summary&gt;
+    public void OnStop() =&gt; _loggingHost.LogInformation($&quot;[{Name}] OnStop called&quot;);
+
+    /// &lt;summary&gt;
+    ///     Called when the plugin has been removed by the host application.
+    /// &lt;/summary&gt;
+    public void OnRemove() =&gt; _loggingHost.LogInformation($&quot;[{Name}] Onremove called&quot;);
+
+    /// &lt;summary&gt;
+    ///     Called when the plugin's state has been
+    ///     changed by the host application.
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;state&quot;&gt;Plugin's current state&lt;/param&gt;
+    public void OnStateChanged(PluginState state) =&gt;
+        _loggingHost.LogInformation($&quot;[{Name}] Plugin state has changed to '{state}'&quot;);
+
+    #endregion
+
+    #region IDatabase Event Handlers
+
+    public void OnStateChanged(DatabaseConnectionState state)
+    {
+        _loggingHost.LogInformation($&quot;[{Name}] Plugin database connection state has changed: {state}&quot;);
+    }
+
+    public void OnEntityAdded&lt;T&gt;(T entity)
+    {
+        _loggingHost.LogInformation($&quot;[{Name}] Plugin database entity has been added: {entity}&quot;);
+    }
+
+    public void OnEntityModified&lt;T&gt;(T oldEntity, T newEntity)
+    {
+        _loggingHost.LogInformation($&quot;[{Name}] Plugin database entity has been modified: {oldEntity}-&gt;{newEntity}&quot;);
+    }
+
+    public void OnEntityDeleted&lt;T&gt;(T entity)
+    {
+        _loggingHost.LogInformation($&quot;[{Name}] Plugin database entity has been deleted: {entity}&quot;);
+    }
+
+    #endregion
+
+    #region ISettingsProperty Event Handlers
+
+    public void OnSave(IReadOnlyDictionary&lt;string, List&lt;ISettingsProperty&gt;&gt; properties)
+    {
+        _loggingHost.LogInformation($&quot;[{Name}] Plugin settings saved: {properties.Count:N0}&quot;);
+    }
+
+    #endregion
+
+    #region Private Methods
+
+    private void TestFileStorageHost()
+    {
+        var fileName = Name + &quot;.deps.json&quot;;
+
+        // Load dependencies config for plugin
+        var fileData = _fileStorageHost.Load&lt;DependenciesConfig&gt;(&quot;&quot;, fileName);
+        _loggingHost.LogInformation($&quot;Loaded file data from '{fileName}': {fileData}&quot;);
+
+        // Save dependencies config to new folder 'configs' in this plugins folder
+        var fileSaveResult = _fileStorageHost.Save(fileData, &quot;configs&quot;, fileName);
+        _loggingHost.LogInformation($&quot;Saved file data for '{fileName}': {fileSaveResult}&quot;);
+    }
+
+    private void TestConfigurationHost()
+    {
+        //var config = _configurationProviderHost.GetConfiguration&lt;Dictionary&lt;string, string&gt;&gt;(sectionName: &quot;ConnectionStrings&quot;);
+        var config = _configurationHost.GetConfiguration();
+        var value = _configurationHost.GetValue&lt;bool&gt;(&quot;Enabled&quot;, sectionName: &quot;Authentication:GitHub&quot;);
+        _loggingHost.LogInformation($&quot;Configuration: {config}, Value: {value}&quot;);
+
+        var locale = _configurationHost.GetValue&lt;string&gt;(&quot;Locale&quot;);
+        _loggingHost.LogInformation($&quot;Configuration Locale: {locale}&quot;);
+    }
+
+    private async void TestDatabaseHost()
+    {
+        try
+        {
+            // Retrieve database entities 
+            var device = await _databaseHost.FindAsync&lt;IDevice, string&gt;(&quot;SGV7SE&quot;);
+            _loggingHost.LogInformation($&quot;Device: {device?.Uuid}&quot;);
+
+            var instance = await _databaseHost.FindAsync&lt;IInstance, string&gt;(&quot;TestInstance&quot;);
+            var circleRouteType = instance?.Data?.CircleRouteType;
+            _loggingHost.LogInformation($&quot;Instance: {instance?.Name}&quot;);
+
+            var geofence = await _databaseHost.FindAsync&lt;IGeofence, string&gt;(&quot;Upland&quot;);
+            _loggingHost.LogInformation($&quot;Geofence: {geofence?.Name}&quot;);
+            _loggingHost.LogInformation($&quot;Area: {geofence?.Data?.Area}&quot;);
+
+            //var devices = await _databaseHost.GetListAsync&lt;IDevice&gt;();
+            //_loggingHost.LogMessage($&quot;Devices: {devices.Count}&quot;);
+
+            //var device = await _databaseHost.Devices.GetByIdAsync(&quot;SGV7SE&quot;);
+            //_loggingHost.LogMessage($&quot;Device: {device}&quot;);
+
+            //var accounts = await _databaseHost.Accounts.GetListAsync();
+            //var accounts = await _databaseHost.GetListAsync&lt;IAccount&gt;();
+            //_loggingHost.LogMessage($&quot;Accounts: {accounts.Count}&quot;);
+            //var pokestop = await _databaseHost.GetByIdAsync&lt;IPokestop, string&gt;(&quot;0192086043834f1c9c577a54a7890b32.16&quot;);
+            //_loggingHost.LogMessage($&quot;Pokestop: {pokestop.Name}&quot;);
+
+            //var spawnpoints = await _databaseHost.GetAllAsync&lt;ISpawnpoint&gt;();
+            //_loggingHost.LogDebug($&quot;Spawnpoints: {spawnpoints.Count:N0}&quot;);
+
+            //spawnpoints = await _databaseHost.FindAsync&lt;ISpawnpoint, ulong&gt;(
+            //    spawnpoint =&gt; spawnpoint.DespawnSecond == null,
+            //    spawnpoint =&gt; spawnpoint.Id,
+            //    SortOrderDirection.Asc,
+            //    50
+            //);
+            //_loggingHost.LogDebug($&quot;Spawnpoints Exp: {spawnpoints?.Count:N0}&quot;);
+
+            //var bannedAccounts = await _databaseHost.FindAsync&lt;IAccount, string&gt;(
+            //    account =&gt; account.Failed == &quot;suspended&quot;,
+            //    account =&gt; account.Username,
+            //    SortOrderDirection.Desc,
+            //    10000
+            //);
+            //_loggingHost.LogInformation($&quot;Banned Accounts: {bannedAccounts?.Count:N0}&quot;);
+        }
+        catch (Exception ex)
+        {
+            _loggingHost.LogError(ex);
+        }
+    }
+
+    private void TestLocaleHost()
+    {
+        // Translate 1 to Bulbasaur
+        var translated = _localeHost.GetPokemonName(1);
+        _loggingHost.LogInformation($&quot;Pokemon: {translated}&quot;);
+    }
+
+    private async void TestJobControllerServiceHost()
+    {
+        try
+        {
+            var customInstanceType = &quot;test_controller&quot;;
+
+            // Register custom job controller type TestInstanceController
+            await _jobControllerHost.RegisterJobControllerAsync&lt;TestInstanceController&gt;(customInstanceType);
+
+            // Create geofence entity
+            //var geofence = CreateGeofence();
+            //await _geofenceServiceHost.CreateGeofenceAsync(geofence);
+
+            //var instance = CreateInstance(customInstanceType, new() { geofence.Name });
+            //await _instanceServiceHost.CreateInstanceAsync(instance);
+
+            //TestAssignDevice(instance.Name);
+        }
+        catch (Exception ex)
+        {
+            _loggingHost.LogError(ex);
+        }
+    }
+
+    private async void TestAssignDevice(string instanceName)
+    {
+        // Assign device to new instance using custom job controller
+        var uuid = &quot;RH2SE&quot;; //&quot;SGV7SE&quot;;
+        var device = await _databaseHost.FindAsync&lt;IDevice, string&gt;(uuid);
+        if (device == null)
+        {
+            _loggingHost.LogError($&quot;Failed to get device from database with UUID '{uuid}'&quot;);
+            return;
+        }
+
+        if (device.InstanceName != instanceName)
+        {
+            await _jobControllerHost.AssignDeviceToJobControllerAsync(device, instanceName);
+        }
+    }
+
+    private async Task TestAuthorizeHost()
+    {
+        var roleName = &quot;TestRole&quot;;
+        var result = await _authHost.RegisterRole(roleName, 3);
+        _loggingHost.LogInformation($&quot;Role Result: {result}&quot;);
+    }
+
+    private static Geofence CreateGeofence()
+    {
+        var geofence = new Geofence
+        {
+            Name = &quot;TestGeofence&quot;,
+            Type = GeofenceType.Circle,
+            Data = new GeofenceData
+            {
+                Area = new List&lt;Coordinate&gt;
+                {
+                    new Coordinate(34.01, -117.01),
+                    new Coordinate(34.02, -117.02),
+                    new Coordinate(34.03, -117.03),
+                    new Coordinate(34.04, -117.04),
+                },
+                [&quot;test&quot;] = &quot;123&quot;, // &lt;- Add custom properties
+            },
+        };
+        return geofence;
+    }
+
+    private static Instance CreateInstance(string customInstanceType, List&lt;string&gt; geofences)
+    {
+        // Create instance
+        var instance = new Instance
+        {
+            Name = &quot;TestInstance&quot;,
+            MinimumLevel = 30,
+            MaximumLevel = 39,
+            Geofences = geofences,
+            Data = new InstanceData
+            {
+                CustomInstanceType = customInstanceType,
+                [&quot;test&quot;] = &quot;123&quot;, // &lt;- Add custom properties
+            },
+        };
+        return instance;
+    }
+
+    #endregion
+}
+
+// Mock {file}.deps.json configuration file model classes.
+// 
+// Since we are passing generic &lt;T&gt; type from host application to
+// plugin (and vice versx) we do not need to register classes
+// with host using 'PluginServiceAttribute' attribute decoration.
+public class DependenciesConfig
+{
+    public RuntimeTarget RuntimeTarget { get; set; } = new();
+
+    public Dictionary&lt;string, object&gt; CompilationOptions { get; set; } = new();
+
+    public Dictionary&lt;string, Dictionary&lt;string, Dictionary&lt;string, TargetDependencies&gt;&gt;&gt; Targets { get; set; } = new();
+
+    public Dictionary&lt;string, Dictionary&lt;string, object&gt;&gt; Libraries { get; set; } = new();
+}
+
+public class RuntimeTarget
+{
+    public string? Name { get; set; }
+
+    public string? Signature { get; set; }
+}
+
+public class TargetDependencies
+{
+    public Dictionary&lt;string, object&gt; Dependencies { get; set; } = new();
+}
+
+public class Instance : IInstance
+{
+    public string Name { get; set; } = null!;
+
+    public InstanceType Type =&gt; InstanceType.Custom;
+
+    public ushort MinimumLevel { get; set; }
+
+    public ushort MaximumLevel { get; set; }
+
+    public List&lt;string&gt; Geofences { get; set; } = new();
+
+    public InstanceData? Data { get; set; } = new();
+}
+
+public class Geofence : IGeofence
+{
+    public string Name { get; set; } = null!;
+
+    public GeofenceType Type { get; set; }
+
+    public GeofenceData? Data { get; set; } = new();
+}
+</code></pre>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../api/" class="btn btn-neutral float-left" title="API Documentation"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../host-interfaces/" class="btn btn-neutral float-right" title="Host Interfaces">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+      <p>Copyright &copy; 2022, Maintained by <a href="https://github.com/versx">versx</a>.</p>
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/versx/chuckdevicecontroller/" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href="../api/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../host-interfaces/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '../..';</script>
+    <script src="../../js/theme_extra.js" defer></script>
+    <script src="../../js/theme.js" defer></script>
+      <script src="../../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(false);
+        };
+    </script>
+
+</body>
+</html>

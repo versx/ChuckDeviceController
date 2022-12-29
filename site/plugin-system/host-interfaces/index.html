@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="versx" /><link rel="canonical" href="https://github.com/versx/ChuckDeviceController/plugin-system/host-interfaces/" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Host Interfaces - ChuckDeviceController</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+        <link href="../../css/base.css" rel="stylesheet" />
+        <link href="../../css/bootstrap-custom.min.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Host Interfaces";
+        var mkdocs_page_input_path = "plugin-system\\host-interfaces.md";
+        var mkdocs_page_url = "/versx/ChuckDeviceController/plugin-system/host-interfaces/";
+      </script>
+    
+    <script src="../../js/jquery-3.6.0.min.js" defer></script>
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/languages/csharp.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/languages/json.min.js"></script>
+      <script>hljs.initHighlightingOnLoad();</script> 
+      <script async src="https://www.googletagmanager.com/gtag/js?id=UA-75960523-2"></script>
+      <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'UA-75960523-2');
+      </script>
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../..">
+          <img src="../../img/chuck.gif" class="logo" alt="Logo"/>
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">General</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../screenshots/">Screenshots</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../requirements/">Install Requirements</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/">Getting Started</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Applications</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../applications/configurator/">ChuckDeviceConfigurator</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../applications/controller/">ChuckDeviceController</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../applications/communicator/">ChuckDeviceCommunicator</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../applications/proxy/">ChuckDeviceProxy</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Plugin System</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../create-a-plugin/">Create a Plugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../api/">API Documentation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../examples/">Examples</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Host Interfaces</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#iauthorizehost">IAuthorizeHost</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#description">Description</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#class-view">Class View</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#iconfigurationhost">IConfigurationHost</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#description_1">Description</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#class-view_1">Class View</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#idatabasehost">IDatabaseHost</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#description_2">Description</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#class-view_2">Class View</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#ieventaggregatorhost">IEventAggregatorHost</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#description_3">Description</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#class-view_3">Class View</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#ifilestoragehost">IFileStorageHost</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#description_4">Description</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#class-view_4">Class View</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#igeofenceservicehost">IGeofenceServiceHost</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#description_5">Description</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#class-view_5">Class View</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#iinstanceservicehost">IInstanceServiceHost</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#description_6">Description</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#class-view_6">Class View</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#ijobcontrollerservicehost">IJobControllerServiceHost</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#description_7">Description</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#class-view_7">Class View</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#ilocalizationhost">ILocalizationHost</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#description_8">Description</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#class-view_8">Class View</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#ilogginghost">ILoggingHost</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#description_9">Description</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#class-view_9">Class View</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#imemorycachehost">IMemoryCacheHost</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#description_10">Description</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#class-view_10">Class View</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#iroutinghost">IRoutingHost</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#description_11">Description</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#class-view_11">Class View</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#iuiconshost">IUIconsHost</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#description_12">Description</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#class-view_12">Class View</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#iuihost">IUiHost</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#description_13">Description</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#class-view_13">Class View</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../entity-interfaces/">Entity Interfaces</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../project-templates/">Visual Studio Templates</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Plugins Included</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/overview/">Overview</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/BitbucketAuthProviderPlugin/">BitbucketAuthProviderPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/DeviceAuthPlugin/">DeviceAuthPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/Example.DotNetCorePlugin/">Example.DotNetCorePlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/FindyJumpyPlugin/">FindyJumpyPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/GitLabAuthProviderPlugin/">GitLabAuthProviderPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/HealthChecksPlugin/">HealthChecksPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/MemoryBenchmarkPlugin/">MemoryBenchmarkPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/MicrosoftAuthProviderPlugin/">MicrosoftAuthProviderPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/MiniProviderPlugin/">MiniProviderPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/PogoEventsPlugin/">PogoEventsPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/RazorTestPlugin/">RazorTestPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/RedditAuthProviderPlugin/">RedditAuthProviderPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/RequestBenchmarkPlugin/">RequestBenchmarkPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/RobotsPlugin/">RobotsPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/TestPlugin/">TestPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/TodoPlugin/">TodoPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/VisualStudioAuthProviderPlugin/">VisualStudioAuthProviderPlugin</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Miscellaneous</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../other/3rd-party-auth/">3rd Party Authentication</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../other/custom-settings/">Custom Settings</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">About</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../about/dedication/">Dedication</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../about/credits/">Credits</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../about/todo/">TODO</a>
+                  </li>
+                  <li class="toctree-l1"><a class="" href="https://github.com/versx/ChuckDeviceController">GitHub</a>
+                  </li>
+                  <li class="toctree-l1"><a class="" href="https://github.com/versx">Author</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">ChuckDeviceController</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" alt="Docs"></a> &raquo;</li>
+          <li>Plugin System &raquo;</li>
+      <li>Host Interfaces</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/versx/chuckdevicecontroller/edit/master/docs/plugin-system/host-interfaces.md" class="icon icon-github"> Edit on GitHub</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="plugin-host-interface-contracts">Plugin Host Interface Contracts<a class="headerlink" href="#plugin-host-interface-contracts" title="Permanent link"></a></h1>
+<h2 id="iauthorizehost">IAuthorizeHost<a class="headerlink" href="#iauthorizehost" title="Permanent link"></a></h2>
+<h3 id="description">Description<a class="headerlink" href="#description" title="Permanent link"></a></h3>
+<ul>
+<li>Create new user identity roles to restrict routing endpoints in plugins    </li>
+</ul>
+<h3 id="class-view">Class View<a class="headerlink" href="#class-view" title="Permanent link"></a></h3>
+<pre><code class="language-cs">namespace ChuckDeviceController.Plugin;
+
+/// &lt;summary&gt;
+/// User identity authorization host handler.
+/// &lt;/summary&gt;
+public interface IAuthorizeHost
+{
+    /// &lt;summary&gt;
+    ///     Registers a custom user role with the host application.
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;name&quot;&gt;
+    ///     The name of the role to register.
+    /// &lt;/param&gt;
+    /// &lt;param name=&quot;displayIndex&quot;&gt;
+    ///     Display index value when listing roles.
+    /// &lt;/param&gt;
+    /// &lt;returns&gt;
+    ///     Returns a value determining whether the role was registered
+    ///     or not.
+    /// &lt;/returns&gt;
+    Task&lt;bool&gt; RegisterRole(string name, int displayIndex);
+}
+</code></pre>
+<hr>
+
+<h2 id="iconfigurationhost">IConfigurationHost<a class="headerlink" href="#iconfigurationhost" title="Permanent link"></a></h2>
+<h3 id="description_1">Description<a class="headerlink" href="#description_1" title="Permanent link"></a></h3>
+<ul>
+<li>Load configuration files from file system</li>
+<li>Get property values from loaded configuration files</li>
+</ul>
+<h3 id="class-view_1">Class View<a class="headerlink" href="#class-view_1" title="Permanent link"></a></h3>
+<pre><code class="language-cs">namespace ChuckDeviceController.Plugin;
+
+using Microsoft.Extensions.Configuration;
+
+/// &lt;summary&gt;
+///     This interface contract can be used by all plugin modules to load setting and configuration data.
+/// 
+///     The default implementation which is loaded if no other plugin registers an instance uses 
+///     appsettings.json to store configuration data to be used by Plugins.
+/// 
+///     An instance of this interface is available via the DI container, any custom implementations
+///     must be configured to be used in the DI contaner when being initialized.
+/// &lt;/summary&gt;
+/// &lt;remarks&gt;
+///     This class can be customized by the host application, if no implementation is provided then
+///     a default implementation is provided.
+/// &lt;/remarks&gt;
+public interface IConfigurationHost
+{
+    /// &lt;summary&gt;
+    ///     Retrieves a configuration instance.
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;jsonFileName&quot;&gt;
+    ///     Name of the JSON file name to be used. If a JSON cofiguration file is not provided, the default
+    ///     'appsettings.json' will be loaded from the calling plugin's root folder.
+    /// &lt;/param&gt;
+    /// &lt;param name=&quot;sectionName&quot;&gt;
+    ///     The name of the configuration section that might be required.
+    /// &lt;/param&gt;
+    /// &lt;returns&gt;
+    ///     Configuration file instance initialized with the required settings.
+    /// &lt;/returns&gt;
+    IConfiguration GetConfiguration(string? jsonFileName = null, string? sectionName = null);
+
+    /// &lt;summary&gt;
+    ///     Retrieves a value from a JSON configuration file.
+    /// &lt;/summary&gt;
+    /// &lt;typeparam name=&quot;T&quot;&gt;The class related to the settings being requested.&lt;/typeparam&gt;
+    /// &lt;param name=&quot;name&quot;&gt;Name of the property to retrieve the value for.&lt;/param&gt;
+    /// &lt;param name=&quot;defaultValue&quot;&gt;Default value to return.&lt;/param&gt;
+    /// &lt;param name=&quot;sectionName&quot;&gt;The name of the configuration section that might be required.&lt;/param&gt;
+    /// &lt;returns&gt;Returns the value related to the named configuration property.&lt;/returns&gt;
+    T? GetValue&lt;T&gt;(string name, T? defaultValue = default, string? sectionName = null);
+}
+</code></pre>
+<hr>
+
+<h2 id="idatabasehost">IDatabaseHost<a class="headerlink" href="#idatabasehost" title="Permanent link"></a></h2>
+<h3 id="description_2">Description<a class="headerlink" href="#description_2" title="Permanent link"></a></h3>
+<ul>
+<li>Retrieve all of a specified data entity (read only access)</li>
+<li>Retrieve a specific data entity by primary key (read only access)</li>
+<li>Retrieve a specific data entity by predicate/expression (read only access)</li>
+</ul>
+<h3 id="class-view_2">Class View<a class="headerlink" href="#class-view_2" title="Permanent link"></a></h3>
+<pre><code class="language-cs">namespace ChuckDeviceController.Plugin;
+
+using System.Linq.Expressions;
+
+using ChuckDeviceController.Data.Common;
+
+/// &lt;summary&gt;
+/// Plugin host handler contract used to interact with the database entities.
+/// &lt;/summary&gt;
+public interface IDatabaseHost
+{
+    //IRepository&lt;IAccount, string&gt; Accounts { get; }
+    //IRepository&lt;IPokestop, string&gt; Pokestops { get; }
+    //IRepository&lt;IDevice, string&gt; Devices { get; }
+
+    /// &lt;summary&gt;
+    /// Gets a list of database entities.
+    /// &lt;/summary&gt;
+    /// &lt;typeparam name=&quot;TEntity&quot;&gt;Database entity contract type.&lt;/typeparam&gt;
+    /// &lt;returns&gt;Returns a list of database entities.&lt;/returns&gt;
+    Task&lt;IReadOnlyList&lt;TEntity&gt;&gt; FindAllAsync&lt;TEntity&gt;();
+
+    /// &lt;summary&gt;
+    /// Gets a database entity by primary key.
+    /// &lt;/summary&gt;
+    /// &lt;typeparam name=&quot;TEntity&quot;&gt;Database entity contract type.&lt;/typeparam&gt;
+    /// &lt;typeparam name=&quot;TKey&quot;&gt;Database entity primary key type.&lt;/typeparam&gt;
+    /// &lt;param name=&quot;id&quot;&gt;Primary key of the database entity.&lt;/param&gt;
+    /// &lt;returns&gt;Returns a database entity.&lt;/returns&gt;
+    Task&lt;TEntity?&gt; FindAsync&lt;TEntity, TKey&gt;(TKey id);
+
+    /// &lt;summary&gt;
+    /// Gets a list of database entities matching the specified criteria.
+    /// &lt;/summary&gt;
+    /// &lt;typeparam name=&quot;TKey&quot;&gt;Entity property type when sorting.&lt;/typeparam&gt;
+    /// &lt;typeparam name=&quot;TEntity&quot;&gt;Database entity contract type.&lt;/typeparam&gt;
+    /// &lt;param name=&quot;predicate&quot;&gt;Predicate used to determine if a database entity matches.&lt;/param&gt;
+    /// &lt;param name=&quot;order&quot;&gt;Sort order expression. (Optional)&lt;/param&gt;
+    /// &lt;param name=&quot;sortDirection&quot;&gt;Sort ordering direction.&lt;/param&gt;
+    /// &lt;param name=&quot;limit&quot;&gt;Limit the returned number of results.&lt;/param&gt;
+    /// &lt;returns&gt;Returns a list of database entities.&lt;/returns&gt;
+    Task&lt;IReadOnlyList&lt;TEntity&gt;&gt; FindAsync&lt;TEntity, TKey&gt;(
+        Expression&lt;Func&lt;TEntity, bool&gt;&gt; predicate,
+        Expression&lt;Func&lt;TEntity, TKey&gt;&gt;? order = null,
+        SortOrderDirection sortDirection = SortOrderDirection.Asc,
+        int limit = 1000)
+        where TEntity : class
+        where TKey : notnull;
+}
+</code></pre>
+<hr>
+
+<h2 id="ieventaggregatorhost">IEventAggregatorHost<a class="headerlink" href="#ieventaggregatorhost" title="Permanent link"></a></h2>
+<h3 id="description_3">Description<a class="headerlink" href="#description_3" title="Permanent link"></a></h3>
+<ul>
+<li>Publish events to the host application</li>
+<li>Publish events to other loaded plugins</li>
+<li>Subscribe to events via event service bus</li>
+</ul>
+<h3 id="class-view_3">Class View<a class="headerlink" href="#class-view_3" title="Permanent link"></a></h3>
+<pre><code class="language-cs">namespace ChuckDeviceController.Plugin.EventBus;
+
+/// &lt;summary&gt;
+/// 
+/// &lt;/summary&gt;
+public interface IEventAggregatorHost : IObservable&lt;IEvent&gt;
+{
+    /// &lt;summary&gt;
+    /// 
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;message&quot;&gt;&lt;/param&gt;
+    void Publish(IEvent message);
+
+    /// &lt;summary&gt;
+    /// 
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;observer&quot;&gt;&lt;/param&gt;
+    /// &lt;returns&gt;&lt;/returns&gt;
+    IDisposable Subscribe(ICustomObserver&lt;IEvent&gt; observer);
+
+    /// &lt;summary&gt;
+    /// 
+    /// &lt;/summary&gt;
+    /// &lt;typeparam name=&quot;T&quot;&gt;&lt;/typeparam&gt;
+    /// &lt;param name=&quot;observer&quot;&gt;&lt;/param&gt;
+    /// &lt;returns&gt;&lt;/returns&gt;
+    IDisposable Subscribe&lt;T&gt;(ICustomObserver&lt;T&gt; observer)
+        where T : IEvent;
+}
+</code></pre>
+<hr>
+
+<h2 id="ifilestoragehost">IFileStorageHost<a class="headerlink" href="#ifilestoragehost" title="Permanent link"></a></h2>
+<h3 id="description_4">Description<a class="headerlink" href="#description_4" title="Permanent link"></a></h3>
+<ul>
+<li>Load files from file system</li>
+<li>Save files to file system</li>
+</ul>
+<h3 id="class-view_4">Class View<a class="headerlink" href="#class-view_4" title="Permanent link"></a></h3>
+<pre><code class="language-cs">namespace ChuckDeviceController.Plugin;
+
+/// &lt;summary&gt;
+///     Interface contract used for reading data from as well as
+///     persisting data to storage. The type of storage used will
+///     depend on the implementation.
+/// &lt;/summary&gt;
+public interface IFileStorageHost : ISaveData, ILoadData
+{
+}
+
+/// &lt;summary&gt;
+/// 
+/// &lt;/summary&gt;
+public interface ILoadData
+{
+    /// &lt;summary&gt;
+    ///     Loads file data of type T from the plugin's folder.
+    /// &lt;/summary&gt;
+    /// &lt;typeparam name=&quot;T&quot;&gt;
+    ///     Type of file data to be loaded.
+    /// &lt;/typeparam&gt;
+    /// &lt;param name=&quot;folderName&quot;&gt;
+    ///     Sub folder within plugin's folder, optional. If not set,
+    ///     searches root of plugin's folder.
+    /// &lt;/param&gt;
+    /// &lt;param name=&quot;fileName&quot;&gt;
+    ///     File name of storage file to load, including extension
+    ///     otherwise generic '.dat' extension will be appended.
+    /// &lt;/param&gt;
+    /// &lt;returns&gt;
+    ///     Type of data to be loaded or default type if exception occurs.
+    /// &lt;/returns&gt;
+    T Load&lt;T&gt;(string folderName, string fileName);
+}
+
+/// &lt;summary&gt;
+/// 
+/// &lt;/summary&gt;
+public interface ISaveData
+{
+    /// &lt;summary&gt;
+    ///     Saves file data of type T to the plugin's folder.
+    /// &lt;/summary&gt;
+    /// &lt;typeparam name=&quot;T&quot;&gt;
+    ///     Type of data to be saved.
+    /// &lt;/typeparam&gt;
+    /// &lt;param name=&quot;data&quot;&gt;
+    ///     File data to be saved.
+    /// &lt;/param&gt;
+    /// &lt;param name=&quot;folderName&quot;&gt;
+    ///     Sub folder within plugin's folder, optional. If not set,
+    ///     uses root of plugin's folder.
+    /// &lt;/param&gt;
+    /// &lt;param name=&quot;name&quot;&gt;
+    ///     File name of storage file to save, including extension
+    ///     otherwise generic '.dat' extension will be appended.
+    /// &lt;/param&gt;
+    /// &lt;param name=&quot;prettyPrint&quot;&gt;
+    /// &lt;/param&gt;
+    /// &lt;returns&gt;
+    ///     Returns &lt;c&gt;true&lt;/c&gt; if successful, otherwise &lt;c&gt;false&lt;/c&gt;.
+    /// &lt;/returns&gt;
+    bool Save&lt;T&gt;(T data, string folderName, string name, bool prettyPrint = false);
+}
+</code></pre>
+<hr>
+
+<h2 id="igeofenceservicehost">IGeofenceServiceHost<a class="headerlink" href="#igeofenceservicehost" title="Permanent link"></a></h2>
+<h3 id="description_5">Description<a class="headerlink" href="#description_5" title="Permanent link"></a></h3>
+<ul>
+<li>Fetch geofences</li>
+<li>Create geofences</li>
+<li>Check if coordinate is in geofence(s)</li>
+</ul>
+<h3 id="class-view_5">Class View<a class="headerlink" href="#class-view_5" title="Permanent link"></a></h3>
+<pre><code class="language-cs">namespace ChuckDeviceController.Plugin;
+
+using ChuckDeviceController.Data.Abstractions;
+using ChuckDeviceController.Geometry.Models.Abstractions;
+
+/// &lt;summary&gt;
+/// 
+/// &lt;/summary&gt;
+public interface IGeofenceServiceHost
+{
+    /// &lt;summary&gt;
+    /// Create a new or update an existing geofence.
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;options&quot;&gt;Geofence options used to create or update.&lt;/param&gt;
+    Task CreateGeofenceAsync(IGeofence options);
+
+    /// &lt;summary&gt;
+    /// Retrieves a geofence from the database by name.
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;name&quot;&gt;Name of geofence to retrieve.&lt;/param&gt;
+    /// &lt;returns&gt;Returns a geofence interface contract.&lt;/returns&gt;
+    Task&lt;IGeofence&gt; GetGeofenceAsync(string name);
+
+    /// &lt;summary&gt;
+    /// Gets the geofence boundaries in multipolygon format as well as a two-dimensional list of coordinates.
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;geofence&quot;&gt;Geofence to get coordinates from.&lt;/param&gt;
+    /// &lt;returns&gt;Returns a tuple with a list of MultiPolygons and a two-dimensional list of coordinates.&lt;/returns&gt;
+    (IReadOnlyList&lt;IMultiPolygon&gt;, IReadOnlyList&lt;IReadOnlyList&lt;ICoordinate&gt;&gt;) GetMultiPolygons(IGeofence geofence);
+
+    /// &lt;summary&gt;
+    /// Gets the geofence location plots as a list of coordinates.
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;geofence&quot;&gt;Geofence to get coordinates from.&lt;/param&gt;
+    /// &lt;returns&gt;Returns a list of coordinates.&lt;/returns&gt;
+    IReadOnlyList&lt;ICoordinate&gt;? GetCoordinates(IGeofence geofence);
+
+    /// &lt;summary&gt;
+    /// 
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;coord&quot;&gt;&lt;/param&gt;
+    /// &lt;param name=&quot;multiPolygons&quot;&gt;&lt;/param&gt;
+    /// &lt;returns&gt;&lt;/returns&gt;
+    bool IsPointInMultiPolygons(ICoordinate coord, IEnumerable&lt;IMultiPolygon&gt; multiPolygons);
+
+    /// &lt;summary&gt;
+    /// 
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;coord&quot;&gt;&lt;/param&gt;
+    /// &lt;param name=&quot;multiPolygon&quot;&gt;&lt;/param&gt;
+    /// &lt;returns&gt;&lt;/returns&gt;
+    bool IsPointInMultiPolygon(ICoordinate coord, IMultiPolygon multiPolygon);
+
+    /// &lt;summary&gt;
+    /// 
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;coord&quot;&gt;&lt;/param&gt;
+    /// &lt;param name=&quot;coordinates&quot;&gt;&lt;/param&gt;
+    /// &lt;returns&gt;&lt;/returns&gt;
+    bool IsPointInPolygon(ICoordinate coord, IEnumerable&lt;ICoordinate&gt; coordinates);
+}
+</code></pre>
+<hr>
+
+<h2 id="iinstanceservicehost">IInstanceServiceHost<a class="headerlink" href="#iinstanceservicehost" title="Permanent link"></a></h2>
+<h3 id="description_6">Description<a class="headerlink" href="#description_6" title="Permanent link"></a></h3>
+<ul>
+<li>Create new instances</li>
+<li>Update instances</li>
+</ul>
+<h3 id="class-view_6">Class View<a class="headerlink" href="#class-view_6" title="Permanent link"></a></h3>
+<pre><code class="language-cs">namespace ChuckDeviceController.Plugin;
+
+using ChuckDeviceController.Data.Abstractions;
+
+/// &lt;summary&gt;
+/// 
+/// &lt;/summary&gt;
+public interface IInstanceServiceHost
+{
+    /// &lt;summary&gt;
+    /// 
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;options&quot;&gt;&lt;/param&gt;
+    /// &lt;returns&gt;&lt;/returns&gt;
+    Task CreateInstanceAsync(IInstance options);
+}
+</code></pre>
+<hr>
+
+<h2 id="ijobcontrollerservicehost">IJobControllerServiceHost<a class="headerlink" href="#ijobcontrollerservicehost" title="Permanent link"></a></h2>
+<h3 id="description_7">Description<a class="headerlink" href="#description_7" title="Permanent link"></a></h3>
+<ul>
+<li>Register new custom job controller instance types</li>
+<li>Create new custom job controllers</li>
+<li>Assign devices to instances</li>
+</ul>
+<h3 id="class-view_7">Class View<a class="headerlink" href="#class-view_7" title="Permanent link"></a></h3>
+<pre><code class="language-cs">namespace ChuckDeviceController.Plugin;
+
+using ChuckDeviceController.Common.Jobs;
+using ChuckDeviceController.Data.Abstractions;
+
+/// &lt;summary&gt;
+/// Plugin host handler contract used to interact with and manage the
+/// job controller service.
+/// &lt;/summary&gt;
+public interface IJobControllerServiceHost : IInstanceServiceHost
+{
+    /// &lt;summary&gt;
+    /// Gets a dictionary of active and configured devices.
+    /// &lt;/summary&gt;
+    IReadOnlyDictionary&lt;string, IDevice&gt; Devices { get; }
+
+    /// &lt;summary&gt;
+    /// Gets a dictionary of all loaded job controller instances.
+    /// &lt;/summary&gt;
+    IReadOnlyDictionary&lt;string, IJobController&gt; Instances { get; }
+
+    /// &lt;summary&gt;
+    /// Gets a list of all registered custom job controller instance types.
+    /// &lt;/summary&gt;
+    IReadOnlyList&lt;string&gt; CustomInstanceTypes { get; }
+
+
+    /// &lt;summary&gt;
+    /// 
+    /// &lt;/summary&gt;
+    /// &lt;typeparam name=&quot;T&quot;&gt;&lt;/typeparam&gt;
+    /// &lt;param name=&quot;customInstanceType&quot;&gt;&lt;/param&gt;
+    /// &lt;returns&gt;&lt;/returns&gt;
+    Task RegisterJobControllerAsync&lt;T&gt;(string customInstanceType) where T : IJobController;
+
+    /// &lt;summary&gt;
+    /// Assigns the specified device to a specific job controller
+    /// instance by name.
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;device&quot;&gt;Device entity.&lt;/param&gt;
+    /// &lt;param name=&quot;instanceName&quot;&gt;Job controller instance name.&lt;/param&gt;
+    Task AssignDeviceToJobControllerAsync(IDevice device, string instanceName);
+}
+</code></pre>
+<hr>
+
+<h2 id="ilocalizationhost">ILocalizationHost<a class="headerlink" href="#ilocalizationhost" title="Permanent link"></a></h2>
+<h3 id="description_8">Description<a class="headerlink" href="#description_8" title="Permanent link"></a></h3>
+<ul>
+<li>Set currently loaded locale</li>
+<li>Retrieve translated localized text</li>
+</ul>
+<h3 id="class-view_8">Class View<a class="headerlink" href="#class-view_8" title="Permanent link"></a></h3>
+<pre><code class="language-cs">namespace ChuckDeviceController.Plugin;
+
+using System.Globalization;
+
+/// &lt;summary&gt;
+/// Plugin host handler contract used to translate strings.
+/// &lt;/summary&gt;
+public interface ILocalizationHost
+{
+    #region Properties
+
+    /// &lt;summary&gt;
+    /// Gets or sets the current culture localization to use.
+    /// &lt;/summary&gt;
+    CultureInfo CurrentCulture { get; }
+
+    /// &lt;summary&gt;
+    /// Gets the two letter ISO country code for the currently set localization.
+    /// &lt;/summary&gt;
+    /// &lt;value&gt;The two letter ISO country code.&lt;/value&gt;
+    string CountryCode { get; }
+
+    #endregion
+
+    /// &lt;summary&gt;
+    /// Sets the country locale code to use for translations.
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;locale&quot;&gt;Two letter ISO language name code.&lt;/param&gt;
+    void SetLocale(string locale);
+
+    /// &lt;summary&gt;
+    /// 
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;key&quot;&gt;&lt;/param&gt;
+    /// &lt;returns&gt;&lt;/returns&gt;
+    string Translate(string key);
+
+    /// &lt;summary&gt;
+    /// 
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;keyWithArgs&quot;&gt;&lt;/param&gt;
+    /// &lt;param name=&quot;args&quot;&gt;&lt;/param&gt;
+    /// &lt;returns&gt;&lt;/returns&gt;
+    string Translate(string keyWithArgs, params object[] args);
+
+    /// &lt;summary&gt;
+    /// Translate a Pokemon id to name.
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;pokemonId&quot;&gt;Pokemon ID to translate to name.&lt;/param&gt;
+    /// &lt;returns&gt;&lt;/returns&gt;
+    string GetPokemonName(uint pokemonId);
+
+    /// &lt;summary&gt;
+    /// Translate a Pokemon form id to name.
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;formId&quot;&gt;Form ID to translate to name.&lt;/param&gt;
+    /// &lt;param name=&quot;includeNormal&quot;&gt;Include 'Normal' form name or not.&lt;/param&gt;
+    /// &lt;returns&gt;&lt;/returns&gt;
+    string GetFormName(uint formId, bool includeNormal = false);
+
+    /// &lt;summary&gt;
+    /// Translate a Pokemon costume id to name.
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;costumeId&quot;&gt;Costume ID to translate to name.&lt;/param&gt;
+    /// &lt;returns&gt;&lt;/returns&gt;
+    string GetCostumeName(uint costumeId);
+
+    /// &lt;summary&gt;
+    /// Translate a Pokemon evolution id to name.
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;evolutionId&quot;&gt;Evolution ID to translate to name.&lt;/param&gt;
+    /// &lt;returns&gt;&lt;/returns&gt;
+    string GetEvolutionName(uint evolutionId);
+
+    /// &lt;summary&gt;
+    /// 
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;moveId&quot;&gt;&lt;/param&gt;
+    /// &lt;returns&gt;&lt;/returns&gt;
+    string GetMoveName(uint moveId);
+
+    /// &lt;summary&gt;
+    /// 
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;throwTypeId&quot;&gt;&lt;/param&gt;
+    /// &lt;returns&gt;&lt;/returns&gt;
+    string GetThrowName(uint throwTypeId);
+
+    /// &lt;summary&gt;
+    /// 
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;itemId&quot;&gt;&lt;/param&gt;
+    /// &lt;returns&gt;&lt;/returns&gt;
+    string GetItem(uint itemId);
+
+    /// &lt;summary&gt;
+    /// 
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;weatherConditionId&quot;&gt;&lt;/param&gt;
+    /// &lt;returns&gt;&lt;/returns&gt;
+    string GetWeather(uint weatherConditionId);
+
+    /// &lt;summary&gt;
+    /// 
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;alignmentTypeId&quot;&gt;&lt;/param&gt;
+    /// &lt;returns&gt;&lt;/returns&gt;
+    string GetAlignmentName(uint alignmentTypeId);
+
+    /// &lt;summary&gt;
+    /// 
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;characterCategoryId&quot;&gt;&lt;/param&gt;
+    /// &lt;returns&gt;&lt;/returns&gt;
+    string GetCharacterCategoryName(uint characterCategoryId);
+
+    /// &lt;summary&gt;
+    /// 
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;invasionCharacterId&quot;&gt;&lt;/param&gt;
+    /// &lt;returns&gt;&lt;/returns&gt;
+    string GetGruntType(uint invasionCharacterId);
+}
+</code></pre>
+<hr>
+
+<h2 id="ilogginghost">ILoggingHost<a class="headerlink" href="#ilogginghost" title="Permanent link"></a></h2>
+<h3 id="description_9">Description<a class="headerlink" href="#description_9" title="Permanent link"></a></h3>
+<ul>
+<li>Log trace messages</li>
+<li>Log info messages</li>
+<li>Log debug messages</li>
+<li>Log warning messages</li>
+<li>Log error messages</li>
+<li>Log critical messages</li>
+</ul>
+<h3 id="class-view_9">Class View<a class="headerlink" href="#class-view_9" title="Permanent link"></a></h3>
+<pre><code class="language-cs">namespace ChuckDeviceController.Plugin;
+
+/// &lt;summary&gt;
+/// Plugin host handler for logging messages from plugins.
+/// &lt;/summary&gt;
+public interface ILoggingHost
+{
+    /// &lt;summary&gt;
+    /// 
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;message&quot;&gt;&lt;/param&gt;
+    /// &lt;param name=&quot;args&quot;&gt;&lt;/param&gt;
+    void LogTrace(string message, params object?[] args);
+
+    /// &lt;summary&gt;
+    /// 
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;message&quot;&gt;&lt;/param&gt;
+    /// &lt;param name=&quot;args&quot;&gt;&lt;/param&gt;
+    void LogInformation(string message, params object?[] args);
+
+    /// &lt;summary&gt;
+    /// 
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;message&quot;&gt;&lt;/param&gt;
+    /// &lt;param name=&quot;args&quot;&gt;&lt;/param&gt;
+    void LogDebug(string message, params object?[] args);
+
+    /// &lt;summary&gt;
+    /// 
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;message&quot;&gt;&lt;/param&gt;
+    /// &lt;param name=&quot;args&quot;&gt;&lt;/param&gt;
+    void LogWarning(string message, params object?[] args);
+
+    /// &lt;summary&gt;
+    /// 
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;message&quot;&gt;&lt;/param&gt;
+    /// &lt;param name=&quot;args&quot;&gt;&lt;/param&gt;
+    void LogError(string message, params object?[] args);
+
+    /// &lt;summary&gt;
+    /// 
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;error&quot;&gt;&lt;/param&gt;
+    /// &lt;param name=&quot;message&quot;&gt;&lt;/param&gt;
+    /// &lt;param name=&quot;args&quot;&gt;&lt;/param&gt;
+    void LogError(Exception error, string? message = null, params object?[] args);
+
+    /// &lt;summary&gt;
+    /// 
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;message&quot;&gt;&lt;/param&gt;
+    /// &lt;param name=&quot;args&quot;&gt;&lt;/param&gt;
+    void LogCritical(string message, params object?[] args);
+
+    /// &lt;summary&gt;
+    /// 
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;error&quot;&gt;&lt;/param&gt;
+    /// &lt;param name=&quot;message&quot;&gt;&lt;/param&gt;
+    /// &lt;param name=&quot;args&quot;&gt;&lt;/param&gt;
+    void LogCritical(Exception error, string? message = null, params object?[] args);
+}
+</code></pre>
+<hr>
+
+<h2 id="imemorycachehost">IMemoryCacheHost<a class="headerlink" href="#imemorycachehost" title="Permanent link"></a></h2>
+<h3 id="description_10">Description<a class="headerlink" href="#description_10" title="Permanent link"></a></h3>
+<ul>
+<li>Cache data in-memory  </li>
+</ul>
+<h3 id="class-view_10">Class View<a class="headerlink" href="#class-view_10" title="Permanent link"></a></h3>
+<pre><code class="language-cs">namespace ChuckDeviceController.Plugin;
+
+/// &lt;summary&gt;
+/// In memory cache host handler.
+/// &lt;/summary&gt;
+public interface IMemoryCacheHost
+{
+    /// &lt;summary&gt;
+    /// Checks whether a key exists in the cache.
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;key&quot;&gt;Key to check if exists.&lt;/param&gt;
+    /// &lt;returns&gt;Returns &lt;c&gt;true&lt;/c&gt; if the key exists, otherwise &lt;c&gt;false&lt;/c&gt;.&lt;/returns&gt;
+    bool IsSet(string key);
+
+    /// &lt;summary&gt;
+    /// Trys to retrieve a value by key from the cache.
+    /// &lt;/summary&gt;
+    /// &lt;typeparam name=&quot;T&quot;&gt;Type of value.&lt;/typeparam&gt;
+    /// &lt;param name=&quot;key&quot;&gt;Key to check.&lt;/param&gt;
+    /// &lt;param name=&quot;value&quot;&gt;Value returned from the cache.&lt;/param&gt;
+    /// &lt;returns&gt;Returns &lt;c&gt;true&lt;/c&gt; if the key exists, otherwise &lt;c&gt;false&lt;/c&gt;.&lt;/returns&gt;
+    bool TryGetValue&lt;T&gt;(string key, out T? value);
+
+    /// &lt;summary&gt;
+    /// Retrieve a value by key from the cache.
+    /// &lt;/summary&gt;
+    /// &lt;typeparam name=&quot;T&quot;&gt;Type of value.&lt;/typeparam&gt;
+    /// &lt;param name=&quot;key&quot;&gt;Key to check.&lt;/param&gt;
+    /// &lt;returns&gt;Returns a value from the cache, otherwise &lt;c&gt;null&lt;/c&gt;.&lt;/returns&gt;
+    T? GetValue&lt;T&gt;(string key);
+
+    /// &lt;summary&gt;
+    /// Caches a value by key with a set expiration time.
+    /// &lt;/summary&gt;
+    /// &lt;typeparam name=&quot;T&quot;&gt;Type of value.&lt;/typeparam&gt;
+    /// &lt;param name=&quot;key&quot;&gt;Key to set.&lt;/param&gt;
+    /// &lt;param name=&quot;value&quot;&gt;Value to cache.&lt;/param&gt;
+    /// &lt;param name=&quot;expiryS&quot;&gt;Expiration time in seconds.&lt;/param&gt;
+    void SetValue&lt;T&gt;(string key, T value, ushort expiryS);
+
+    /// &lt;summary&gt;
+    /// Remove a entry from the cache by key.
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;key&quot;&gt;Key to remove from the cache.&lt;/param&gt;
+    void Remove(string key);
+
+    /// &lt;summary&gt;
+    /// Clears all cached entries.
+    /// &lt;/summary&gt;
+    void Clear();
+}
+</code></pre>
+<hr>
+
+<h2 id="iroutinghost">IRoutingHost<a class="headerlink" href="#iroutinghost" title="Permanent link"></a></h2>
+<h3 id="description_11">Description<a class="headerlink" href="#description_11" title="Permanent link"></a></h3>
+<ul>
+<li>Generate routes (random, dynamic, bootstrap style, and POI focused)</li>
+<li>Optimize routes</li>
+</ul>
+<h3 id="class-view_11">Class View<a class="headerlink" href="#class-view_11" title="Permanent link"></a></h3>
+<pre><code class="language-cs">namespace ChuckDeviceController.Plugin;
+
+using ChuckDeviceController.Geometry.Models.Abstractions;
+
+/// &lt;summary&gt;
+/// Route generator plugin host.
+/// &lt;/summary&gt;
+public interface IRoutingHost
+{
+    /// &lt;summary&gt;
+    ///     Generates a route using the specified route generator options.
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;options&quot;&gt;Routing generation options to use.&lt;/param&gt;
+    /// &lt;returns&gt;Returns a list of coordinates of the generated route.&lt;/returns&gt;
+    List&lt;ICoordinate&gt; GenerateRoute(RouteGeneratorOptions options);
+
+    // TODO: OptimizeRoute
+
+    // TODO: Clusters
+}
+</code></pre>
+<hr>
+
+<h2 id="iuiconshost">IUIconsHost<a class="headerlink" href="#iuiconshost" title="Permanent link"></a></h2>
+<h3 id="description_12">Description<a class="headerlink" href="#description_12" title="Permanent link"></a></h3>
+<ul>
+<li>Retrieve/generate Pokemon icon urls  </li>
+</ul>
+<h3 id="class-view_12">Class View<a class="headerlink" href="#class-view_12" title="Permanent link"></a></h3>
+<pre><code class="language-cs">namespace ChuckDeviceController.Plugin;
+
+/// &lt;summary&gt;
+/// UIcons standard host handler to retrieve icon url endpoints for plugins.
+/// &lt;/summary&gt;
+public interface IUIconsHost
+{
+    /// &lt;summary&gt;
+    /// Gets an icon image url based on the provided Pokemon details.
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;pokemonId&quot;&gt;Pokemon pokedex id.&lt;/param&gt;
+    /// &lt;param name=&quot;formId&quot;&gt;Pokemon form id.&lt;/param&gt;
+    /// &lt;param name=&quot;evolutionId&quot;&gt;Pokemon mega evolution id.&lt;/param&gt;
+    /// &lt;param name=&quot;gender&quot;&gt;Pokemon gender id.&lt;/param&gt;
+    /// &lt;param name=&quot;costumeId&quot;&gt;Pokemon costume id.&lt;/param&gt;
+    /// &lt;param name=&quot;shiny&quot;&gt;Whether the Pokemon is shiny or not.&lt;/param&gt;
+    /// &lt;returns&gt;Returns a url of the Pokemon image.&lt;/returns&gt;
+    string GetPokemonIcon(uint pokemonId, uint formId = 0, uint evolutionId = 0, uint gender = 0, uint costumeId = 0, bool shiny = false);
+}
+</code></pre>
+<hr>
+
+<h2 id="iuihost">IUiHost<a class="headerlink" href="#iuihost" title="Permanent link"></a></h2>
+<h3 id="description_13">Description<a class="headerlink" href="#description_13" title="Permanent link"></a></h3>
+<ul>
+<li>Add Dashboard statistics</li>
+<li>Add Dashboard tiles</li>
+<li>Add Sidebar menu items and pages (including endless dropdowns)</li>
+<li>Add new global settings as well as tabs to settings page</li>
+</ul>
+<h3 id="class-view_13">Class View<a class="headerlink" href="#class-view_13" title="Permanent link"></a></h3>
+<pre><code class="language-cs">namespace ChuckDeviceController.Plugin;
+
+/// &lt;summary&gt;
+/// Plugin host handler for executing user interface operations.
+/// &lt;/summary&gt;
+public interface IUiHost
+{
+    #region Properties
+
+    /// &lt;summary&gt;
+    /// Gets a list of sidebar items registered by plugins.
+    /// &lt;/summary&gt;
+    IReadOnlyList&lt;SidebarItem&gt; SidebarItems { get; }
+
+    /// &lt;summary&gt;
+    /// Gets a list of dashboard statistics registered by plugins.
+    /// &lt;/summary&gt;
+    IReadOnlyList&lt;IDashboardStatsItem&gt; DashboardStatsItems { get; }
+
+    /// &lt;summary&gt;
+    /// Gets a list of dashboard tiles registered by plugins.
+    /// &lt;/summary&gt;
+    IReadOnlyList&lt;IDashboardTile&gt; DashboardTiles { get; }
+
+    /// &lt;summary&gt;
+    /// Gets a list of settings tabs registered by plugins.
+    /// &lt;/summary&gt;
+    IReadOnlyList&lt;ISettingsTab&gt; SettingsTabs { get; }
+
+    /// &lt;summary&gt;
+    /// Gets a dictionary of settings properties for tabs registered by plugins.
+    /// &lt;/summary&gt;
+    IReadOnlyDictionary&lt;string, List&lt;ISettingsProperty&gt;&gt; SettingsProperties { get; }
+
+    #endregion
+
+    #region Sidebar
+
+    /// &lt;summary&gt;
+    /// Adds a &lt;seealso cref=&quot;SidebarItem&quot;/&gt; item to the main
+    /// application's Mvc sidebar.
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;header&quot;&gt;Sidebar item to add.&lt;/param&gt;
+    Task AddSidebarItemAsync(SidebarItem header);
+
+    /// &lt;summary&gt;
+    /// Adds a list of &lt;seealso cref=&quot;SidebarItem&quot;/&gt; items to the
+    /// main application's Mvc sidebar.
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;headers&quot;&gt;List of sidebar items to add.&lt;/param&gt;
+    Task AddSidebarItemsAsync(IEnumerable&lt;SidebarItem&gt; headers);
+
+    #endregion
+
+    #region Dashboard Statistics
+
+    /// &lt;summary&gt;
+    /// Adds a custom &lt;seealso cref=&quot;IDashboardStatsItem&quot;/&gt; to the
+    /// dashboard front page.
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;stat&quot;&gt;Dashboard statistics item to add.&lt;/param&gt;
+    Task AddDashboardStatisticAsync(IDashboardStatsItem stat);
+
+    /// &lt;summary&gt;
+    /// Adds a list of &lt;seealso cref=&quot;IDashboardStatsItem&quot;/&gt; items to
+    /// the dashboard front page.
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;stats&quot;&gt;List of dashboard statistic items to add.&lt;/param&gt;
+    Task AddDashboardStatisticsAsync(IEnumerable&lt;IDashboardStatsItem&gt; stats);
+
+    /// &lt;summary&gt;
+    /// Update an existing &lt;seealso cref=&quot;IDashboardStatsItem&quot;/&gt; item
+    /// on the dashboard front page.
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;stat&quot;&gt;Dashboard statistics item to update.&lt;/param&gt;
+    Task UpdateDashboardStatisticAsync(IDashboardStatsItem stat);
+
+    /// &lt;summary&gt;
+    /// Update a list of existing &lt;seealso cref=&quot;IDashboardStatsItem&quot;/&gt; items
+    /// on the dashboard front page.
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;stats&quot;&gt;List of dashboard statistic items to update.&lt;/param&gt;
+    Task UpdateDashboardStatisticsAsync(IEnumerable&lt;IDashboardStatsItem&gt; stats);
+
+    #endregion
+
+    #region Dashboard Tiles
+
+    /// &lt;summary&gt;
+    /// Adds a statistic tile to the front page dashboard.
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;tile&quot;&gt;Dashboard statistics tile to add.&lt;/param&gt;
+    Task AddDashboardTileAsync(IDashboardTile tile);
+
+    /// &lt;summary&gt;
+    /// Adds a list of statistic tiles to the front page dashboard.
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;tiles&quot;&gt;List of dashboard statistic tiles to add.&lt;/param&gt;
+    Task AddDashboardTilesAsync(IEnumerable&lt;IDashboardTile&gt; tiles);
+
+    #endregion
+
+    #region Settings
+
+    /// &lt;summary&gt;
+    /// 
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;tab&quot;&gt;&lt;/param&gt;
+    Task AddSettingsTabAsync(SettingsTab tab);
+
+    /// &lt;summary&gt;
+    /// 
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;tabId&quot;&gt;&lt;/param&gt;
+    /// &lt;param name=&quot;property&quot;&gt;&lt;/param&gt;
+    Task AddSettingsPropertyAsync(string tabId, SettingsProperty property);
+
+    /// &lt;summary&gt;
+    /// 
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;tabId&quot;&gt;&lt;/param&gt;
+    /// &lt;param name=&quot;properties&quot;&gt;&lt;/param&gt;
+    Task AddSettingsPropertiesAsync(string tabId, IEnumerable&lt;SettingsProperty&gt; properties);
+
+    /// &lt;summary&gt;
+    /// 
+    /// &lt;/summary&gt;
+    /// &lt;typeparam name=&quot;T&quot;&gt;&lt;/typeparam&gt;
+    /// &lt;param name=&quot;name&quot;&gt;&lt;/param&gt;
+    T? GetSettingsPropertyValue&lt;T&gt;(string name);
+
+    #endregion
+}
+</code></pre>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../examples/" class="btn btn-neutral float-left" title="Examples"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../entity-interfaces/" class="btn btn-neutral float-right" title="Entity Interfaces">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+      <p>Copyright &copy; 2022, Maintained by <a href="https://github.com/versx">versx</a>.</p>
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/versx/chuckdevicecontroller/" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href="../examples/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../entity-interfaces/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '../..';</script>
+    <script src="../../js/theme_extra.js" defer></script>
+    <script src="../../js/theme.js" defer></script>
+      <script src="../../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(false);
+        };
+    </script>
+
+</body>
+</html>
