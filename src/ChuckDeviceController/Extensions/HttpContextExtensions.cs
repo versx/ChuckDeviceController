@@ -32,14 +32,14 @@ public static class HttpContextExtensions
             {
                 Contents = contents,
                 Username = DefaultMadUsername,
-                Uuid = uuid,
+                Uuid = uuid!,
             };
 
             // Replace request stream to downstream handlers
             var json = payload.ToJson();
             //var requestData = Encoding.UTF8.GetBytes(json);
             //context.Request.Body = new MemoryStream(requestData);
-            var content = new StringContent(json, Encoding.UTF8, JsonContentType);
+            var content = new StringContent(json ?? string.Empty, Encoding.UTF8, JsonContentType);
             context.Request.Body = await content.ReadAsStreamAsync();
             context.Request.ContentLength = context.Request.Body.Length;
         }

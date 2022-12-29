@@ -1,13 +1,12 @@
 ﻿namespace TestPlugin.JobControllers;
 
-using System;
 using System.Text.Json.Serialization;
 
 using ChuckDeviceController.Common;
-using ChuckDeviceController.Data.Abstractions;
-using ChuckDeviceController.Data.Common;
 using ChuckDeviceController.Common.Jobs;
 using ChuckDeviceController.Common.Tasks;
+using ChuckDeviceController.Data.Abstractions;
+using ChuckDeviceController.Data.Common;
 using ChuckDeviceController.Geometry.Models.Abstractions;
 using ChuckDeviceController.Plugin;
 
@@ -57,8 +56,8 @@ public class TestInstanceController : IJobController, IJobControllerCoordinates,
         MinimumLevel = instance.MinimumLevel;
         MaximumLevel = instance.MaximumLevel;
         Coordinates = coords;
-        GroupName = instance.Data.AccountGroup;
-        IsEvent = instance.Data.IsEvent ?? false;
+        GroupName = instance.Data?.AccountGroup;
+        IsEvent = instance.Data?.IsEvent ?? false;
     }
 
     #endregion

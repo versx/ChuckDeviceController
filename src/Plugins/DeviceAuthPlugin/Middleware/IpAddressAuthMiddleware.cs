@@ -53,10 +53,14 @@ public sealed class IpAddressAuthMiddleware
         await _next(context);
     }
 
-    private static bool IsValid(string ipAddress, IEnumerable<string> ipAddresses)
+    private static bool IsValid(string? ipAddress, IEnumerable<string> ipAddresses)
     {
         var result = false;
-        var ipAddr = IPAddress.Parse(ipAddress);
+        if (!IPAddress.TryParse(ipAddress, out var ipAddr))
+        {
+            return result;
+        }
+
         foreach (var entry in ipAddresses)
         {
             if (entry.Contains('-'))

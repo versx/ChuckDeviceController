@@ -7,16 +7,16 @@ public sealed class EditRobotsViewModel
     #region Properties
 
     [Required]
-    public string UserAgent { get; set; }
+    public string UserAgent { get; set; } = null!;
 
     [Required]
-    public string Route { get; set; }
+    public string Route { get; set; } = null!;
 
     public bool IsAllowed { get; set; }
 
-    public List<string> UserAgents { get; private set; }
+    public List<string> UserAgents { get; private set; } = new();
 
-    public List<CustomUserAgentViewModel> Routes { get; private set; }
+    public List<CustomUserAgentViewModel> Routes { get; private set; } = new();
 
     #endregion
 
