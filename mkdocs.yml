@@ -87,3 +87,4 @@ copyright: Copyright &copy; 2022, Maintained by <a href="https://github.com/vers
 extra_css:
     - css/base.css
     - css/bootstrap-custom.min.css
+    - css/custom.css

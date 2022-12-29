@@ -78,6 +78,8 @@ Splits and proxies requests from Atlas devices to separate endpoints in order to
 
 ### Overview  
 [https://cdc.rtfd.io](https://cdc.rtfd.io)  
+or  
+[https://versx.github.io/ChuckDeviceController](https://versx.github.io/ChuckDeviceController)  
 
 ### Getting Started  
 [https://cdc.rtfd.io/en/latest/getting-started](https://cdc.rtfd.io/en/latest/getting-started)  
@@ -155,12 +157,12 @@ Adds `VisualStudioOnline.com` user authentication support
 
 <hr>
 
-## Screenshots:  
+## Screenshots  
 ![Dashboard](docs/img/dashboard.png)  
 
 <hr>
 
-## TODO:  
+## TODO  
 - [ ] Finish localization  
 - [ ] Finish TTH finder job controller  
 - [ ] Finish implementing permissions provided by API keys  
