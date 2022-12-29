@@ -349,14 +349,15 @@ ChuckDeviceController.Plugin
 ##### Summary
 
 [IDashboardTile](#T-ChuckDeviceController-Plugin-IDashboardTile 'ChuckDeviceController.Plugin.IDashboardTile') class implementation to
-display custom tile-like elements on the dashboard.
+    display custom tile-like elements on the dashboard.
 
 <a name='M-ChuckDeviceController-Plugin-DashboardTile-#ctor-System-String,System-String,System-String,System-String,System-String-'></a>
 ### #ctor(text,value,icon,controllerName,actionName) `constructor`
 
 ##### Summary
 
-Instantiates a new instance of the class.
+Instantiates a new instance of the 
+    class.
 
 ##### Parameters
 
@@ -365,10 +366,10 @@ Instantiates a new instance of the class.
 | text | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | The text displayed for the dashboard tile. |
 | value | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | The value for the dashboard tile. |
 | icon | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | Fontawesome icon to display. |
-| controllerName | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | Mvc Controller name the action name
-should relate to when the tile is clicked. |
-| actionName | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | Mvc controller action name to execute
-when the navbar header is clicked. |
+| controllerName | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | Mvc Controller name the action name should relate
+    to when the tile is clicked. |
+| actionName | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | Mvc controller action name to execute when the
+    navbar header is clicked. |
 
 <a name='P-ChuckDeviceController-Plugin-DashboardTile-ActionName'></a>
 ### ActionName `property`
@@ -376,7 +377,7 @@ when the navbar header is clicked. |
 ##### Summary
 
 Gets the Mvc controller action name to execute
-when the navbar header is clicked.
+    when the navbar header is clicked.
 
 <a name='P-ChuckDeviceController-Plugin-DashboardTile-ControllerName'></a>
 ### ControllerName `property`
@@ -384,7 +385,7 @@ when the navbar header is clicked.
 ##### Summary
 
 Gets the Mvc controller name the action name
-should relate to when the tile is clicked.
+    should relate to when the tile is clicked.
 
 <a name='P-ChuckDeviceController-Plugin-DashboardTile-Icon'></a>
 ### Icon `property`
@@ -466,8 +467,8 @@ ChuckDeviceController.Plugin
 
 ##### Summary
 
-Sets the expected geofence type for custom
-instances.
+Sets the expected for custom
+    instances.
 
 <a name='M-ChuckDeviceController-Plugin-GeofenceTypeAttribute-#ctor-ChuckDeviceController-Data-Common-GeofenceType-'></a>
 ### #ctor(type) `constructor`
@@ -475,13 +476,14 @@ instances.
 ##### Summary
 
 Instantiates a new instance of the [GeofenceTypeAttribute](#T-ChuckDeviceController-Plugin-GeofenceTypeAttribute 'ChuckDeviceController.Plugin.GeofenceTypeAttribute')
-attribute class.
+    attribute class.
 
 ##### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| type | [ChuckDeviceController.Data.Common.GeofenceType](#T-ChuckDeviceController-Data-Common-GeofenceType 'ChuckDeviceController.Data.Common.GeofenceType') | Geofence type to define. |
+| type | [ChuckDeviceController.Data.Common.GeofenceType](#T-ChuckDeviceController-Data-Common-GeofenceType 'ChuckDeviceController.Data.Common.GeofenceType') | Expected geofence type required by the custom
+    . |
 
 <a name='P-ChuckDeviceController-Plugin-GeofenceTypeAttribute-Type'></a>
 ### Type `property`
@@ -3512,7 +3514,7 @@ ChuckDeviceController.Plugin
 
 ##### Summary
 
-Determines the location of any static files and folders
+Determines the location of any static files and folders.
 i.e. 'wwwroot'
 
 <a name='F-ChuckDeviceController-Plugin-StaticFilesLocation-External'></a>
@@ -3520,14 +3522,15 @@ i.e. 'wwwroot'
 
 ##### Summary
 
-Static files are located externally
+Static files are located externally on the
+file system.
 
 <a name='F-ChuckDeviceController-Plugin-StaticFilesLocation-None'></a>
 ### None `constants`
 
 ##### Summary
 
-No static files from plugin
+No static files or folders from the plugin.
 
 <a name='F-ChuckDeviceController-Plugin-StaticFilesLocation-Resources'></a>
 ### Resources `constants`
@@ -3535,6 +3538,7 @@ No static files from plugin
 ##### Summary
 
 Static files are embedded in a resource file
+within the plugin.
 
 <a name='T-ChuckDeviceController-Plugin-StaticFilesLocationAttribute'></a>
 ## StaticFilesLocationAttribute `type`
@@ -3545,8 +3549,8 @@ ChuckDeviceController.Plugin
 
 ##### Summary
 
-Defines where the static files (i.e. 'wwwroot' and 'Views') will be located,
-relevant to the plugin's path.
+Defines where the static files or folders (i.e. \`wwwroot\` and \`Views\`) will
+    be located, relevant to the plugin's path.
 
 <a name='M-ChuckDeviceController-Plugin-StaticFilesLocationAttribute-#ctor-ChuckDeviceController-Plugin-StaticFilesLocation,ChuckDeviceController-Plugin-StaticFilesLocation-'></a>
 ### #ctor(views,webRoot) `constructor`
@@ -3554,22 +3558,22 @@ relevant to the plugin's path.
 ##### Summary
 
 Instantiates a new instance of the [StaticFilesLocationAttribute](#T-ChuckDeviceController-Plugin-StaticFilesLocationAttribute 'ChuckDeviceController.Plugin.StaticFilesLocationAttribute')
-attribute class.
+    attribute class.
 
 ##### Parameters
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| views | [ChuckDeviceController.Plugin.StaticFilesLocation](#T-ChuckDeviceController-Plugin-StaticFilesLocation 'ChuckDeviceController.Plugin.StaticFilesLocation') | Determines where the Views folder is located. |
-| webRoot | [ChuckDeviceController.Plugin.StaticFilesLocation](#T-ChuckDeviceController-Plugin-StaticFilesLocation 'ChuckDeviceController.Plugin.StaticFilesLocation') | Determines where the wwwroot folder is located. |
+| views | [ChuckDeviceController.Plugin.StaticFilesLocation](#T-ChuckDeviceController-Plugin-StaticFilesLocation 'ChuckDeviceController.Plugin.StaticFilesLocation') | Determines where the Mvc \`Views\` folder is located. |
+| webRoot | [ChuckDeviceController.Plugin.StaticFilesLocation](#T-ChuckDeviceController-Plugin-StaticFilesLocation 'ChuckDeviceController.Plugin.StaticFilesLocation') | Determines where the \`wwwroot\` folder is located. |
 
 <a name='P-ChuckDeviceController-Plugin-StaticFilesLocationAttribute-Views'></a>
 ### Views `property`
 
 ##### Summary
 
-Gets an enum value determining where any Mvc Views are located.
-i.e. 'Views' folder.
+Gets an enum value defining where the plugin's Mvc Views folder is located.
+    i.e. \`Views\` folder.
 
 <a name='P-ChuckDeviceController-Plugin-StaticFilesLocationAttribute-WebRoot'></a>
 ### WebRoot `property`
@@ -3577,4 +3581,4 @@ i.e. 'Views' folder.
 ##### Summary
 
 Gets an enum value determining where any web resource files are
-located. i.e. 'wwwroot' web root folder.
+    located. i.e. \`wwwroot\` web root folder.
