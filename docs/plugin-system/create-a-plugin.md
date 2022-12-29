@@ -1,7 +1,7 @@
 # Plugin System  
 
 - [ASP.NET Core Documentation](https://learn.microsoft.com/en-us/dotnet/?view=aspnetcore-7.0)
-- [Plugins Included](./included-plugins.md)  
+- [Plugins Included](../plugins/overview.md)  
 
 ## Requirements  
 - [Visual Studio 2022](https://visualstudio.microsoft.com/vs/)  

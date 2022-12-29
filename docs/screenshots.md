@@ -1,4 +1,4 @@
 # Screenshot Previews  
 
 ### Dashboard  
-![Dashboard](./images/dashboard.png)  
+![Dashboard](./img/dashboard.png)  

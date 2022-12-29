@@ -4,10 +4,15 @@ site_description: ChuckDeviceController
 site_author: versx
 
 repo_url: https://github.com/versx/chuckdevicecontroller/
-edit_uri: ""
+repo_name: GitHub
 
 theme:
     name: readthedocs #mkdocs, bootstrap4, cinder, cosmo, cyborg, flatly, ivory, material, readthedocs, slate, yeti
+    nav_style: dark
+    locale: en
+    logo: 
+    analytics:
+        gtag: UA-75960523-2
 
 plugins:
     - search:
