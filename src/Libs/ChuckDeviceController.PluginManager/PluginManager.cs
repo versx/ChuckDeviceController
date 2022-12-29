@@ -37,7 +37,7 @@ public class PluginManager : IPluginManager
     private IWebHostEnvironment _webHostEnv = null!;
     private readonly PluginFinder<IPlugin> _pluginFinder;
     private Func<IReadOnlyList<IApiKey>> _getApiKeysFunc;
-    private Func<IReadOnlyList<IPlugin>> _getPluginStatesFunc;
+    //private Func<IReadOnlyList<IPlugin>> _getPluginStatesFunc;
 
     #endregion
 
@@ -122,7 +122,6 @@ public class PluginManager : IPluginManager
         });
 
         _getApiKeysFunc = null!;
-        _getPluginStatesFunc = null!;
     }
 
     #endregion

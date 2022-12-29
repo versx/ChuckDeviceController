@@ -83,17 +83,17 @@ public class UserController : Controller
     {
         try
         {
-            if (await _userManager.FindByNameAsync(model.UserName) != null)
+            if (model.UserName != null && await _userManager.FindByNameAsync(model.UserName) != null)
             {
                 ModelState.AddModelError("User", $"User account by name '{model.UserName}' already exists, please choose a different username. It is also possible to use your email address as your username.");
                 return View(model);
             }
-            if (await _userManager.FindByEmailAsync(model.Email) != null)
+            if (model.Email != null && await _userManager.FindByEmailAsync(model.Email) != null)
             {
                 ModelState.AddModelError("User", $"User account with email '{model.Email}' already exists, please use a different email address.");
                 return View(model);
             }
-            if (model.Password != model.ConfirmPassword)
+            if (model.Password == null || model.ConfirmPassword == null || model.Password != model.ConfirmPassword)
             {
                 ModelState.AddModelError("User", $"Provided password and confirm password do not match.");
                 return View(model);
@@ -129,7 +129,7 @@ public class UserController : Controller
 
             // Send new user their email confirmation link
             await _emailSender.SendEmailAsync(
-                user.Email,
+                user.Email!,
                     Strings.DefaultEmailConfirmationSubject,
                     string.Format(Strings.DefaultEmailConfirmationMessageHtmlFormat, HtmlEncoder.Default.Encode(callbackUrl)));
 
@@ -141,9 +141,11 @@ public class UserController : Controller
             }
             else
             {
-                var roleNames = model.Roles.Where(role => role.Selected)
-                                           .Select(role => role.RoleName);
-                var rolesResult = await _userManager.AddToRolesAsync(user, roleNames);
+                var roleNames = model.Roles
+                    .Where(role => role.Selected)
+                    .Select(role => role.RoleName)
+                    .ToList();
+                var rolesResult = await _userManager.AddToRolesAsync(user, roleNames!);
                 if (!rolesResult.Succeeded)
                 {
                     var errors = rolesResult.Errors.Select(err => err.Description);
@@ -194,7 +196,7 @@ public class UserController : Controller
             {
                 RoleId = role.Id,
                 RoleName = role.Name,
-                Selected = roles.Contains(role?.Name),
+                Selected = roles.Contains(role.Name!),
             };
             model.Roles.Add(userRolesViewModel);
         }
@@ -262,13 +264,13 @@ public class UserController : Controller
         }
 
         // Get selected role names
-        var selectedRoles = model.Roles.Where(role => role.Selected)
-                                       .Select(role => role.RoleName)
-                                       .ToList();
+        var selectedRoles = model.Roles
+            .Where(role => role.Selected)
+            .Select(role => role.RoleName)
+            .ToList();
 
         // Fetch all existing roles assigned to user account
         var roles = await _userManager.GetRolesAsync(user);
-
         if (user.UserName == Strings.DefaultUserName)
         {
             var superAdminRole = Roles.SuperAdmin.ToString();
@@ -292,7 +294,7 @@ public class UserController : Controller
         }
 
         // Assign user account new list of expected roles
-        var addResult = await _userManager.AddToRolesAsync(user, selectedRoles);
+        var addResult = await _userManager.AddToRolesAsync(user, selectedRoles!);
         if (!addResult.Succeeded)
         {
             ModelState.AddModelError("User", $"Cannot assign selected roles to user account '{model.UserName}'");
