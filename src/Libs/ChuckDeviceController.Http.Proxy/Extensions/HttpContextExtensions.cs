@@ -76,12 +76,12 @@ public static class HttpContextExtensions
 
             if (string.Equals(headerName, HeaderNames.Cookie, StringComparison.OrdinalIgnoreCase) && value.Count > 1)
             {
-                value = string.Join("; ", value);
+                value = string.Join("; ", value!);
             }
 
             if (value.Count == 1)
             {
-                string headerValue = value;
+                string? headerValue = value;
                 if (!requestMessage.Headers.TryAddWithoutValidation(headerName, headerValue))
                 {
                     requestMessage.Content?.Headers.TryAddWithoutValidation(headerName, headerValue);
@@ -89,10 +89,10 @@ public static class HttpContextExtensions
             }
             else
             {
-                string[] headerValues = value;
-                if (!requestMessage.Headers.TryAddWithoutValidation(headerName, headerValues))
+                string[]? headerValues = value;
+                if (!requestMessage.Headers.TryAddWithoutValidation(headerName, headerValues ?? Array.Empty<string>()))
                 {
-                    requestMessage.Content?.Headers.TryAddWithoutValidation(headerName, headerValues);
+                    requestMessage.Content?.Headers.TryAddWithoutValidation(headerName, headerValues ?? Array.Empty<string>());
                 }
             }
         }

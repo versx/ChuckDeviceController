@@ -79,7 +79,7 @@ public class AsyncQueue<T> : IAsyncQueue<T>
         //var results = _queue.Take((int)maxBatchSize);
         //_sem.Release();
         var results = _queue.Take((int)maxBatchSize, stoppingToken);
-        return results;
+        return await Task.FromResult(results);
 
         //for (; ; )
         //{

@@ -19,7 +19,7 @@ public static class JsonExtensions
             var obj = JsonSerializer.Deserialize<T>(json, options);
             return obj;
         }
-        catch (Exception ex)
+        catch //(Exception ex)
         {
             return default;
         }
@@ -33,7 +33,7 @@ public static class JsonExtensions
             var json = JsonSerializer.Serialize(obj, options);
             return json;
         }
-        catch (Exception ex)
+        catch //(Exception ex)
         {
             return default;
         }

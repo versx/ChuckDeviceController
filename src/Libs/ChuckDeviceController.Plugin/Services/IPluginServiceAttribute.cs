@@ -28,9 +28,4 @@ public interface IPluginServiceAttribute
     /// Gets or sets the service lifetime for the plugin service.
     /// </summary>
     ServiceLifetime Lifetime { get; }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    //bool IsHostedService { get; set; }
 }

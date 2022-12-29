@@ -212,7 +212,7 @@ public class SafeCollection<T> : IProducerConsumerCollection<T>
             var item = Get(predicate);
             return item;
         }
-        catch (Exception ex)
+        catch
         {
             return default;
         }

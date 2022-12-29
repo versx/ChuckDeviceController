@@ -8,6 +8,8 @@ public static class ConcurrentDictionaryExtensions
     private static readonly object _lock = new();
 
     public static int GetCount<TKey, TEntity>(this ConcurrentDictionary<TKey, ConcurrentBag<TEntity>> dict)
+        where TKey : notnull
+        where TEntity : class
     {
         lock (_lock)
         {

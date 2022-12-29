@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Text.Json.Serialization;
 
-public static class PropertyExtensions
+public static class PropertyInfoExtensions
 {
     //private static readonly IEnumerable<string> _ignoreProperties = new[]
     //{
@@ -60,8 +60,8 @@ public static class PropertyExtensions
     /// <returns></returns>
     public static PropertyDescriptor GetPropertyDescriptor(this PropertyInfo propertyInfo)
     {
-        var properties = TypeDescriptor.GetProperties(propertyInfo.DeclaringType);
+        var properties = TypeDescriptor.GetProperties(propertyInfo.DeclaringType!);
         var propertyDescriptor = properties.Find(propertyInfo.Name, ignoreCase: false);
-        return propertyDescriptor;
+        return propertyDescriptor!;
     }
 }
