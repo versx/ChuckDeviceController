@@ -19,7 +19,7 @@ theme:
         gtag: UA-75960523-2
     font:
         text: Roboto
-    highlightjs: true
+    highlightjs: True
     hljs_languages:
         - csharp
         - json
