@@ -1,7 +1,7 @@
 ﻿namespace ChuckDeviceController.Plugin;
 
 /// <summary>
-/// Determines the type of HTML element to create for
+/// Defines the type of HTML element to create for
 /// the settings property.
 /// </summary>
 public enum SettingsPropertyType

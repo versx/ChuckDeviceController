@@ -4,7 +4,9 @@ using ChuckDeviceController.Data.Abstractions;
 using ChuckDeviceController.Geometry.Models.Abstractions;
 
 /// <summary>
-/// 
+/// Geofence service interface contract used to create new geofences, check
+/// if coordinate is within a polygon, as well as converting geofence text to
+/// actual geometry models.
 /// </summary>
 public interface IGeofenceServiceHost
 {

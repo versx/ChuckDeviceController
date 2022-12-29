@@ -3,14 +3,14 @@
 using System.Globalization;
 
 /// <summary>
-/// Plugin host handler contract used to translate strings.
+/// Plugin host handler contract used to translating strings.
 /// </summary>
 public interface ILocalizationHost
 {
     #region Properties
 
     /// <summary>
-    /// Gets or sets the current culture localization to use.
+    /// Gets the current culture localization to use.
     /// </summary>
     CultureInfo CurrentCulture { get; }
 

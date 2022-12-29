@@ -1,7 +1,8 @@
 ﻿namespace ChuckDeviceController.Plugin;
 
 /// <summary>
-/// Settings tab interface contract to add UI settings for plugins.
+/// Settings tab interface contract for adding UI settings
+/// from plugins to separate tabs.
 /// </summary>
 public interface ISettingsTab
 {

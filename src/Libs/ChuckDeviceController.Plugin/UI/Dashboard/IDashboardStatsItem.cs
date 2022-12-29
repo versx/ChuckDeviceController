@@ -1,8 +1,8 @@
 ﻿namespace ChuckDeviceController.Plugin;
 
 /// <summary>
-/// Dashboard statistics item for displaying information
-/// on the front page.
+/// Dashboard statistics item interface contract for
+/// displaying information on the front page.
 /// </summary>
 public interface IDashboardStatsItem
 {

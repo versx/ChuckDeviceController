@@ -1,8 +1,8 @@
 ﻿namespace ChuckDeviceController.Plugin;
 
 /// <summary>
-/// Settings property interface contract used by plugins to
-/// create UI setting elements in the dashboard.
+/// <see cref="ISettingsProperty"/> class implementation used by plugins
+/// to create UI setting elements in the dashboard.
 /// </summary>
 public class SettingsProperty : ISettingsProperty
 {
@@ -14,12 +14,12 @@ public class SettingsProperty : ISettingsProperty
     /// Gets or sets the displayed text for the property, possibly
     /// used in a label.
     /// </summary>
-    public string Text { get; set; }
+    public string Text { get; set; } = null!;
 
     /// <summary>
     /// Gets or sets the ID and name of the element.
     /// </summary>
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 
     /// <summary>
     /// Gets or sets the initial value to set for the element.
@@ -58,7 +58,7 @@ public class SettingsProperty : ISettingsProperty
     /// <summary>
     /// Gets or sets the CSS class name to use.
     /// </summary>
-    public string? Class { get; set; }
+    public string? Class { get; set; } = DefaultClassName;
 
     /// <summary>
     /// Gets or sets the raw CSS styling to use.
@@ -76,27 +76,26 @@ public class SettingsProperty : ISettingsProperty
     #region Constructors
 
     /// <summary>
-    /// 
+    /// Instantiates a new instance of the <see cref="SettingsProperty"/> class.
     /// </summary>
     public SettingsProperty()
     {
-        Class = DefaultClassName;
     }
 
     /// <summary>
-    /// 
+    /// Instantiates a new instance of the <see cref="SettingsProperty"/> class.
     /// </summary>
-    /// <param name="text"></param>
-    /// <param name="name"></param>
-    /// <param name="type"></param>
-    /// <param name="value"></param>
-    /// <param name="defaultValue"></param>
-    /// <param name="displayIndex"></param>
-    /// <param name="isRequired"></param>
-    /// <param name="validate"></param>
-    /// <param name="className"></param>
-    /// <param name="style"></param>
-    /// <param name="group"></param>
+    /// <param name="text">Text displayed for the property, possibly used in a label.</param>
+    /// <param name="name">The ID and name of the element.</param>
+    /// <param name="type">The type of HTML element to create.</param>
+    /// <param name="value">Sets the initial value of the HTML element.</param>
+    /// <param name="defaultValue">Default value of the HTML element, if it supports it.</param>
+    /// <param name="displayIndex">Defines the sorting of the HTML element created for the properties.</param>
+    /// <param name="isRequired">Determining whether or not the HTML element value is required.</param>
+    /// <param name="validate">Determines whether or not to validate the value of the HTML element.</param>
+    /// <param name="className">CSS class name to use.</param>
+    /// <param name="style">Raw CSS styling to use.</param>
+    /// <param name="group">Element group the settings property will be placed in.</param>
     public SettingsProperty(
         string text,
         string name,

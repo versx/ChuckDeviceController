@@ -6,12 +6,12 @@
 public interface ISettingsPropertyGroup
 {
     /// <summary>
-    /// Gets or sets the unique ID for the settings property group.
+    /// Gets or sets the unique identifier for the settings property group.
     /// </summary>
     string Id { get; }
 
     /// <summary>
-    /// Gets or sets the display text for the settings property group.
+    /// Gets or sets the text to display for the settings property group.
     /// </summary>
     string Text { get; }
 

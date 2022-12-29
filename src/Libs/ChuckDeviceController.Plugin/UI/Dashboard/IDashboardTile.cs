@@ -1,7 +1,8 @@
 ﻿namespace ChuckDeviceController.Plugin;
 
 /// <summary>
-/// Dashboard tile interface contract.
+/// Dashboard tile interface contract to display
+/// custom tile-like elements on the dashboard.
 /// </summary>
 public interface IDashboardTile
 {
@@ -21,13 +22,13 @@ public interface IDashboardTile
     string Icon { get; }
 
     /// <summary>
-    /// Gets or sets the controller name the action name
+    /// Gets or sets the Mvc controller name the action name
     /// should relate to when the tile is clicked.
     /// </summary>
     string ControllerName { get; }
 
     /// <summary>
-    /// Gets or sets the controller action name to execute
+    /// Gets or sets the Mvc controller action name to execute
     /// when the navbar header is clicked.
     /// </summary>
     string ActionName { get; }

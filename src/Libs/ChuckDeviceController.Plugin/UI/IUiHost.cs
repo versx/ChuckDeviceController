@@ -103,30 +103,30 @@ public interface IUiHost
     #region Settings
 
     /// <summary>
-    /// 
+    /// Adds a new settings tab.
     /// </summary>
-    /// <param name="tab"></param>
+    /// <param name="tab">Settings tab to add.</param>
     Task AddSettingsTabAsync(SettingsTab tab);
 
     /// <summary>
-    /// 
+    /// Adds a settings property to an existing settings tab.
     /// </summary>
-    /// <param name="tabId"></param>
-    /// <param name="property"></param>
+    /// <param name="tabId">Unique identifier of the destination tab.</param>
+    /// <param name="property">Settings property to add to the destination tab.</param>
     Task AddSettingsPropertyAsync(string tabId, SettingsProperty property);
 
     /// <summary>
-    /// 
+    /// Adds a list of settings properties to an existing settings tab.
     /// </summary>
-    /// <param name="tabId"></param>
-    /// <param name="properties"></param>
+    /// <param name="tabId">Unique identifier of the destination tab.</param>
+    /// <param name="properties">List of settings properties to add to the destination.</param>
     Task AddSettingsPropertiesAsync(string tabId, IEnumerable<SettingsProperty> properties);
 
     /// <summary>
-    /// 
+    /// Gets the value of a settings property by name.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="name"></param>
+    /// <typeparam name="T">Expected return type of the settings property.</typeparam>
+    /// <param name="name">Name of the property to get the value of.</param>
     T? GetSettingsPropertyValue<T>(string name);
 
     #endregion

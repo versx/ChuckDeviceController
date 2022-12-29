@@ -1,19 +1,20 @@
 ﻿namespace ChuckDeviceController.Plugin;
 
 /// <summary>
-/// Interface contract for grouping settings properties.
+/// <see cref="ISettingsPropertyGroup"/> class implementation
+/// for grouping <seealso cref="ISettingsProperty"/>.
 /// </summary>
 public class SettingsPropertyGroup : ISettingsPropertyGroup, IEquatable<SettingsPropertyGroup>
 {
     /// <summary>
-    /// Gets or sets the unique ID for the settings property group.
+    /// Gets or sets the unique identifier for the settings property group.
     /// </summary>
-    public string Id { get; set; }
+    public string Id { get; set; } = null!;
 
     /// <summary>
-    /// Gets or sets the display text for the settings property group.
+    /// Gets or sets the text to display for the settings property group.
     /// </summary>
-    public string Text { get; set; }
+    public string Text { get; set; } = null!;
 
     /// <summary>
     /// Gets or sets a value used for sorting each HTML element
@@ -22,24 +23,26 @@ public class SettingsPropertyGroup : ISettingsPropertyGroup, IEquatable<Settings
     public uint DisplayIndex { get; set; }
 
     /// <summary>
-    /// 
+    /// Instantiates a new instance of the <see cref="SettingsPropertyGroup"/> class.
     /// </summary>
     public SettingsPropertyGroup()
     {
     }
 
     /// <summary>
-    /// 
+    /// Instantiates a new instance of the <see cref="SettingsPropertyGroup"/> class.
     /// </summary>
-    /// <param name="id"></param>
-    /// <param name="text"></param>
-    /// <param name="displayIndex"></param>
+    /// <param name="id">Unique identifier for the settings property group.</param>
+    /// <param name="text">Text displayed for the settings property group.</param>
+    /// <param name="displayIndex">Sorting index used with each HTML element created for the grouped properties.</param>
     public SettingsPropertyGroup(string id, string text, uint displayIndex)
     {
         Id = id;
         Text = text;
         DisplayIndex = displayIndex;
     }
+
+    #region IEquatable Implementation
 
     /// <summary>
     /// 
@@ -71,4 +74,6 @@ public class SettingsPropertyGroup : ISettingsPropertyGroup, IEquatable<Settings
         var result = other != null && Text == other.Text;
         return result;
     }
+
+    #endregion
 }

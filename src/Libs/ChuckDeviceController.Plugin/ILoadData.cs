@@ -1,7 +1,8 @@
 ﻿namespace ChuckDeviceController.Plugin;
 
 /// <summary>
-/// 
+/// Interface contract used by <seealso cref="IFileStorageHost"/>
+/// to load data from the file system.
 /// </summary>
 public interface ILoadData
 {

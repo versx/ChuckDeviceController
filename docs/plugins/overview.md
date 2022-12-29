@@ -1,8 +1,8 @@
 # Plugins Included  
 
-Roughly 17 plugins are included and provided by default.   
+> Roughly 17 plugins are included and provided by default.   
 
-><hr>
+<hr>
 
 #### [BitbucketAuthProviderPlugin](../plugins/BitbucketAuthProviderPlugin.md)  
 - Adds `Bitbucket.org` user authentication support.  
