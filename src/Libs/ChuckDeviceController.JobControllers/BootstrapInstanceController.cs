@@ -99,7 +99,7 @@ public class BootstrapInstanceController : BaseSmartInstanceController, IScanNex
         if ((Coordinates?.Count ?? 0) == 0)
         {
             _logger.LogWarning($"[{Name}] [{options.Uuid}] Instance does not contain any coordinates, returning empty task for device");
-            return null;
+            return null!;
         }
 
         // Get next scan coordinate for device based on route type
@@ -109,7 +109,7 @@ public class BootstrapInstanceController : BaseSmartInstanceController, IScanNex
         if (currentCoord == null)
         {
             _logger.LogWarning($"[{Name}] [{options.Uuid}] Failed to retrieve next scan coordinate");
-            return null;
+            return null!;
         }
 
         _currentUuid[options.Uuid].CoordinatesCompletedCount++;
@@ -236,7 +236,7 @@ public class BootstrapInstanceController : BaseSmartInstanceController, IScanNex
             return optimizedRoute;
         }
 
-        return bootstrapRoute;
+        return bootstrapRoute ?? new();
     }
 
     private async Task CheckCompletionStatusAsync(string uuid)

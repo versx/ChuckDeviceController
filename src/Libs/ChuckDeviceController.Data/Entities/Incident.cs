@@ -22,7 +22,7 @@ public class Incident : BaseEntity, IIncident, IWebhookEntity
         Key,
         DatabaseGenerated(DatabaseGeneratedOption.None),
     ]
-    public string Id { get; set; }
+    public string Id { get; set; } = null!;
 
     [
         Column("pokestop_id"),
@@ -30,7 +30,7 @@ public class Incident : BaseEntity, IIncident, IWebhookEntity
         ForeignKey("pokestop_id"),
         //ForeignKey("FK_incident_pokestop_pokestop_id"),
     ]
-    public string PokestopId { get; set; }
+    public string PokestopId { get; set; } = null!;
 
     public virtual Pokestop? Pokestop { get; set; }
 
@@ -60,11 +60,10 @@ public class Incident : BaseEntity, IIncident, IWebhookEntity
 
     #endregion
 
-    #region Constructor
+    #region Constructors
 
     public Incident()
     {
-        Id = string.Empty;
     }
 
     public Incident(ulong now, string pokestopId, PokestopIncidentDisplayProto pokestopDisplay)

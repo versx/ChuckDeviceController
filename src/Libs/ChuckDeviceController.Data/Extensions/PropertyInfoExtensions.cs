@@ -202,9 +202,19 @@ public static class PropertyInfoExtensions
 
         // Convert enumeration value from string to specific type
         // using converter function
-        var enumValue = Convert.ToString(value) ?? string.Empty;
+        var enumValue = Convert.ToString(value) ?? null!;
+        if (string.IsNullOrEmpty(enumValue))
+        {
+            return enumValue;
+        }
+
         var propertyDescriptor = property.GetPropertyDescriptor();
         var converted = propertyDescriptor.Converter.ConvertFromString(enumValue);
+        if (converted == null)
+        {
+            return enumValue;
+        }
+
         var convertedValue = _enumsToConvert[property.PropertyType](converted);
         var result = SqlifyPropertyValueToString(convertedValue);
         return result;
@@ -217,8 +227,8 @@ public static class PropertyInfoExtensions
     /// <returns></returns>
     public static PropertyDescriptor GetPropertyDescriptor(this PropertyInfo propertyInfo)
     {
-        var properties = TypeDescriptor.GetProperties(propertyInfo.DeclaringType);
+        var properties = TypeDescriptor.GetProperties(propertyInfo.DeclaringType!);
         var propertyDescriptor = properties.Find(propertyInfo.Name, ignoreCase: false);
-        return propertyDescriptor;
+        return propertyDescriptor!;
     }
 }

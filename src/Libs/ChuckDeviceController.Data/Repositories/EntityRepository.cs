@@ -96,6 +96,8 @@ public class EntityRepository
         TKey key,
         IMemoryCacheService memCache,
         bool skipCache = false)
+        where TKey : notnull
+        where TEntity : class
     {
         if (!skipCache)
         {

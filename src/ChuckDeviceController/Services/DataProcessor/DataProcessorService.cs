@@ -424,6 +424,8 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
         //        _logger.LogError($"Error: {ex}");
         //    }
         //}
+
+        await Task.CompletedTask;
     }
 
     private async Task UpdateCellAsync(ulong cellId)
@@ -466,6 +468,8 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
         //{
         //    _logger.LogError($"Error: {ex}");
         //}
+
+        await Task.CompletedTask;
     }
 
     private async Task UpdateClientWeatherAsync(string requestId, MySqlConnection connection, IEnumerable<ClientWeatherProto> clientWeather)

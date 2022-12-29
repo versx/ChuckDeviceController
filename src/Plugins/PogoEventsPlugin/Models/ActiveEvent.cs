@@ -16,22 +16,22 @@ public class ActiveEvent : IActiveEvent
     public string End { get; set; } = null!;
 
     [DisplayName("Wild Pokemon Spawns")]
-    public IEnumerable<EventItem> Spawns { get; set; }
+    public IEnumerable<EventItem> Spawns { get; set; } = Array.Empty<EventItem>();
 
     [DisplayName("Hatchable Eggs")]
-    public IEnumerable<EventItem> Eggs { get; set; }
+    public IEnumerable<EventItem> Eggs { get; set; } = Array.Empty<EventItem>();
 
     [DisplayName("Raid Bosses")]
-    public IEnumerable<EventRaidItem> Raids { get; set; }
+    public IEnumerable<EventRaidItem> Raids { get; set; } = Array.Empty<EventRaidItem>();
 
     [DisplayName("Shiny Pokemon")]
-    public IEnumerable<EventItem> Shinies { get; set; }
+    public IEnumerable<EventItem> Shinies { get; set; } = Array.Empty<EventItem>();
 
     [DisplayName("Bonuses")]
-    public IEnumerable<EventBonusItem> Bonuses { get; set; }
+    public IEnumerable<EventBonusItem> Bonuses { get; set; } = Array.Empty<EventBonusItem>();
 
     [DisplayName("Features")]
-    public IEnumerable<string> Features { get; set; }
+    public IEnumerable<string> Features { get; set; } = Array.Empty<string>();
 
     [
         DisplayName("Has Event Quests"),

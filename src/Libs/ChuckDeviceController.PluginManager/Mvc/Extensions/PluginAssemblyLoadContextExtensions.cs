@@ -165,7 +165,7 @@ public static class PluginAssemblyLoadContextExtensions
         return includeTypes == null || includeTypes.Contains(type);
     }
 
-    private static bool Excludes(Type type, IEnumerable<Type> excludeTypes)
+    private static bool Excludes(Type type, IEnumerable<Type>? excludeTypes = null)
     {
         return excludeTypes != null && excludeTypes.Contains(type);
     }

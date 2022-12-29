@@ -94,11 +94,17 @@ public class PluginFinder<TPlugin> where TPlugin : class
     public IEnumerable<PluginFinderResult<TPlugin>> LoadPluginAssemblies(IEnumerable<PluginAssemblyDetails> pluginAssemblyDetails)
     {
         var entryAssembly = Assembly.GetEntryAssembly();
-        var hostFramework = entryAssembly?.GetHostFramework();
+        if (entryAssembly == null)
+        {
+            _logger.LogError($"Failed to get entry assembly");
+            return null!;
+        }
+
+        var hostFramework = entryAssembly.GetHostFramework();
         var results = new List<PluginFinderResult<TPlugin>>();
         foreach (var pluginAssembly in pluginAssemblyDetails)
         {
-            var result = LoadPluginAssembly(pluginAssembly, hostFramework);
+            var result = LoadPluginAssembly(pluginAssembly, hostFramework!);
             if (result == null)
             {
                 _logger.LogWarning($"Failed to load plugin assembly '{pluginAssembly.AssemblyFullPath}'");

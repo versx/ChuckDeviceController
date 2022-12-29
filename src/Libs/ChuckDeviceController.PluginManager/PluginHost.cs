@@ -58,7 +58,13 @@ public sealed class PluginHost : IPluginHost
         LoadContext.Unload();
 
         var entryAssembly = System.Reflection.Assembly.GetEntryAssembly();
-        var hostFramework = entryAssembly?.GetHostFramework();
+        if (entryAssembly == null)
+        {
+            Console.WriteLine($"Failed to get entry assembly for plugin host '{Plugin.Name}', unable to load plugin.");
+            return;
+        }
+
+        var hostFramework = entryAssembly.GetHostFramework();
         LoadContext = PluginAssemblyLoadContext.Create<IPlugin>(Assembly.AssemblyFullPath, hostFramework);
     }
 

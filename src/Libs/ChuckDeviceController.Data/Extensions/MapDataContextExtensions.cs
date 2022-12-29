@@ -236,13 +236,15 @@ public static class MapDataContextExtensions
     /// <returns></returns>
     public static async Task<List<Cell>> GetS2CellsAsync(this MapDbContext context, IEnumerable<IMultiPolygon> multiPolygons)
     {
-        var cells = multiPolygons.SelectMany(multiPolygon => GetS2CellsAsync(context, multiPolygon).Result).ToList();
+        var cells = multiPolygons
+            .SelectMany(multiPolygon => GetS2CellsAsync(context, multiPolygon).Result)
+            .ToList();
         //foreach (var multiPolygon in multiPolygons)
         //{
         //    var list = await GetS2CellsAsync(context, multiPolygon);
         //    cells.AddRange(list);
         //}
-        return cells;
+        return await Task.FromResult(cells);
     }
 
     #endregion

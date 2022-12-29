@@ -9,10 +9,10 @@ public class ManageApiKeyViewModel
     public uint Id { get; set; }
 
     [DisplayName("Name")]
-    public string? Name { get; set; }
+    public string Name { get; set; } = null!;
 
     [DisplayName("API Key")]
-    public string? Key { get; set; }
+    public string Key { get; set; } = null!;
 
     [DisplayName("Expiration Date")]
     //public DateTime Expiration { get; set; }

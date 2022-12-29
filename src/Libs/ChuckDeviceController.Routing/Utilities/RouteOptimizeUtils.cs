@@ -111,9 +111,10 @@ public static class RouteOptimizeUtil
     // FindNn
     private static ICoordinate FindNext(IEnumerable<ICoordinate> coords, double lat, double lon)
     {
-        var coord = coords.OrderBy(coord => GetDistance(lat, lon, coord.Latitude, coord.Longitude))
-                          .FirstOrDefault();
-        return coord;
+        var coord = coords
+            .OrderBy(coord => GetDistance(lat, lon, coord.Latitude, coord.Longitude))
+            .FirstOrDefault();
+        return coord ?? null!;
     }
 
     private static float GetDistance(ICoordinate coord1, ICoordinate coord2)

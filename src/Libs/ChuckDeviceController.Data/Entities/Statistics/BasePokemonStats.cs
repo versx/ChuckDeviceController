@@ -9,7 +9,7 @@ public class BasePokemonStats
         Key,
         Column("date"),
     ]
-    public string Date { get; set; }
+    public string Date { get; set; } = null!;
 
     [
         Key,

@@ -5,10 +5,13 @@ using System.Text.Json.Serialization;
 
 public class EventGruntItem : IEventGruntItem
 {
+    [JsonPropertyName("active")]
     public bool Active { get; set; }
 
+    [JsonPropertyName("character")]
     public EventGruntCharacter Character { get; set; } = null!;
 
+    [JsonPropertyName("lineup")]
     public EventGruntLineUp? Lineup { get; set; }
 }
 
@@ -21,7 +24,7 @@ public class EventGruntCharacter : IEventGruntCharacter
     public ushort Gender { get; set; }
 
     [JsonPropertyName("type")]
-    public EventGruntCharacterType Type { get; set; }
+    public EventGruntCharacterType Type { get; set; } = new();
 
     [JsonPropertyName("boss")]
     public bool Boss { get; set; }

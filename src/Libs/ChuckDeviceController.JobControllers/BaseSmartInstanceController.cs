@@ -181,7 +181,7 @@ public abstract class BaseSmartInstanceController : IJobController, ILureInstanc
             {
                 // Failed to calculate device spacing, probably no devices
                 _logger.LogError($"[{Name}] [{uuid}] Failed to calculate spacing between devices in order to get next location, skipping device...");
-                return null;
+                return null!;
             }
 
             var dist = Convert.ToInt32((numLiveDevices * distanceToNextDevice) + 0.5);
@@ -253,7 +253,7 @@ public abstract class BaseSmartInstanceController : IJobController, ILureInstanc
             {
                 // Failed to calculate device spacing, probably no devices
                 _logger.LogError($"[{Name}] [{uuid}] Failed to calculate spacing between devices in order to get next location, skipping device...");
-                return null;
+                return null!;
             }
 
             var dist = 10 * distanceToNextDevice * numLiveDevices + 5;

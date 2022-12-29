@@ -616,7 +616,7 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
         if (IsEvent && AttackIV == null)
         {
             // TODO: Pokemon? oldPokemonNoEvent = null;
-            var oldPokemonNoEvent = await EntityRepository.GetEntityAsync<string, Pokemon>(null, Id, memCache); // IsEvent: false;
+            var oldPokemonNoEvent = await EntityRepository.GetEntityAsync<string, Pokemon>(null!, Id, memCache); // IsEvent: false;
             if (oldPokemonNoEvent != null && oldPokemonNoEvent.AttackIV != null &&
                 (((Weather == 0 || Weather == null) && (oldPokemonNoEvent.Weather == 0 || oldPokemonNoEvent.Weather == null)) ||
                 (Weather != 0 && oldPokemonNoEvent.Weather != 0)))
@@ -640,7 +640,7 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
         if (IsEvent && !IsExpireTimestampVerified)
         {
             // TODO: Pokemon? oldPokemonNoEvent = null;
-            var oldPokemonNoEvent = await EntityRepository.GetEntityAsync<string, Pokemon>(null, Id, memCache); // IsEvent: false;
+            var oldPokemonNoEvent = await EntityRepository.GetEntityAsync<string, Pokemon>(null!, Id, memCache); // IsEvent: false;
             if (oldPokemonNoEvent != null && oldPokemonNoEvent.IsExpireTimestampVerified)
             {
                 ExpireTimestamp = oldPokemonNoEvent.ExpireTimestamp;
@@ -759,13 +759,13 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
                     SetDittoAttributes(PokemonId, oldPokemon.Weather ?? 0, oldPokemon.Level ?? 0);
                 }
             }
-            else if ((AttackIV != null && oldPokemon.AttackIV == null) ||
-                (CP != null && oldPokemon.CP == null) || HasIvChanges)
+            else if ((AttackIV != null && oldPokemon?.AttackIV == null) ||
+                (CP != null && oldPokemon?.CP == null) || HasIvChanges)
             {
                 setIvForWeather = false;
                 updateIV = true;
             }
-            else if (weatherChanged && oldPokemon.AttackIV != null && EntityConfiguration.Instance.EnableWeatherIvClearing)
+            else if (weatherChanged && oldPokemon?.AttackIV != null && EntityConfiguration.Instance.EnableWeatherIvClearing)
             {
                 Console.WriteLine($"Pokemon {Id} changed weather boost state. Clearing IVs.");
                 setIvForWeather = true;
@@ -795,9 +795,9 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
                 HasIvChanges = true;
             }
 
-            if (oldPokemon.PokemonId == DittoPokemonId && PokemonId != DittoPokemonId)
+            if ((oldPokemon?.PokemonId ?? 0) == DittoPokemonId && PokemonId != DittoPokemonId)
             {
-                Console.WriteLine($"Pokemon {Id} Ditto changed from {oldPokemon.PokemonId} to {PokemonId}");
+                Console.WriteLine($"Pokemon {Id} Ditto changed from {oldPokemon?.PokemonId} to {PokemonId}");
             }
 
             Updated = now;

@@ -31,12 +31,12 @@ public class GenericDapperRepository<TEntity> : IGenericRepository<TEntity>, IGe
         Expression<Func<TEntity, bool>>? filter = null,
         Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null)
     {
-        return null;
+        return null!;
     }
 
     public IEnumerable<TEntity> FindAll()
     {
-        return null;
+        return null!;
     }
     public TEntity? FindById<TKey>(TKey id)
     {
@@ -72,14 +72,17 @@ public class GenericDapperRepository<TEntity> : IGenericRepository<TEntity>, IGe
         Expression<Func<TEntity, bool>>? filter = null,
         Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null)
     {
-        return null;
+        await Task.CompletedTask;
+        return null!;
     }
     public async Task<IEnumerable<TEntity>> FindAllAsync()
     {
-        return null;
+        await Task.CompletedTask;
+        return null!;
     }
     public async Task<TEntity?> FindByIdAsync<TKey>(TKey id)
     {
+        await Task.CompletedTask;
         return null;
     }
 

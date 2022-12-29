@@ -120,6 +120,9 @@ public class PluginManager : IPluginManager
             RootPluginsDirectory = Options.RootPluginsDirectory,
             ValidFileTypes = new[] { PluginFinderOptions.DefaultPluginFileType },
         });
+
+        _getApiKeysFunc = null!;
+        _getPluginStatesFunc = null!;
     }
 
     #endregion

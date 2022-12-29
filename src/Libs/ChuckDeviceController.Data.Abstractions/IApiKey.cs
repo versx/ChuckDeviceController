@@ -8,7 +8,7 @@ public interface IApiKey
 
     string Name { get; }
 
-    string? Key { get; }
+    string Key { get; }
 
     List<PluginApiKeyScope>? Scope { get; }
 

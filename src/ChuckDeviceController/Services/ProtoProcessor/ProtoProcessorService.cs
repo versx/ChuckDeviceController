@@ -423,7 +423,10 @@ public class ProtoProcessorService : TimedHostedService, IProtoProcessorService
         {
             // Inform frontend/configurator via RPC of trainer account XP and Level for leveling instance stats
             var json = new { username, xp, level }.ToJson();
-            await SendPlayerInfoAsync(username, json);
+            if (!string.IsNullOrEmpty(json))
+            {
+                await SendPlayerInfoAsync(username, json);
+            }
         }
 
         if (!processedProtos.Any())

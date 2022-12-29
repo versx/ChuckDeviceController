@@ -14,11 +14,11 @@ public class AssignmentGroup : BaseEntity, IAssignmentGroup
         Column("name"),
         Key,
     ]
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 
     [
         DisplayName("Assignments"),
         Column("assignment_ids"),
     ]
-    public List<uint> AssignmentIds { get; set; }
+    public List<uint> AssignmentIds { get; set; } = new();
 }

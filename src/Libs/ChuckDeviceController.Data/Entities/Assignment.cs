@@ -20,7 +20,7 @@ public class Assignment : BaseEntity, IAssignment
         DisplayName("Instance Name"),
         Column("instance_name"),
     ]
-    public string InstanceName { get; set; }
+    public string InstanceName { get; set; } = null!;
 
     [
         DisplayName("Source Instance Name"),

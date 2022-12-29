@@ -60,7 +60,7 @@ public class CircleInstanceController : BaseSmartInstanceController, IScanNextIn
         if ((Coordinates?.Count ?? 0) == 0)
         {
             _logger.LogWarning($"[{Name}] [{options.Uuid}] Instance requires at least one coordinate, returning empty task for device");
-            return null;
+            return null!;
         }
 
         // Get next scan coordinate for device based on route type
@@ -70,7 +70,7 @@ public class CircleInstanceController : BaseSmartInstanceController, IScanNextIn
         if (currentCoord == null)
         {
             _logger.LogWarning($"[{Name}] [{options.Uuid}] Failed to retrieve next scan coordinate");
-            return null;
+            return null!;
         }
 
         var task = CreateTask(currentCoord, CircleType);

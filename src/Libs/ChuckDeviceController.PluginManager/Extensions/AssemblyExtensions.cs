@@ -11,10 +11,10 @@ public static class AssemblyExtensions
         return assembly?.GetHostFramework();
     }
 
-    public static string? GetHostFramework(this Assembly assembly)
+    public static string GetHostFramework(this Assembly assembly)
     {
         var attr = assembly?.GetCustomAttribute<TargetFrameworkAttribute>();
         var hostFramework = attr?.FrameworkName;
-        return hostFramework;
+        return hostFramework ?? null!;
     }
 }

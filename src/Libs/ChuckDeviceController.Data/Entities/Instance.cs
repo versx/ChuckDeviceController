@@ -52,7 +52,7 @@ public class Instance : BaseEntity, IInstance
         Required,
         JsonPropertyName("geofences"),
     ]
-    public List<string> Geofences { get; set; }
+    public List<string> Geofences { get; set; } = new();
 
     [
         DisplayName("Data"),

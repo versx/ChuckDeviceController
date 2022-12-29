@@ -348,7 +348,7 @@ public class AutoInstanceController : IJobController
                     $"{(isCompleted ? $", Completed @ {completedDate}" : "")}";
                 return status;
         }
-        return null;
+        return null!;
     }
 
     public async Task ReloadAsync()
@@ -437,6 +437,9 @@ public class AutoInstanceController : IJobController
         {
             // Add pokestop to ignore list
             var stop = todayStops[i];
+            if (stop == null)
+                continue;
+
             if (!_ignorePokestopIds.Contains(stop.Pokestop.Id))
             {
                 _ignorePokestopIds.Remove(stop.Pokestop.Id);
@@ -842,7 +845,7 @@ public class AutoInstanceController : IJobController
         var targetCellId = _bootstrapCellIds.TakeLast();
         if (targetCellId == default)
         {
-            return null;
+            return null!;
         }
 
         var center = targetCellId.S2LatLngFromId();

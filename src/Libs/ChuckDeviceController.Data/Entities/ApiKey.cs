@@ -26,7 +26,7 @@ public class ApiKey : BaseEntity, IApiKey
         Column("name"),
         Required,
     ]
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 
     [
         JsonPropertyName("key"),
@@ -34,7 +34,7 @@ public class ApiKey : BaseEntity, IApiKey
         Column("key"),
         Required,
     ]
-    public string? Key { get; set; }
+    public string Key { get; set; } = null!;
 
     [
         JsonPropertyName("scope"),

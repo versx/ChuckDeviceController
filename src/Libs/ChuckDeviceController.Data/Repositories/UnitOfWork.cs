@@ -138,7 +138,7 @@ public class UnitOfWork<TDbContext> : IUnitOfWork
             var result = rowsAffected > 0;
             return result;
         }
-        catch (Exception ex)
+        catch //(Exception ex)
         {
             return false;
         }

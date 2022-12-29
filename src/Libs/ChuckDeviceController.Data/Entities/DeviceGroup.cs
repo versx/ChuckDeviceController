@@ -14,11 +14,11 @@ public class DeviceGroup : BaseEntity, IDeviceGroup
         Column("name"),
         Key,
     ]
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 
     [
         DisplayName("Devices"),
         Column("device_uuids"),
     ]
-    public List<string> DeviceUuids { get; set; }
+    public List<string> DeviceUuids { get; set; } = new();
 }

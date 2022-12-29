@@ -30,9 +30,6 @@ public class PluginServiceAttribute : Attribute, IPluginServiceAttribute
     /// </summary>
     public ServiceLifetime Lifetime { get; set; }
 
-    /// <summary>
-    /// 
-    /// </summary>
     //public bool IsHostedService { get; set; }
 
     /// <summary>

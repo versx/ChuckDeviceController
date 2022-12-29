@@ -28,7 +28,7 @@ public class Webhook : BaseEntity, IWebhook
         Column("types"),
         JsonPropertyName("types"),
     ]
-    public List<WebhookType> Types { get; set; }
+    public List<WebhookType> Types { get; set; } = new();
 
     [
         DisplayName("Delay"),
@@ -42,7 +42,7 @@ public class Webhook : BaseEntity, IWebhook
         Column("url"),
         JsonPropertyName("url"),
     ]
-    public string Url { get; set; }
+    public string Url { get; set; } = null!;
 
     [
         DisplayName("Enabled"),
@@ -56,7 +56,7 @@ public class Webhook : BaseEntity, IWebhook
         Column("geofences"),
         JsonPropertyName("geofences"),
     ]
-    public List<string> Geofences { get; set; }
+    public List<string> Geofences { get; set; } = new();
 
     [
         DisplayName("Data"),

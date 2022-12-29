@@ -29,8 +29,12 @@ public static class Utils
         return string.Join("<br>", bonuses.Select(bonus => bonus.Text));
     }
 
-    public static string FormatUpper(string text)
+    public static string FormatUpper(string? text)
     {
+        if (string.IsNullOrEmpty(text))
+        {
+            return string.Empty;
+        }
         var value = text[1..^1].ToLower();
         var firstChar = text[0].ToString().ToUpper();
         return firstChar + value;
