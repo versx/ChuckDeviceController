@@ -40,8 +40,8 @@ public interface IRobots
     /// </summary>
     /// <param name="userAgent">Name of the user agent.</param>
     /// <returns>
-    ///     Returns <code>true</code> if the user agent was added successfully,
-    ///     otherwise <code>false</code>.
+    ///     Returns <c>true</c> if the user agent was added successfully,
+    ///     otherwise <c>false</c>.
     /// </returns>
     bool AddUserAgent(string userAgent);
 
@@ -50,8 +50,8 @@ public interface IRobots
     /// </summary>
     /// <param name="userAgent">Name of the user agent.</param>
     /// <returns>
-    ///     Returns <code>true</code> if the user agent was removed successfully,
-    ///     otherwise <code>false</code>.
+    ///     Returns <c>true</c> if the user agent was removed successfully,
+    ///     otherwise <c>false</c>.
     /// </returns>
     bool RemoveUserAgent(string userAgent);
 
@@ -73,8 +73,8 @@ public interface IRobots
     /// <param name="isAllowed">Whether the route is allowed or denied.</param>
     /// <param name="comment"></param>
     /// <returns>
-    ///     Returns <code>true</code> if the route was added successfully,
-    ///     otherwise <code>false</code>.
+    ///     Returns <c>true</c> if the route was added successfully,
+    ///     otherwise <c>false</c>.
     /// </returns>
     bool AddRoute(string userAgent, string route, bool isAllowed, string? comment = null);
 
@@ -86,8 +86,8 @@ public interface IRobots
     /// <param name="isAllowed">Whether the route is allowed or denied.</param>
     /// <param name="comment"></param>
     /// <returns>
-    ///     Returns <code>true</code> if the route was updated successfully,
-    ///     otherwise <code>false</code>.
+    ///     Returns <c>true</c> if the route was updated successfully,
+    ///     otherwise <c>false</c>.
     /// </returns>
     bool UpdateRoute(string userAgent, string route, bool isAllowed, string? comment = null);
 
@@ -96,15 +96,15 @@ public interface IRobots
     /// </summary>
     /// <param name="userAgent">Name of the user agent.</param>
     /// <param name="route">Route that will be removed.</param>
-    /// <returns>Returns <code>true</code> if the route was removed.</returns>
+    /// <returns>Returns <c>true</c> if the route was removed.</returns>
     bool RemoveRoute(string userAgent, string route);
 
     /// <summary>
     ///     Saves the web crawler robots config data.
     /// </summary>
     /// <returns>
-    ///     Returns <code>true</code> if the data was saved successfully,
-    ///     otherwise <code>false</code>.
+    ///     Returns <c>true</c> if the data was saved successfully,
+    ///     otherwise <c>false</c>.
     /// </returns>
     bool SaveData();
 }

@@ -262,7 +262,7 @@ public interface ISaveData
     /// <param name="prettyPrint">
     /// </param>
     /// <returns>
-    ///     Returns <code>true</code> if successful, otherwise <code>false</code>.
+    ///     Returns <c>true</c> if successful, otherwise <c>false</c>.
     /// </returns>
     bool Save<T>(T data, string folderName, string name, bool prettyPrint = false);
 }

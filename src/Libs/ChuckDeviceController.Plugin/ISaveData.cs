@@ -16,17 +16,16 @@ public interface ISaveData
     ///     File data to be saved.
     /// </param>
     /// <param name="folderName">
-    ///     Sub folder within plugin's folder, optional. If not set,<br />
-    ///     uses root of plugin's folder.
+    ///     Sub folder within plugin's folder, optional. If not set, uses root of plugin's folder.
     /// </param>
     /// <param name="name">
-    ///     File name of storage file to save, including extension<br />
-    ///     otherwise generic '.dat' extension will be appended.
+    ///     File name of storage file to save, including extension otherwise generic '.dat' extension will be appended.
     /// </param>
     /// <param name="prettyPrint">
+    ///     Determines whether or not to 'pretty print' the JSON file to readable format.
     /// </param>
     /// <returns>
-    ///     Returns <code>true</code> if successful, otherwise <code>false</code>.
+    ///     Returns <c>true</c> if successful, otherwise <c>false</c>.
     /// </returns>
     bool Save<T>(T data, string folderName, string name, bool prettyPrint = false);
 }

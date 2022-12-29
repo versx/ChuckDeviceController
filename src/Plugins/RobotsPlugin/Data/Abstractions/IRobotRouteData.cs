@@ -26,14 +26,14 @@
         /// <summary>
         ///     Gets or sets a value determining whether it is an allowed or denied route.
         /// </summary>
-        /// <value>Returns <code>true</code> if allowed, otherwise <code>false</code>.</value>
+        /// <value>Returns <c>true</c> if allowed, otherwise <c>false</c>.</value>
         public bool IsAllowed { get; set; }
 
         /// <summary>
         ///     Gets or sets a value determineing whether the route is a custom user defined
         ///     route, or one discovered via attributes.
         /// </summary>
-        /// <value>Returns <code>true</code> if custom, otherwise <code>false</code>.</value>
+        /// <value>Returns <c>true</c> if custom, otherwise <c>false</c>.</value>
         public bool IsCustom { get; set; }
     }
 }

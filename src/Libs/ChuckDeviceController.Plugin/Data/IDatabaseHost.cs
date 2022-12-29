@@ -17,7 +17,7 @@ public interface IDatabaseHost
     /// Gets a list of database entities.
     /// </summary>
     /// <typeparam name="TEntity">Database entity contract type.</typeparam>
-    /// <returns>Returns a list of database entities.</returns>
+    /// <returns>Returns the list of database entities.</returns>
     Task<IReadOnlyList<TEntity>> FindAllAsync<TEntity>();
 
     /// <summary>
@@ -26,7 +26,7 @@ public interface IDatabaseHost
     /// <typeparam name="TEntity">Database entity contract type.</typeparam>
     /// <typeparam name="TKey">Database entity primary key type.</typeparam>
     /// <param name="id">Primary key of the database entity.</param>
-    /// <returns>Returns a database entity.</returns>
+    /// <returns>Returns the database entity.</returns>
     Task<TEntity?> FindAsync<TEntity, TKey>(TKey id);
 
     /// <summary>
@@ -38,7 +38,7 @@ public interface IDatabaseHost
     /// <param name="order">Sort order expression. (Optional)</param>
     /// <param name="sortDirection">Sort ordering direction.</param>
     /// <param name="limit">Limit the returned number of results.</param>
-    /// <returns>Returns a list of database entities.</returns>
+    /// <returns>Returns the list of database entities.</returns>
     Task<IReadOnlyList<TEntity>> FindAsync<TEntity, TKey>(
         Expression<Func<TEntity, bool>> predicate,
         Expression<Func<TEntity, TKey>>? order = null,

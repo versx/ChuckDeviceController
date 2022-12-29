@@ -5,6 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <DocumentationMarkdown>$(MSBuildProjectDirectory)\API.md</DocumentationMarkdown>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <PackageProjectUrl>https://github.com/versx/ChuckDeviceController</PackageProjectUrl>
     <RepositoryUrl>https://github.com/versx/ChuckDeviceController</RepositoryUrl>
