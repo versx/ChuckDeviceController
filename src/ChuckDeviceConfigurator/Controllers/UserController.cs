@@ -180,7 +180,8 @@ public class UserController : Controller
         var user = await _userManager.FindByIdAsync(userId);
         if (user == null)
         {
-            return View("Error");
+            ModelState.AddModelError("User", $"User account with id '{userId}' does not exist");
+            return View();
         }
 
         var model = new ManageUserViewModel
@@ -209,7 +210,7 @@ public class UserController : Controller
     // POST: UserController/Manage?userId=123
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Manage(ManageUserViewModel model, string userId)
+    public async Task<IActionResult> Manage(string userId, ManageUserViewModel model)
     {
         var user = await _userManager.FindByIdAsync(userId);
         if (user == null)
@@ -311,14 +312,14 @@ public class UserController : Controller
         if (user == null)
         {
             // Failed to retrieve user account from database, does it exist?
-            ModelState.AddModelError("User", $"User account does not exist with username '{userId}'.");
+            ModelState.AddModelError("User", $"User account with id '{userId}' does not exist");
             return View();
         }
 
         if (user.UserName == Strings.DefaultUserName)
         {
             ModelState.AddModelError($"User", $"Default 'root' user account cannot be deleted");
-            return View();
+            return View(user);
         }
 
         return View(user);
@@ -327,7 +328,7 @@ public class UserController : Controller
     // POST: UserController/Delete?userId=123
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<ActionResult> Delete(ApplicationUser user, string userId)
+    public async Task<ActionResult> Delete(string userId, ApplicationUser user)
     {
         try
         {
@@ -335,14 +336,14 @@ public class UserController : Controller
             if (userAccount == null)
             {
                 // Failed to retrieve user account from database, does it exist?
-                ModelState.AddModelError("User", $"User account does not exist with username '{userId}'.");
+                ModelState.AddModelError("User", $"User account with id '{userId}' does not exist");
                 return View(user);
             }
 
             if (userAccount.UserName == Strings.DefaultUserName)
             {
                 ModelState.AddModelError($"User", $"Default '{Strings.DefaultUserName}' user account cannot be deleted");
-                return View();
+                return View(userAccount);
             }
 
             // Delete user account from database

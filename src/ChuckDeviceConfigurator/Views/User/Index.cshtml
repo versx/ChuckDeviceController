@@ -29,10 +29,13 @@
     <tbody>
         @foreach (var user in Model.Items)
         {
+            if (user == null)
+                continue;
+
             <tr>
                 <th scope="row">@user.UserName</th>
                 <td>@user.Email</td>
-                <td>@string.Join(", ", user.Roles.ToList())</td>
+                <td>@string.Join(", ", (user.Roles?.ToList() ?? new List<string>()))</td>
                 <td>
                     <a class="btn btn-primary btn-sm" asp-controller="User" asp-action="Manage" asp-route-userId="@user.UserId">
                         <i class="fa-solid fa-pen-to-square"></i>

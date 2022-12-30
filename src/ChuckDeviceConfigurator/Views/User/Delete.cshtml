@@ -15,8 +15,7 @@
 <div>
     <h4>User Account '@Model?.UserName'</h4>
     <div>
-        <form asp-action="Delete">
-            <input type="hidden" asp-for="UserName" />
+        <form asp-action="Delete" asp-route-userId="@Model?.Id">
             <input type="submit" value="Yes" class="btn btn-danger" />
             <a asp-action="Index" class="btn btn-secondary">No</a>
         </form>
