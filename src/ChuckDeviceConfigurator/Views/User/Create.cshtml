@@ -1,6 +1,7 @@
 ﻿@model CreateUserViewModel
 @{
     ViewData["Title"] = "Create User";
+    Model?.Roles.Sort((a, b) => a.RoleName?.CompareTo(b.RoleName) ?? 0);
 }
 
 <h1>Create User Account</h1>

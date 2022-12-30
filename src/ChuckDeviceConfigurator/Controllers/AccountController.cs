@@ -89,7 +89,7 @@ public class AccountController : Controller
             CleanLevel40s = (ulong)cleanAccounts.LongCount(x => x.IsLevel40OrHigher),
             CleanLevel30s = (ulong)cleanAccounts.LongCount(x => x.IsLevel30OrHigher),
             SuspendedAccounts = (ulong)suspendedAccounts.LongCount(),
-            CleanAccounts = (ulong)cleanAccounts.LongCount(),
+            CleanAccounts = (ulong)cleanAccounts.Count,
             FreshAccounts = (ulong)cleanAccounts.LongCount(x => x.IsNewAccount),
             Level40OrHigher = (ulong)accounts!.LongCount(x => x.IsLevel40OrHigher),
             Level30OrHigher = (ulong)accounts!.LongCount(x => x.IsLevel30OrHigher),
