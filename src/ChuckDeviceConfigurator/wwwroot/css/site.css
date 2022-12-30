@@ -1,5 +1,7 @@
 html {
     font-size: 14px;
+    position: relative;
+    min-height: 100%;
 }
 
 @media (min-width: 768px) {
@@ -8,12 +10,20 @@ html {
     }
 }
 
-html {
-    position: relative;
-    min-height: 100%;
+
+/** Start Form-Floating Placeholder Fix */
+/** Credits: https://codepen.io/broofa/pen/gOmwVPz */
+.form-floating > .form-control::placeholder {
+    color: revert;
 }
 
+.form-floating > .form-control:not(:focus)::placeholder {
+    color: transparent;
+}
+/** End Form-Floating Placeholder fix */
 
+
+/** Start Auth Buttons */
 .btn-google:hover {
     background: #b22222;
     color: #fff;
@@ -78,6 +88,7 @@ html {
     background: #007bb6;
     color: #fff;
 }
+/** End Auth Buttons */
 
 /* Remove hyperlink color from footer About link */
 /*
@@ -87,6 +98,7 @@ footer > div > a {
 }
 */
 
+/** Start Text Status */
 .account-warning, .account-suspended,
 .account-cooldown, .account-spinlimit {
     color: orange;
@@ -125,11 +137,13 @@ footer > div > a {
 .webhook-disabled {
     color: red;
 }
+/** End Text Status */
 
-/* Breadcrumbs */
+/** Start Breadcrumbs */
 nav > ol > li > a {
     text-decoration: none;
 }
+/** End Breadcrumbs */
 
 .card-header {
     background-color: #212529;

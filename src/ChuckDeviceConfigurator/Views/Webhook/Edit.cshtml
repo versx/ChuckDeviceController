@@ -30,7 +30,7 @@
     </div>
     <hr />
     <div class="row">
-        <div class="col-md-6">
+        <div class="col-lg-6 col-md-12">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-floating mb-3">
                 <input asp-for="Name" class="form-control" placeholder="Webhook name" readonly />
@@ -43,8 +43,8 @@
                 <span asp-validation-for="Url" class="text-danger"></span>
             </div>
             <div class="form-floating mb-3">
-                <input asp-for="Delay" class="form-control" min="0" max="3600" placeholder="Webhook delay" />
-                <label asp-for="Delay"></label> <small class="text-muted"><i>(in seconds)</i></small>
+                <input asp-for="Delay" class="form-control" min="0" max="3600" type="number" placeholder="Webhook delay" />
+                <label asp-for="Delay"></label> <small class="text-muted"><i>in seconds</i></small>
                 <span asp-validation-for="Delay" class="text-danger"></span>
             </div>
             <div class="form-group mb-3">
@@ -72,23 +72,23 @@
                 <label><input type="checkbox" asp-for="Enabled"> Enable Webhook Endpoint</label>
             </div>
         </div>
-        <div class="col-md-6">
+        <div class="col-lg-6 col-md-12">
             <div class="card">
                 <div class="card-header">Blacklisted Data</div>
                 <div class="card-body">
-                    <div class="form-group mb-3 pokemon">
-                        <label asp-for="Data!.PokemonIds"></label> <small class="text-muted"><i>(i.e. 1_f123_c11_g1)</i></small>
-                        <textarea id="Data.PokemonIds" name="Data.PokemonIds" class="form-control">@(string.Join("\n", Model?.Data?.PokemonIds ?? new()))</textarea>
+                    <div class="form-floating mb-3 pokemon">
+                        <textarea id="Data.PokemonIds" name="Data.PokemonIds" class="form-control" placeholder="i.e. 1_f123_c11_g1">@(string.Join("\n", Model?.Data?.PokemonIds ?? new()))</textarea>
+                        <label asp-for="Data!.PokemonIds"></label> <small class="text-muted"><i>Each entry should be on a newline</i></small>
                         <span asp-validation-for="Data!.PokemonIds" class="text-danger"></span>
                     </div>
-                    <div class="form-group mb-3 pokestops">
-                        <label asp-for="Data!.PokestopIds"></label>
-                        <textarea id="Data.PokestopIds" name="Data.PokestopIds" class="form-control">@(string.Join("\n", Model?.Data?.PokestopIds ?? new()))</textarea>
+                    <div class="form-floating mb-3 pokestops">
+                        <textarea id="Data.PokestopIds" name="Data.PokestopIds" class="form-control" placeholder="i.e. 000350f25244314e8b1bec531c7aa7a0.16">@(string.Join("\n", Model?.Data?.PokestopIds ?? new()))</textarea>
+                        <label asp-for="Data!.PokestopIds"></label> <small class="text-muted"><i>Each entry should be on a newline</i></small>
                         <span asp-validation-for="Data!.PokestopIds" class="text-danger"></span>
                     </div>
-                    <div class="form-group mb-3 raids">
-                        <label asp-for="Data!.RaidPokemonIds"></label> <small class="text-muted"><i>(i.e. 150_f123_c11_g1)</i></small>
-                        <textarea id="Data.RaidPokemonIds" name="Data.RaidPokemonIds" class="form-control">@(string.Join("\n", Model?.Data?.RaidPokemonIds ?? new()))</textarea>
+                    <div class="form-floating mb-3 raids">
+                        <textarea id="Data.RaidPokemonIds" name="Data.RaidPokemonIds" class="form-control" placeholder="i.e. 150_f123_c11_g1">@(string.Join("\n", Model?.Data?.RaidPokemonIds ?? new()))</textarea>
+                        <label asp-for="Data!.RaidPokemonIds"></label> <small class="text-muted"><i>Each entry should be on a newline</i></small>
                         <span asp-validation-for="Data!.RaidPokemonIds" class="text-danger"></span>
                     </div>
                     <div class="form-group mb-3 eggs">
@@ -128,9 +128,9 @@
                         </select>
                         <span asp-validation-for="Data!.GymTeamIds" class="text-danger"></span>
                     </div>
-                    <div class="form-group mb-3 gyminfo">
-                        <label asp-for="Data!.GymIds"></label>
-                        <textarea id="Data.GymIds" name="Data.GymIds" class="form-control">@(string.Join("\n", Model?.Data?.GymIds ?? new()))</textarea>
+                    <div class="form-floating mb-3 gyminfo">
+                        <textarea id="Data.GymIds" name="Data.GymIds" class="form-control" placeholder="i.e. 0002a1b5721140cc847c20b59030727a.16">@(string.Join("\n", Model?.Data?.GymIds ?? new()))</textarea>
+                        <label asp-for="Data!.GymIds"></label> <small class="text-muted"><i>Each entry should be on a newline</i></small>
                         <span asp-validation-for="Data!.GymIds" class="text-danger"></span>
                     </div>
                     <div class="form-group mb-3 weather">
