@@ -26,7 +26,7 @@ internal class CollectionTests
     {
         var items = _collection.Take(count);
         var itemsCount = items.Count();
-        Assert.That(count == itemsCount, Is.True);
+        Assert.That(count, Is.EqualTo(itemsCount));
     }
 
     [TestCase(150)]
@@ -34,7 +34,7 @@ internal class CollectionTests
     {
         var items = _collection.TryTake(count);
         var itemsCount = items.Count();
-        Assert.That(count == itemsCount, Is.True);
+        Assert.That(count, Is.EqualTo(itemsCount));
     }
 
     [Test]
@@ -72,6 +72,7 @@ internal class CollectionTests
 
         sw.Start();
         var results = _collection.Take(maxBatchSize);
+        Console.WriteLine($"Results: {results}");
         sw.Stop();
         totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
         Console.WriteLine($"Take took: {totalSeconds}s");

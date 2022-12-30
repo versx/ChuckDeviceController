@@ -1,49 +1,53 @@
 ﻿@using ChuckDeviceController.Extensions
 @using ChuckDeviceController.PluginManager
 @model ManageApiKeyViewModel
-@* TODO: Conseal API key, add toggle to reveal *@
 
 <dl class="row">
-    <dt class="col-sm-2">
+    <dt class="col-sm-3">
         @Html.DisplayNameFor(model => model.Id)
     </dt>
-    <dd class="col-sm-10">
+    <dd class="col-sm-9">
         @Html.DisplayFor(model => model.Id)
     </dd>
-    <dt class="col-sm-2">
+    <dt class="col-sm-3">
         @Html.DisplayNameFor(model => model.Name)
     </dt>
-    <dd class="col-sm-10">
+    <dd class="col-sm-9">
         @Html.DisplayFor(model => model.Name)
     </dd>
-    <dt class="col-sm-2">
+    <dt class="col-sm-3">
         @Html.DisplayNameFor(model => model.Key)
     </dt>
-    <dd class="col-sm-10">
-        @Html.DisplayFor(model => model.Key)
+    <dd class="col-sm-9">
+        <div class="input-group">
+            @Html.TextBoxFor(model => model.Key, new { type = "password", @class = "form-control" })
+            <button id="toggle-button" class="btn btn-outline-secondary btn-sm" onclick="toggleVisibility();">
+                <i id="toggle-icon" class="fa fa-fw fa-eye-slash"></i>
+            </button>
+        </div>
     </dd>
-    <dt class="col-sm-2">
+    <dt class="col-sm-3">
         @Html.DisplayNameFor(model => model.Expiration)
     </dt>
-    <dd class="col-sm-10">
-        @(Model?.Expiration == 0 ? "Never" : Model?.Expiration.FromSeconds().ToLocalTime())
+    <dd class="col-sm-9">
+        @(Model?.Expiration == 0 ? "Never" : (Model?.Expiration ?? 0).FromSeconds().ToLocalTime())
     </dd>
-    <dt class="col-sm-2">
+    <dt class="col-sm-3">
         @Html.DisplayNameFor(model => model.Scope)
     </dt>
-    <dd class="col-sm-10">
-        @Html.Raw(string.Join("<br>", (Model?.Scope ?? new()).Select(scope => scope.Scope)))
+    <dd class="col-sm-9">
+        @Html.Raw(string.Join("<br>", (Model?.Scope ?? PluginApiKeyScope.None).ToString().Split(',')))
     </dd>
-    <dt class="col-sm-2">
+    <dt class="col-sm-3">
         @Html.DisplayNameFor(model => model.IsEnabled)
     </dt>
-    <dd class="col-sm-10">
+    <dd class="col-sm-9">
         @Html.Raw(Utils.FormatBoolean(Model?.IsEnabled ?? false, html: true))
     </dd>
-    <dt class="col-sm-2">
+    <dt class="col-sm-3">
         Plugins
     </dt>
-    <dd class="col-sm-10">
+    <dd class="col-sm-9">
         @if (Model?.Plugins?.Any() ?? false)
         {
             <ul class="list-group">
@@ -63,3 +67,15 @@
         }
     </dd>
 </dl>
+<script>
+    function toggleVisibility() {
+        const icon = document.getElementById('toggle-icon');
+        icon.classList.toggle('fa-eye');
+        icon.classList.toggle('fa-eye-slash');
+
+        const input = document.getElementById('Key');
+        input.type = input.type === 'password'
+            ? 'text'
+            : 'password';
+    }
+</script>

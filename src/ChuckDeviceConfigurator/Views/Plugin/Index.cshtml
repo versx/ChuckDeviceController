@@ -116,7 +116,7 @@
                             @Html.DisplayFor(modelItem => item.Key)
                         </td>
                         <td>
-                            @Html.Raw(string.Join("<br>", item.Scope ?? new()))
+                            @Html.Raw(string.Join("<br>", item.Scope.ToString().Split(',')))
                         </td>
                         <td>
                             @(item.ExpirationTimestamp == 0 ? "Never" : item.ExpirationTimestamp.FromSeconds().ToLocalTime())
@@ -193,11 +193,17 @@
 
             $('#table-apikeys').DataTable({
                 columnDefs: [
+                    //{ responsivePriority: 0, targets: 0 },
+                    //{ responsivePriority: 2, targets: 1, render: $.fn.dataTable.render.ellipsis(15) },
+                    //{ responsivePriority: 4, targets: 2 },
+                    //{ responsivePriority: 3, targets: 3 },
+                    //{ responsivePriority: 5, targets: 4 },
+                    //{ responsivePriority: 1, targets: -1, orderable: false },
                     { responsivePriority: 0, targets: 0 },
-                    { responsivePriority: 2, targets: 1, render: $.fn.dataTable.render.ellipsis(15) },
+                    { responsivePriority: 5, targets: 1, render: $.fn.dataTable.render.ellipsis(15) },
                     { responsivePriority: 4, targets: 2 },
                     { responsivePriority: 3, targets: 3 },
-                    { responsivePriority: 5, targets: 4 },
+                    { responsivePriority: 2, targets: 4 },
                     { responsivePriority: 1, targets: -1, orderable: false },
                 ],
                 order: [[0, 'asc']],

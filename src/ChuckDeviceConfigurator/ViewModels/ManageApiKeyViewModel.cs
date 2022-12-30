@@ -1,7 +1,9 @@
 ﻿namespace ChuckDeviceConfigurator.ViewModels;
 
-using ChuckDeviceController.PluginManager;
 using System.ComponentModel;
+
+using ChuckDeviceController.Data.Common;
+using ChuckDeviceController.PluginManager;
 
 public class ManageApiKeyViewModel
 {
@@ -15,11 +17,13 @@ public class ManageApiKeyViewModel
     public string Key { get; set; } = null!;
 
     [DisplayName("Expiration Date")]
-    //public DateTime Expiration { get; set; }
-    public ulong Expiration { get; set; }
+    public ulong? Expiration { get; set; } = 0;
 
-    [DisplayName("Scope")]
-    public List<ApiKeyScopeViewModel> Scope { get; set; } = new();
+    [DisplayName("Scopes")]
+    public PluginApiKeyScope Scope { get; set; } = PluginApiKeyScope.None;
+
+    [DisplayName("Scopes")]
+    public Dictionary<string, List<ApiKeyScopeViewModel>> Scopes { get; set; } = new();
 
     [DisplayName("Enabled")]
     public bool IsEnabled { get; set; }

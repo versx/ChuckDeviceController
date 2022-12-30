@@ -15,7 +15,11 @@ using ChuckDeviceController.PluginManager.Services.Loader.Runtime.Platform;
 public class PluginDependencyContextProvider : IPluginDependencyContextProvider
 {
     private const string DependenciesExtension = ".deps.json";
-    private const string LibsPath = "";
+    private const string LibsPath = "lib/";
+    private const string RefsPath = "refs";
+    private const string VersionSuffix = ",Version=v";
+    private const string NetStandardSuffix = ".netstandard";
+    private const string ReferenceAssembly = "referenceassembly";
 
     #region Variables
 
@@ -91,14 +95,15 @@ public class PluginDependencyContextProvider : IPluginDependencyContextProvider
             return null;
         }
 
-        using (var fs = File.OpenRead(depFilePath))
-        {
-            return new DependencyContextJsonReader().Read(fs);
-        }
+        using var fs = File.OpenRead(depFilePath);
+        return new DependencyContextJsonReader().Read(fs);
     }
 
     private static void CheckFrameworkCompatibility(string hostFramework, string pluginFramework, bool ignorePlatformInconsistencies)
     {
+        // TODO: Add conditional to ignore compatibility check when adding migrations
+        //return;
+
         if (ignorePlatformInconsistencies)
             return;
 
@@ -108,8 +113,8 @@ public class PluginDependencyContextProvider : IPluginDependencyContextProvider
 
         _logger.LogWarning($"Plugin framework {pluginFramework} does not match host framework {hostFramework}");
 
-        var pluginFrameworkSplit = pluginFramework.Split(new[] { ",Version=v" }, StringSplitOptions.RemoveEmptyEntries);
-        var hostFrameworkSplit = hostFramework.Split(new[] { ",Version=v" }, StringSplitOptions.RemoveEmptyEntries);
+        var pluginFrameworkSplit = pluginFramework.Split(new[] { VersionSuffix }, StringSplitOptions.RemoveEmptyEntries);
+        var hostFrameworkSplit = hostFramework.Split(new[] { VersionSuffix }, StringSplitOptions.RemoveEmptyEntries);
 
         if (pluginFrameworkSplit.Length != hostFrameworkSplit.Length)
         {
@@ -118,7 +123,7 @@ public class PluginDependencyContextProvider : IPluginDependencyContextProvider
 
         var pluginFrameworkType = pluginFrameworkSplit[0];
         var hostFrameworkType = hostFrameworkSplit[0];
-        if (pluginFrameworkType.ToLower() == ".netstandard")
+        if (pluginFrameworkType.ToLower() == NetStandardSuffix)
         {
             throw new Exception($"Plugin framework {pluginFramework} might have compatibility issues with the host {hostFramework}, use the IgnorePlatformInconsistencies flag to skip this check.");
         }
@@ -151,8 +156,9 @@ public class PluginDependencyContextProvider : IPluginDependencyContextProvider
         if (assemblyName?.Name == null || hostDependencies.Any(h => h.DependencyName.Name == assemblyName.Name))
             return;
 
-        var allowDowngrade = downgradableHostTypes.Any(type => type.Assembly.GetName().Name == assemblyName.Name) ||
-                             downgradableAssemblies.Any(asm => asm == assemblyName.Name);
+        var allowDowngrade =
+            downgradableHostTypes.Any(type => type.Assembly.GetName().Name == assemblyName.Name) ||
+            downgradableAssemblies.Any(asm => asm == assemblyName.Name);
         hostDependencies.Add(new HostDependency
         {
             DependencyName = assemblyName,
@@ -214,7 +220,7 @@ public class PluginDependencyContextProvider : IPluginDependencyContextProvider
             }
             foreach (var asset in assets)
             {
-                var path = asset.StartsWith("lib/")
+                var path = asset.StartsWith(LibsPath)
                     ? Path.GetFileName(asset)
                     : asset;
 
@@ -239,7 +245,7 @@ public class PluginDependencyContextProvider : IPluginDependencyContextProvider
             return dependencies;
         }
 
-        var referenceAssemblies = pluginDependencyContext.CompileLibraries.Where(r => r.Type == "referenceassembly");
+        var referenceAssemblies = pluginDependencyContext.CompileLibraries.Where(r => r.Type == ReferenceAssembly);
         foreach (var referenceAssembly in referenceAssemblies)
         {
             foreach (var assembly in referenceAssembly.Assemblies)
@@ -249,7 +255,7 @@ public class PluginDependencyContextProvider : IPluginDependencyContextProvider
                     DependencyNameWithoutExtension = Path.GetFileNameWithoutExtension(assembly),
                     //Version = new Version(referenceAssembly.Version),
                     Version = referenceAssembly.Version,
-                    DependencyPath = Path.Join("refs", assembly),
+                    DependencyPath = Path.Join(RefsPath, assembly),
                 });
             }
         }

@@ -1,5 +1,7 @@
 ﻿namespace ChuckDeviceConfigurator.Controllers;
 
+using System.ComponentModel.DataAnnotations;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,8 +9,10 @@ using ChuckDeviceConfigurator.Services.Plugins;
 using ChuckDeviceConfigurator.ViewModels;
 using ChuckDeviceController.Common;
 using ChuckDeviceController.Data.Common;
+using ChuckDeviceController.Data.Common.Extensions;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Repositories;
+using ChuckDeviceController.Extensions;
 using ChuckDeviceController.PluginManager;
 
 [Controller]
@@ -43,17 +47,15 @@ public class ApiKeyController : Controller
             .Where(plugin => plugin.Value.ApiKey.Id == apiKey.Id)
             .Select(plugin => plugin.Value)
             .ToList();
-        var scope = ((PluginApiKeyScope[])Enum.GetValues(typeof(PluginApiKeyScope)))
-            .Where(scope => scope != PluginApiKeyScope.None)
-            .Select(scope => new ApiKeyScopeViewModel { Scope = scope, Selected = apiKey.Scope?.Contains(scope) ?? false })
-            .ToList();
+        var scopes = GroupedApiScopes(apiKey.Scope);
         var model = new ManageApiKeyViewModel
         {
             Id = apiKey.Id,
             Name = apiKey.Name,
             Key = apiKey.Key,
             Expiration = apiKey.ExpirationTimestamp,
-            Scope = scope,
+            Scope = apiKey.Scope,
+            Scopes = scopes,
             IsEnabled = apiKey.IsEnabled,
             Plugins = plugins,
         };
@@ -63,13 +65,9 @@ public class ApiKeyController : Controller
     // GET: ApiKeyController/Create
     public ActionResult Create()
     {
-        var scopes = ((PluginApiKeyScope[])Enum.GetValues(typeof(PluginApiKeyScope)))
-            .Where(scope => scope != PluginApiKeyScope.None)
-            .Select(scope => new ApiKeyScopeViewModel { Scope = scope, Selected = false })
-            .ToList();
         var model = new ManageApiKeyViewModel
         {
-            Scope = scopes,
+            Scopes = GroupedApiScopes(),
         };
         return View(model);
     }
@@ -87,10 +85,7 @@ public class ApiKeyController : Controller
                 return View(model);
             }
 
-            var scope = model.Scope
-                .Where(scope => scope.Selected)
-                .Select(scope => scope.Scope)
-                .ToList();
+            var scope = GetScope(model.Scopes);
             var seconds = model.Expiration == 0
                 ? 0
                 : model.Expiration;
@@ -99,14 +94,14 @@ public class ApiKeyController : Controller
             {
                 Name = model.Name,
                 Key = pluginApiKey,
-                ExpirationTimestamp = seconds,
+                ExpirationTimestamp = seconds ?? 0,
                 Scope = scope,
                 IsEnabled = model.IsEnabled,
             };
             await _uow.ApiKeys.AddAsync(apiKey);
             await _uow.CommitAsync();
 
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Index), nameof(Plugin), "apikeys");
         }
         catch
         {
@@ -125,17 +120,15 @@ public class ApiKeyController : Controller
             ModelState.AddModelError("ApiKey", $"API key does not exist with id '{id}'.");
             return View();
         }
-        var scope = ((PluginApiKeyScope[])Enum.GetValues(typeof(PluginApiKeyScope)))
-            .Where(scope => scope != PluginApiKeyScope.None)
-            .Select(scope => new ApiKeyScopeViewModel { Scope = scope, Selected = apiKey.Scope?.Contains(scope) ?? false })
-            .ToList();
+        var scope = GroupedApiScopes(apiKey.Scope);
         var model = new ManageApiKeyViewModel
         {
             Id = apiKey.Id,
             Name = apiKey.Name,
             Key = apiKey.Key,
             Expiration = apiKey.ExpirationTimestamp,
-            Scope = scope,
+            Scope = apiKey.Scope,
+            Scopes = scope,
             IsEnabled = apiKey.IsEnabled,
         };
         return View(model);
@@ -155,13 +148,10 @@ public class ApiKeyController : Controller
                 ModelState.AddModelError("ApiKey", $"API key does not exist with id '{id}'.");
                 return View(model);
             }
-            var scope = model.Scope
-                .Where(scope => scope.Selected)
-                .Select(scope => scope.Scope)
-                .ToList();
-            var seconds = model.Expiration == 0
-                ? 0
-                : model.Expiration;
+            var scope = GetScope(model.Scopes);
+            var seconds = model.Expiration > 0
+                ? model.Expiration ?? 0
+                : 0;
 
             apiKey.Name = model?.Name ?? string.Empty;
             apiKey.ExpirationTimestamp = seconds;
@@ -171,7 +161,7 @@ public class ApiKeyController : Controller
             await _uow.ApiKeys.UpdateAsync(apiKey);
             await _uow.CommitAsync();
 
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Index), nameof(Plugin), "apikeys");
         }
         catch
         {
@@ -194,17 +184,15 @@ public class ApiKeyController : Controller
             .Where(plugin => plugin.Value.ApiKey.Id == apiKey.Id)
             .Select(plugin => plugin.Value)
             .ToList();
-        var scope = ((PluginApiKeyScope[])Enum.GetValues(typeof(PluginApiKeyScope)))
-            .Where(scope => scope != PluginApiKeyScope.None)
-            .Select(scope => new ApiKeyScopeViewModel { Scope = scope, Selected = apiKey.Scope?.Contains(scope) ?? false })
-            .ToList();
+        var scope = GroupedApiScopes(apiKey.Scope);
         var model = new ManageApiKeyViewModel
         {
             Id = apiKey.Id,
             Name = apiKey.Name,
             Key = apiKey.Key,
             Expiration = apiKey.ExpirationTimestamp,
-            Scope = scope,
+            Scope = apiKey.Scope,
+            Scopes = scope,
             IsEnabled = apiKey.IsEnabled,
             Plugins = plugins,
         };
@@ -223,19 +211,55 @@ public class ApiKeyController : Controller
             {
                 // Failed to retrieve API key from database, does it exist?
                 ModelState.AddModelError("ApiKey", $"API key does not exist with id '{id}'.");
-                return View();
+                return View(model);
             }
 
             // Delete API key from database
             await _uow.ApiKeys.RemoveAsync(apiKey);
             await _uow.CommitAsync();
 
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Index), nameof(Plugin), "apikeys");
         }
         catch
         {
             ModelState.AddModelError("ApiKey", $"Unknown error occurred while deleting API key '{id}'.");
-            return View();
+            return View(model);
         }
+    }
+
+    public static Dictionary<string, List<ApiKeyScopeViewModel>> GroupedApiScopes(PluginApiKeyScope scopes = PluginApiKeyScope.None)
+    {
+        var grouped = Enum
+            .GetValues<PluginApiKeyScope>()
+            .Select(scope =>
+            {
+                var attr = scope.GetAttribute<DisplayAttribute>();
+                var model = new ApiKeyScopeViewModel
+                {
+                    GroupName = attr.GroupName!,
+                    Name = attr.Name!,
+                    Description = attr.Description!,
+                    Value = scope,
+                    Selected = scopes.HasFlag(scope),
+                };
+                return model;
+            })
+            .GroupBy(x => x.GroupName!)
+            .ToDictionary(x => x.Key, x => x.ToList());
+        return grouped;
+    }
+
+    private static PluginApiKeyScope GetScope(Dictionary<string, List<ApiKeyScopeViewModel>> model)
+    {
+        var scopes = model.Values
+            .SelectMany(x => x)
+            .Where(scope => scope.Selected)
+            .Select(scope => scope.Value)
+            .ToList();
+
+        var scope = PluginApiKeyScope.None;
+        scopes.ForEach(x => scope = scope.SetFlag(x));
+
+        return scope;
     }
 }

@@ -10,7 +10,7 @@ public interface IApiKey
 
     string Key { get; }
 
-    List<PluginApiKeyScope>? Scope { get; }
+    PluginApiKeyScope Scope { get; }
 
     ulong ExpirationTimestamp { get; }
 

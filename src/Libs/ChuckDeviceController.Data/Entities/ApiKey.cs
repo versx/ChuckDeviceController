@@ -40,16 +40,15 @@ public class ApiKey : BaseEntity, IApiKey
         JsonPropertyName("scope"),
         DisplayName("Scope"),
         Column("scope"),
-        Required,
     ]
-    public List<PluginApiKeyScope>? Scope { get; set; }
+    public PluginApiKeyScope Scope { get; set; } = PluginApiKeyScope.None;
 
     [
         JsonPropertyName("expiration_timestamp"),
         DisplayName("Expires"),
         Column("expiration_timestamp"),
     ]
-    public ulong ExpirationTimestamp { get; set; }
+    public ulong ExpirationTimestamp { get; set; } = 0;
 
     [
         JsonPropertyName("enabled"),

@@ -83,11 +83,6 @@ public class ControllerDbContext : DbContext
         modelBuilder.Entity<ApiKey>(entity =>
         {
             entity.HasIndex(p => p.ExpirationTimestamp);
-            entity.Property(p => p.Scope)
-                  .HasConversion(
-                       DbContextFactory.CreateJsonValueConverter<List<PluginApiKeyScope>?>(),
-                       DbContextFactory.CreateValueComparer<PluginApiKeyScope>()
-                   );
         });
 
         modelBuilder.Entity<Assignment>(entity =>

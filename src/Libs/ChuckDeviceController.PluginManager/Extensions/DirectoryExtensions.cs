@@ -10,8 +10,9 @@ public static class DirectoryExtensions
             RecurseSubdirectories = true,
             ReturnSpecialDirectories = false,
         };
-        var assemblies = Directory.GetFiles(path, "*.*", enumerationOptions ?? options)
-                                  .Where(file => searchPattern.Contains(Path.GetExtension(file)));
+        var assemblies = Directory
+            .GetFiles(path, "*.*", enumerationOptions ?? options)
+            .Where(file => searchPattern.Contains(Path.GetExtension(file)));
         return assemblies;
     }
 

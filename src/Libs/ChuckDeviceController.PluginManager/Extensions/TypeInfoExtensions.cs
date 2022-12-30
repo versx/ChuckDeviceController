@@ -24,17 +24,19 @@ public static class TypeInfoExtensions
     public static IEnumerable<(FieldInfo, T?)> GetFieldsOfCustomAttribute<T>(this TypeInfo type)
         where T : Attribute
     {
-        return type.DeclaredFields
-                   .Where(f => f.CustomAttributes.Any(c => c.AttributeType.Name == typeof(T).Name))
-                   .Select(f => (f, f.GetCustomAttribute<T>()));
+        return type
+            .DeclaredFields
+            .Where(f => f.CustomAttributes.Any(c => c.AttributeType.Name == typeof(T).Name))
+            .Select(f => (f, f.GetCustomAttribute<T>()));
     }
 
     public static IEnumerable<(PropertyInfo, T?)> GetPropertiesOfCustomAttribute<T>(this TypeInfo type)
         where T : Attribute
     {
-        return type.DeclaredProperties
-                   .Where(p => p.CustomAttributes.Any(c => c.AttributeType.Name == typeof(T).Name))
-                   .Select(p => (p, p.GetCustomAttribute<T>()));
+        return type
+            .DeclaredProperties
+            .Where(p => p.CustomAttributes.Any(c => c.AttributeType.Name == typeof(T).Name))
+            .Select(p => (p, p.GetCustomAttribute<T>()));
     }
 
     public static bool TrySetField<T>(this object instance, FieldInfo field, T fieldInstance)
@@ -67,9 +69,10 @@ public static class TypeInfoExtensions
 
     public static void SetPluginServiceFields(this object instance, IReadOnlyDictionary<Type, object> sharedServices)
     {
-        instance.GetType()
-                .GetTypeInfo()
-                .SetPluginServiceFields(instance, sharedServices);
+        instance
+            .GetType()
+            .GetTypeInfo()
+            .SetPluginServiceFields(instance, sharedServices);
     }
 
     public static void SetPluginServiceFields(this TypeInfo typeInfo, object instance, IReadOnlyDictionary<Type, object> sharedServices)
@@ -106,9 +109,10 @@ public static class TypeInfoExtensions
 
     public static void SetPluginServiceProperties(this object instance, IReadOnlyDictionary<Type, object> sharedServices)
     {
-        instance.GetType()
-                .GetTypeInfo()
-                .SetPluginServiceProperties(instance, sharedServices);
+        instance
+            .GetType()
+            .GetTypeInfo()
+            .SetPluginServiceProperties(instance, sharedServices);
     }
 
     public static void SetPluginServiceProperties(this TypeInfo typeInfo, object instance, IReadOnlyDictionary<Type, object> sharedServices)
