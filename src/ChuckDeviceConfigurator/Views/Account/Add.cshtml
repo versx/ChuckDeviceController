@@ -11,6 +11,11 @@
 @Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Account", ControllerText = "Accounts", CurrentPage = "Import Accounts" })
 
 <hr />
+
+<div class="alert alert-primary mb-3" role="alert">
+    <span>Supported Delimiters:</span><br /><code>, ; :</code>
+</div>
+
 <form asp-action="Add">
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
     <div class="form-floating mb-3">
@@ -19,7 +24,7 @@
         <span asp-validation-for="Level" class="text-danger"></span>
     </div>
     <div class="form-floating mb-3">
-        <textarea asp-for="Accounts" class="form-control" rows="10" placeholder="Delimiters supported: ; : ,"></textarea>
+        <textarea asp-for="Accounts" class="form-control" rows="10" placeholder="Supported Delimiters: ; : ,"></textarea>
         <label asp-for="Accounts"></label> <small class="text-muted"><i>Each account should be on a newline</i></small>
         <span asp-validation-for="Accounts" class="text-danger"></span>
     </div>

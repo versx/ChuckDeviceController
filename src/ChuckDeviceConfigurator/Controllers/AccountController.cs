@@ -209,8 +209,8 @@ public class AccountController : Controller
 
             foreach (var line in accountsList)
             {
-                // TODO: Add support for , : and ; delimiters
-                var split = line.Split(',');
+                // Support `, : ;` delimiters
+                var split = line.Split(new[] { ',', ';', ':' }, StringSplitOptions.RemoveEmptyEntries);
                 if (split.Length != 2)
                 {
                     _logger.LogWarning($"Invalid account format '{line}', skipping...");

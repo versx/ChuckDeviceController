@@ -59,7 +59,7 @@
     <div class="card">
         <div class="card-header"><b>User Permissions</b></div>
         <div class="card-body">
-            @for (var i = 0; i < Model.Roles.Count; i++)
+            @for (var i = 0; i < Model?.Roles.Count; i++)
             {
                 <div class="form-check">
                     <input type="hidden" asp-for="@Model.Roles[i].RoleId" />
