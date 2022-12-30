@@ -52,7 +52,7 @@ public class UIconsService : IUIconsService, IUIconsHost
         _baseIconUrl = baseIconUrl;
         IconFormat = iconFormat;
 
-        Task.Run(async () => await BuildIndexManifestAsync()).Wait();
+        Task.Run(BuildIndexManifestAsync).Wait();
     }
 
     #endregion

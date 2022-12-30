@@ -235,7 +235,10 @@ public class PvpRankGenerator : IPvpRankGenerator
         {
             if (_ranking.TryGetValue(league, out var value))
             {
-                cached = value[info];
+                if (value.ContainsKey(info))
+                {
+                    cached = value[info];
+                }
             }
         }
 
