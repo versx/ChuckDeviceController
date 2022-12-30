@@ -17,7 +17,7 @@ public static class DbContextFactory
     {
         new ObjectDataConverter<GeofenceData>(),
         new ObjectDataConverter<InstanceData>(),
-        new ObjectDataConverter<WebhookData>(),
+        //new ObjectDataConverter<WebhookData>(),
     };
 
     public static T CreateDbContext<T>(string connectionString, string? assemblyName = null, bool autoDetectChanges = false)

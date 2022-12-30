@@ -193,7 +193,8 @@ public class ControllerDbContext : DbContext
                        DbContextFactory.CreateValueComparer<WebhookType>()
                    );
             entity.Property(p => p.Data)
-                  .HasConversion(DbContextFactory.CreateJsonValueConverter<WebhookData?>(new[] { new ObjectDataConverter<WebhookData>() }));
+                  .HasConversion(DbContextFactory.CreateJsonValueConverter<WebhookData?>());
+                  //.HasConversion(DbContextFactory.CreateJsonValueConverter<WebhookData?>(new[] { new ObjectDataConverter<WebhookData>() }));
             entity.Property(nameof(Webhook.Geofences))
                   .HasConversion(
                        DbContextFactory.CreateJsonValueConverter<List<string>>(),

@@ -62,7 +62,7 @@ public class Webhook : BaseEntity, IWebhook
         DisplayName("Data"),
         Column("data"),
         JsonPropertyName("data"),
-        JsonConverter(typeof(ObjectDataConverter<WebhookData>)),
+        //JsonConverter(typeof(ObjectDataConverter<WebhookData>)),
     ]
     public WebhookData? Data { get; set; }
 

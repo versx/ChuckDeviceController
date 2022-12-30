@@ -1,5 +1,6 @@
 ﻿namespace ChuckDeviceController.Extensions.Json.Extensions;
 
+using System.Collections;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Reflection;
@@ -15,12 +16,12 @@ public static class PropertyInfoExtensions
 
     public static void SetPropertyValue<T>(this PropertyInfo property, T instance, object? value)
     {
+        var propertyDescriptor = property.GetPropertyDescriptor();
+        if (propertyDescriptor == null)
+            return;
+
         try
         {
-            var propertyDescriptor = property.GetPropertyDescriptor();
-            if (propertyDescriptor == null)
-                return;
-
             if (propertyDescriptor.PropertyType == typeof(object))
             {
                 // Data / Area
@@ -34,6 +35,17 @@ public static class PropertyInfoExtensions
 
                 property.SetValue(instance, value.ToJson());
             }
+            //else if (
+            //    propertyDescriptor.PropertyType == typeof(IEnumerable<>) ||
+            //    propertyDescriptor.PropertyType == typeof(ICollection<>) ||
+            //    propertyDescriptor.PropertyType == typeof(IList<>) ||
+            //    propertyDescriptor.PropertyType == typeof(IList) ||
+            //    propertyDescriptor.PropertyType == typeof(List<>) ||
+            //    propertyDescriptor.PropertyType == typeof(List<string>) ||
+            //    propertyDescriptor.PropertyType == typeof(Array))
+            //{
+            //    property.SetValue(instance, value.ToJson());
+            //}
             else
             {
                 var strValue = Convert.ToString(value);

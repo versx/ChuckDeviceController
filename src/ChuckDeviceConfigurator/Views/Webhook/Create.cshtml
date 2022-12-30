@@ -62,14 +62,17 @@
                     <div class="form-group mb-3 pokemon">
                         <label asp-for="Data.PokemonIds"></label> <small class="text-muted"><i>(i.e. 1_f123_c11_g1)</i></small>
                         <textarea asp-for="Data.PokemonIds" class="form-control"></textarea>
+                        <span asp-validation-for="Data.PokemonIds" class="text-danger"></span>
                     </div>
                     <div class="form-group mb-3 pokestops">
                         <label asp-for="Data.PokestopIds"></label>
                         <textarea asp-for="Data.PokestopIds" class="form-control"></textarea>
+                        <span asp-validation-for="Data.PokestopIds" class="text-danger"></span>
                     </div>
                     <div class="form-group mb-3 raids">
                         <label asp-for="Data.RaidPokemonIds"></label> <small class="text-muted"><i>(i.e. 150_f123_c11_g1)</i></small>
                         <textarea asp-for="Data.RaidPokemonIds" class="form-control"></textarea>
+                        <span asp-validation-for="Data.RaidPokemonIds" class="text-danger"></span>
                     </div>
                     <div class="form-group mb-3 eggs">
                         <label asp-for="Data.EggLevels"></label>
