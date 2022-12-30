@@ -167,11 +167,11 @@ internal class RepositoryTests
         Console.WriteLine($"Time taken: {timeTaken}s");
 
         await Task.CompletedTask;
-        Assert.That(true, Is.True);
+        Assert.Pass();
     }
 
     [Test]
-    public async Task TestUpdatePokestopWithAllProperties()
+    public void TestUpdatePokestopWithAllProperties()
     {
         var now = DateTime.UtcNow.ToTotalSeconds();
         var timeTaken = BenchmarkAction(async () =>
@@ -193,8 +193,7 @@ internal class RepositoryTests
         });
         Console.WriteLine($"Time taken: {timeTaken}s");
 
-        await Task.CompletedTask;
-        Assert.That(true, Is.True);
+        Assert.Pass();
     }
 
     [Test]

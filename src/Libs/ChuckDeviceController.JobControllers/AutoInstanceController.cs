@@ -128,11 +128,11 @@ public class AutoInstanceController : IJobController
 
         _logger.LogInformation($"[{Name}] Clearing Quests in {timeLeft:N0}s at 12:00 AM (Currently: {localTime})");
 
-        Task.Run(async () => await UpdateAsync()).Wait();
+        Task.Run(UpdateAsync).Wait();
 
         if (!IgnoreS2CellBootstrap)
         {
-            Task.Run(async () => await BootstrapAsync()).Wait();
+            Task.Run(BootstrapAsync).Wait();
         }
     }
 

@@ -20,7 +20,7 @@ internal class FortTests
     public void Setup()
     {
         _connection = new MySqlConnection(ConnectionString);
-        Task.Run(async () => await _connection.OpenAsync()).Wait();
+        Task.Run(_connection.OpenAsync).Wait();
     }
 
     [TestCase("a59634f8aec34f9b8e7b265124d78ac8.16")]

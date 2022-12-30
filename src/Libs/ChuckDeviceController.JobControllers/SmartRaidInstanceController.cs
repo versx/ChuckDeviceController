@@ -89,7 +89,7 @@ public class SmartRaidInstanceController : IJobController
         _smartRaidPointsUpdated = new ConcurrentDictionary<ICoordinate, ulong>(DefaultConcurrencyLevel, DefaultCapacity);
 
         // Load/build gyms list for smart raid cache
-        Task.Run(async () => await LoadGymsAsync()).Wait();
+        Task.Run(LoadGymsAsync).Wait();
 
         _timer = new System.Timers.Timer(GymInfoSyncS * 1000); // 30 second interval
         _timer.Elapsed += async (sender, e) => await UpdateGymInfoAsync();

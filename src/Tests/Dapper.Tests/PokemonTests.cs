@@ -21,7 +21,7 @@ internal class PokemonTests
     public void SetUp()
     {
         _connection = new MySqlConnection(ConnectionString);
-        Task.Run(async () => await _connection.OpenAsync()).Wait();
+        Task.Run(_connection.OpenAsync).Wait();
     }
 
     [TestCase("10782810733712845072")] // encounter

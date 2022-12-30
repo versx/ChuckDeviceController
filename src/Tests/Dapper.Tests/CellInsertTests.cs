@@ -42,7 +42,7 @@ ON DUPLICATE KEY UPDATE
     public void Setup()
     {
         _connection = new MySqlConnection(ConnectionString);
-        Task.Run(async () => await _connection.OpenAsync()).Wait();
+        Task.Run(_connection.OpenAsync).Wait();
     }
 
     /* 1 Million Rows Insert

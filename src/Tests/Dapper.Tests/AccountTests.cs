@@ -17,7 +17,7 @@ internal class AccountTests
     public void Setup()
     {
         _connection = new MySqlConnection(ConnectionString);
-        //Task.Run(async () => await _connection.OpenAsync()).Wait();
+        //Task.Run(_connection.OpenAsync).Wait();
     }
 
     [Test]
@@ -29,19 +29,6 @@ internal class AccountTests
         {
             Console.WriteLine($"Column: {columnName}");
         }
-        Assert.IsTrue(true);
-    }
-
-    private static void SetTypeMap<TEntity>()
-    {
-        SqlMapper.SetTypeMap(
-            typeof(TEntity),
-            new CustomPropertyTypeMap(
-                typeof(TEntity),
-                (type, columnName) =>
-                    type.GetProperties().FirstOrDefault(prop =>
-                        prop.GetCustomAttributes(false)
-                            .OfType<ColumnAttribute>()
-                            .Any(attr => attr.Name == columnName))));
+        Assert.Pass();
     }
 }
