@@ -20,9 +20,9 @@ public static partial class HttpContextExtensions
             throw new ArgumentNullException(nameof(context));
         }
 
-        if (context.Items.ContainsKey(ExtensionLowered))
+        if (context.Items.TryGetValue(ExtensionLowered, out var value))
         {
-            return context.Items[ExtensionLowered]?.ToString() ?? string.Empty;
+            return value?.ToString() ?? string.Empty;
         }
 
         var route = context.GetRoute(toLower: true);
@@ -45,9 +45,9 @@ public static partial class HttpContextExtensions
         }
 
         var cacheKey = toLower ? LoweredRoute : RouteNormal;
-        if (context.Items.ContainsKey(cacheKey))
+        if (context.Items.TryGetValue(cacheKey, out var value))
         {
-            return context.Items[cacheKey]?.ToString() ?? string.Empty;
+            return value?.ToString() ?? string.Empty;
         }
 
         var route = context.Request.Path.ToString();

@@ -403,18 +403,16 @@ public class SmartRaidInstanceController : IJobController
 
     private async Task<List<Gym>> GetGymsAsync(List<string>? ids = null)
     {
-        using (var context = _factory.CreateDbContext())
+        using var context = _factory.CreateDbContext();
+        if (!(ids?.Any() ?? false))
         {
-            if (!(ids?.Any() ?? false))
-            {
-                var allGyms = context.Gyms.ToList();
-                return await Task.FromResult(allGyms);
-            }
-
-            var gyms = context.Gyms.Where(gym => ids!.Contains(gym.Id))
-                                   .ToList();
-            return gyms;
+            var allGyms = context.Gyms.ToList();
+            return await Task.FromResult(allGyms);
         }
+
+        var gyms = context.Gyms.Where(gym => ids!.Contains(gym.Id))
+                               .ToList();
+        return gyms;
     }
 
     #endregion

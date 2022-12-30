@@ -112,7 +112,7 @@ public class SqlBulk
         var rowsAffected = 0;
         var batchCount = 0;
         var expectedCount = entities.Count();
-        IEnumerable<string>? sqls = default;
+        IEnumerable<string>? sqls;
 
         try
         {

@@ -10,11 +10,8 @@ using ChuckDeviceController.Common;
 [Authorize(Roles = RoleConsts.BenchmarksRole)]
 public class MemoryController : Controller
 {
-    private readonly ILogger<MemoryController> _logger;
-
-    public MemoryController(ILogger<MemoryController> logger)
+    public MemoryController() 
     {
-        _logger = logger;
     }
 
     public IActionResult Index()

@@ -233,12 +233,9 @@ public class PvpRankGenerator : IPvpRankGenerator
 
         lock (_rankLock)
         {
-            if (_ranking.ContainsKey(league))
+            if (_ranking.TryGetValue(league, out var value))
             {
-                if (_ranking[league].ContainsKey(info))
-                {
-                    cached = _ranking[league][info];
-                }
+                cached = value[info];
             }
         }
 

@@ -30,7 +30,7 @@ public abstract class DapperGenericRepository<TKey, TEntity> : IDapperGenericRep
     #region Variables
 
     private static IEnumerable<PropertyInfo> GetProperties => typeof(TEntity).GetProperties();
-    private static Func<string, string> ParamTemplateFunc = new(property => $"@{property}");
+    private static readonly Func<string, string> ParamTemplateFunc = new(property => $"@{property}");
 
     private readonly string _tableName;
     private readonly string _connectionString;

@@ -305,10 +305,7 @@ public class UnitOfWorkDapper : IUnitOfWorkDapper
 
     public void Dispose()
     {
-        if (_transaction != null)
-        {
-            _transaction.Dispose();
-        }
+        _transaction?.Dispose();
         _transaction = null!;
 
         GC.SuppressFinalize(this);

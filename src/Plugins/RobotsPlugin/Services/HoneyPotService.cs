@@ -36,11 +36,7 @@ public class HoneyPotService : IHoneyPotService
         _loggingHost.LogInformation($"Honey pot triggered by web crawler bot: {ipAddress} - {userAgent}");
 
         // Check if throws error when not found
-        var log = _fileStorageHost.Load<List<HoneyPotEvent>>(DefaultLogFolderName, DefaultLogFileName);
-        if (log == null)
-        {
-            log = new();
-        }
+        var log = _fileStorageHost.Load<List<HoneyPotEvent>>(DefaultLogFolderName, DefaultLogFileName) ?? new();
         log.Add(new(ipAddress, userAgent));
 
         _fileStorageHost.Save(log, DefaultLogFolderName, DefaultLogFileName, prettyPrint: true);

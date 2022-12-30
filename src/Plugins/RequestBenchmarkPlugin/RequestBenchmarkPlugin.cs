@@ -22,7 +22,7 @@ public class RequestBenchmarkPlugin : IPlugin
 
     private readonly IUiHost _uiHost;
     private readonly IConfiguration _config;
-    private readonly IAuthorizeHost _authHost;
+    //private readonly IAuthorizeHost _authHost;
 
     #region Plugin Metadata Properties
 
@@ -38,11 +38,14 @@ public class RequestBenchmarkPlugin : IPlugin
 
     #region Constructor
 
-    public RequestBenchmarkPlugin(IUiHost uiHost, IConfigurationHost configHost, IAuthorizeHost authHost)
+    public RequestBenchmarkPlugin(
+        IUiHost uiHost,
+        IConfigurationHost configHost)
+        //IAuthorizeHost authHost)
     {
         _uiHost = uiHost;
         _config = configHost.GetConfiguration();
-        _authHost = authHost;
+        //_authHost = authHost;
     }
 
     #endregion

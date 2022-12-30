@@ -22,11 +22,8 @@ public class TimeZoneService : ITimeZoneService
         {
             throw new FileNotFoundException($"Time zone database file '{TimeZonesFileName}' does not exist!", filePath);
         }
-        var obj = filePath.LoadFromFile<Dictionary<string, TimeZoneOffsetData>>();
-        if (obj == null)
-        {
-            throw new NullReferenceException($"Failed to deserialize time zone manifest.");
-        }
+        var obj = filePath.LoadFromFile<Dictionary<string, TimeZoneOffsetData>>()
+            ?? throw new NullReferenceException($"Failed to deserialize time zone manifest.");
         TimeZones = obj;
     }
 }

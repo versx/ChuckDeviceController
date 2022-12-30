@@ -633,14 +633,12 @@ public class AutoInstanceController : IJobController
 
         PokestopWithMode? closest;
         var key = modeKey;
-        bool? mode = _lastMode.ContainsKey(key)
-            ? _lastMode[key]
-            : null;
+        bool? mode = _lastMode.TryGetValue(key, out var value) ? value : null;
         if (mode == null)
         {
             closest = closestOverall;
         }
-        else if (_lastMode.ContainsKey(key) && !_lastMode[key])
+        else if (_lastMode.TryGetValue(key, out var lastModeValue) && !lastModeValue)
         {
             closest = closestNormal ?? closestOverall;
         }
@@ -694,8 +692,8 @@ public class AutoInstanceController : IJobController
             {
                 var pokestopWithMode = new PokestopWithMode(stop, isAlternative);
                 var key = (stop.Id, isAlternative);
-                var spinAttemptsCount = _todayStopsAttempts.ContainsKey(key)
-                    ? _todayStopsAttempts[key]
+                var spinAttemptsCount = _todayStopsAttempts.TryGetValue(key, out var value)
+                    ? value
                     : 0;
                 // Check if Pokestop does not have any quests found and spin attempts is less
                 // than or equal to max spin attempts allowed
@@ -911,31 +909,29 @@ public class AutoInstanceController : IJobController
     private async Task<Account?> GetAccountAsync(string uuid, Coordinate encounterTarget)
     {
         // TODO: Check account against encounterTarget to see if too far
-        using (var context = _deviceFactory.CreateDbContext())
+        using var context = _deviceFactory.CreateDbContext();
+        if (_accounts.TryGetValue(uuid, out var value))
         {
-            if (_accounts.ContainsKey(uuid))
+            var username = value;
+            var result = _accounts.TryRemove(uuid, out var _);
+            if (!result)
             {
-                var username = _accounts[uuid];
-                var result = _accounts.TryRemove(uuid, out var _);
-                if (!result)
-                {
-                    // Failed to remove account from cache
-                }
-                return await context.GetAccountAsync(username);
+                // Failed to remove account from cache
             }
-
-            var account = await context.GetNewAccountAsync(
-                MinimumLevel,
-                MaximumLevel,
-                UseWarningAccounts,
-                SpinLimit,
-                noCooldown: true,
-                GroupName,
-                Strings.CooldownLimitS,
-                Strings.SuspensionTimeLimitS
-            );
-            return account;
+            return await context.GetAccountAsync(username);
         }
+
+        var account = await context.GetNewAccountAsync(
+            MinimumLevel,
+            MaximumLevel,
+            UseWarningAccounts,
+            SpinLimit,
+            noCooldown: true,
+            GroupName,
+            Strings.CooldownLimitS,
+            Strings.SuspensionTimeLimitS
+        );
+        return account;
     }
 
     #endregion

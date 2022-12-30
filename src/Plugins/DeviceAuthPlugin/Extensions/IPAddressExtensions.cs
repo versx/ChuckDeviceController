@@ -68,8 +68,7 @@ public static class IPAddressExtensions
         }
 
         // Now find out how long the prefix is.
-        int maskLength = int.Parse(subnetMask.Substring(slashIdx + 1));
-
+        var maskLength = int.Parse(subnetMask[(slashIdx + 1)..]);
         if (maskLength == 0)
         {
             return true;

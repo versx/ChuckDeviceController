@@ -10,14 +10,10 @@ using Services;
 [Authorize(Roles = PogoEventsPlugin.PogoEventsRole)]
 public class EventController : Controller
 {
-    private readonly ILogger<EventController> _logger;
     private readonly IPokemonEventDataService _pokemonEventService;
 
-    public EventController(
-        ILogger<EventController> logger,
-        IPokemonEventDataService pokemonEventService)
+    public EventController(IPokemonEventDataService pokemonEventService)
     {
-        _logger = logger;
         _pokemonEventService = pokemonEventService;
     }
 

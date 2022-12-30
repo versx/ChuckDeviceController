@@ -64,7 +64,7 @@ public class UserController : Controller
             var userRolesViewModel = new ManageUserRolesViewModel
             {
                 RoleId = role.Id,
-                RoleName = role.Name,
+                RoleName = role.Name!,
                 Selected = false,
             };
             roles.Add(userRolesViewModel);
@@ -186,8 +186,8 @@ public class UserController : Controller
 
         var model = new ManageUserViewModel
         {
-            UserName = user.UserName,
-            Email = user.Email,
+            UserName = user.UserName!,
+            Email = user.Email!,
         };
 
         var roles = await _userManager.GetRolesAsync(user);
@@ -196,7 +196,7 @@ public class UserController : Controller
             var userRolesViewModel = new ManageUserRolesViewModel
             {
                 RoleId = role.Id,
-                RoleName = role.Name,
+                RoleName = role.Name!,
                 Selected = roles.Contains(role.Name!),
             };
             model.Roles.Add(userRolesViewModel);

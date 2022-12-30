@@ -66,7 +66,7 @@ public class RouteGenerator : IRoutingHost
 
     #region Route Generator Methods
 
-    private List<ICoordinate> GenerateBootstrapRoute(List<IMultiPolygon> multiPolygons, RouteGeneratorOptions options)
+    private static List<ICoordinate> GenerateBootstrapRoute(List<IMultiPolygon> multiPolygons, RouteGeneratorOptions options)
     {
         var coordinates = new List<ICoordinate>();
         foreach (var multiPolygon in multiPolygons)
@@ -77,7 +77,7 @@ public class RouteGenerator : IRoutingHost
         return coordinates;
     }
 
-    private List<ICoordinate> GenerateBootstrapRoute(IMultiPolygon multiPolygon, RouteGeneratorOptions options)
+    private static List<ICoordinate> GenerateBootstrapRoute(IMultiPolygon multiPolygon, RouteGeneratorOptions options)
     {
         var radius = options.RadiusM;
         var xMod = Math.Sqrt(0.75);
@@ -124,7 +124,7 @@ public class RouteGenerator : IRoutingHost
         return points;
     }
 
-    private List<ICoordinate> GenerateRandomRoute(List<IMultiPolygon> multiPolygons, uint maxPoints = 500)
+    private static List<ICoordinate> GenerateRandomRoute(List<IMultiPolygon> multiPolygons, uint maxPoints = 500)
     {
         var coordinates = new List<ICoordinate>();
         foreach (var multiPolygon in multiPolygons)
@@ -135,14 +135,14 @@ public class RouteGenerator : IRoutingHost
         return coordinates;
     }
 
-    private List<ICoordinate> GenerateRandomRoute(IMultiPolygon multiPolgyon, uint maxPoints = 500)
+    private static List<ICoordinate> GenerateRandomRoute(IMultiPolygon multiPolgyon, uint maxPoints = 500)
     {
         var coordinates = multiPolgyon.ToCoordinates();
         var routeCoords = Calculate(coordinates, maxPoints);
         return routeCoords;
     }
 
-    private List<ICoordinate> GenerateOptimizedRoute(List<IMultiPolygon> multiPolygons)
+    private static List<ICoordinate> GenerateOptimizedRoute(List<IMultiPolygon> multiPolygons)
     {
         var coordinates = new List<ICoordinate>();
         foreach (var multiPolygon in multiPolygons)
@@ -153,7 +153,7 @@ public class RouteGenerator : IRoutingHost
         return coordinates;
     }
 
-    private List<ICoordinate> GenerateOptimizedRoute(IMultiPolygon multiPolygon)
+    private static List<ICoordinate> GenerateOptimizedRoute(IMultiPolygon multiPolygon)
     {
         var polygon = multiPolygon.ToCoordinates();
         var bbox = polygon.GetBoundingBox();

@@ -39,7 +39,7 @@ public class RazorTestPlugin : IPlugin
     // When decorated with the 'PluginBootstrapperService' attribute, the
     // property will be initalized by the host's service implementation.
     [PluginBootstrapperService(typeof(IUiHost))]
-    private readonly IUiHost _uiHost;
+    private readonly IUiHost _uiHost = null!;
 
     #endregion
 

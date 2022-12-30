@@ -73,7 +73,7 @@ public class RobotsPlugin : IPlugin
 
     public async void OnLoad()
     {
-        _uiHost.AddSidebarItemAsync(new SidebarItem
+        await _uiHost.AddSidebarItemAsync(new SidebarItem
         {
             Text = "Robots",
             ActionName = "Index",

@@ -1,4 +1,6 @@
-﻿namespace ChuckDeviceControllerPlugin;
+﻿#pragma warning disable IDE0051 // Remove unused private members
+#pragma warning disable IDE0052 // Remove unread private members
+namespace ChuckDeviceControllerPlugin;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -34,7 +36,7 @@ public class ChuckPlugin : IPlugin, IDatabaseEvents, IJobControllerServiceEvents
     // related service class.
 
     // Used for logging messages to the host application from the plugin
-    private readonly ILoggingHost _loggingHost;
+    private readonly ILoggingHost _loggingHost = null!;
 
     // Interacts with the job controller instance service to add new job
     // controllers.
@@ -45,10 +47,10 @@ public class ChuckPlugin : IPlugin, IDatabaseEvents, IJobControllerServiceEvents
     // When decorated with the 'PluginBootstrapperService' attribute, the
     // property will be initalized by the host's service implementation.
     [PluginBootstrapperService(typeof(IDatabaseHost))]
-    private readonly IDatabaseHost _databaseHost;
+    private readonly IDatabaseHost _databaseHost = null!;
 
     // Translate text based on the set locale in the host application.
-    private readonly ILocalizationHost _localeHost;
+    private readonly ILocalizationHost _localeHost = null!;
 
     // Expand your plugin implementation by adding user interface elements
     // and pages to the dashboard.
@@ -56,7 +58,7 @@ public class ChuckPlugin : IPlugin, IDatabaseEvents, IJobControllerServiceEvents
     // When decorated with the 'PluginBootstrapperService' attribute, the
     // property will be initalized by the host's service implementation.
     [PluginBootstrapperService(typeof(IUiHost))]
-    private readonly IUiHost _uiHost;
+    private readonly IUiHost _uiHost = null!;
 
     // Manage files local to your plugin's folder using saving and loading
     // implementations.
@@ -64,10 +66,10 @@ public class ChuckPlugin : IPlugin, IDatabaseEvents, IJobControllerServiceEvents
     // When decorated with the 'PluginBootstrapperService' attribute, the
     // property will be initalized by the host's service implementation.
     [PluginBootstrapperService(typeof(IFileStorageHost))]
-    private readonly IFileStorageHost _fileStorageHost;
+    private readonly IFileStorageHost _fileStorageHost = null!;
 
     [PluginBootstrapperService(typeof(IConfigurationHost))]
-    private readonly IConfigurationHost _configurationHost;
+    private readonly IConfigurationHost _configurationHost = null!;
 
     #endregion
 
@@ -107,7 +109,7 @@ public class ChuckPlugin : IPlugin, IDatabaseEvents, IJobControllerServiceEvents
     ///     property will be initalized by the host's service implementation.
     /// </remarks>
     [PluginBootstrapperService(typeof(IUiHost))]
-    public IUiHost UiHost { get; set; }
+    public IUiHost UiHost { get; set; } = null!;
 
     #endregion
 
@@ -153,7 +155,7 @@ public class ChuckPlugin : IPlugin, IDatabaseEvents, IJobControllerServiceEvents
         // Example routing using minimal APIs
         // We can configure routing here using 'Minimal APIs' or using Mvc Controller classes
         // Minimal API's Reference: https://docs.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis?view=aspnetcore-6.0
-        appBuilder.MapDelete("example", async (httpContext) => { });
+        appBuilder.MapDelete("example", async (httpContext) => await Task.CompletedTask);
 
         appBuilder.MapGet("example/hello/{name}", async (httpContext) =>
         {
@@ -289,3 +291,5 @@ public class ChuckPlugin : IPlugin, IDatabaseEvents, IJobControllerServiceEvents
 
     #endregion
 }
+#pragma warning restore IDE0051 // Remove unused private members
+#pragma warning restore IDE0052 // Remove unread private members

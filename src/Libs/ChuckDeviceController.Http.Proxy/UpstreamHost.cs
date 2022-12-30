@@ -91,7 +91,7 @@ public sealed class UpstreamHost : IEquatable<UpstreamHost>
 
     public bool Equals(UpstreamHost? other)
     {
-        if (ReferenceEquals(null, other))
+        if (other is null)
             return false;
 
         if (ReferenceEquals(this, other))
@@ -104,7 +104,7 @@ public sealed class UpstreamHost : IEquatable<UpstreamHost>
 
     public override bool Equals(object? obj)
     {
-        if (ReferenceEquals(null, obj))
+        if (obj is null)
             return false;
 
         if (ReferenceEquals(this, obj))
@@ -118,13 +118,7 @@ public sealed class UpstreamHost : IEquatable<UpstreamHost>
 
     public override int GetHashCode()
     {
-        unchecked
-        {
-            var hashCode = Scheme.GetHashCode();
-            hashCode = (hashCode * 397) ^ Host.GetHashCode();
-            hashCode = (hashCode * 397) ^ PathBase.GetHashCode();
-            return hashCode;
-        }
+        return HashCode.Combine(Scheme, Host, PathBase);
     }
 
     public static bool operator ==(UpstreamHost left, UpstreamHost right) => Equals(left, right);

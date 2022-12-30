@@ -44,9 +44,9 @@ internal class FortTests
         //var pokestop = await _connection.QueryFirstOrDefaultAsync<Pokestop>(GetPokestopById, new { id = pokestopId }, commandTimeout: 30);
         //Assert.That(pokestop, Is.Not.Null);
 
-        var instance = Activator.CreateInstance(typeof(Pokestop)) as Pokestop;
-        var columnNames = GetPropertyNames(instance);//typeof(Pokestop));
-        var columnNamesSql = string.Join(", ", columnNames);
+        //var instance = Activator.CreateInstance(typeof(Pokestop)) as Pokestop;
+        //var columnNames = GetPropertyNames(instance);//typeof(Pokestop));
+        //var columnNamesSql = string.Join(", ", columnNames);
         //var sql = $"SELECT {columnNamesSql} FROM pokestop WHERE id = '{pokestopId}'";
         var sql = $"SELECT * FROM pokestop WHERE id = '{pokestopId}'";
         var pokestop = await _connection.QueryFirstOrDefaultAsync<Pokestop>(sql);
@@ -54,15 +54,16 @@ internal class FortTests
     }
 
     [Test]
-    public async Task TestGymDefender()
+    public void TestGymDefender()
     {
         var instance = Activator.CreateInstance(typeof(GymDefender)) as GymDefender;
         var columnNames = GetPropertyNames(instance);
-        Assert.IsTrue(true);
+        Console.WriteLine($"ColumnNames: {columnNames}");
+        Assert.Pass();
     }
 
     [Test]
-    public async Task TestGymTrainer()
+    public void TestGymTrainer()
     {
         var instance = Activator.CreateInstance(typeof(GymTrainer)) as GymTrainer;
         var columnNames = GetPropertyNames(instance);
@@ -70,7 +71,7 @@ internal class FortTests
         {
             Console.WriteLine(columnName);
         }
-        Assert.IsTrue(true);
+        Assert.Pass();
     }
 
     private static void SetTypeMap<TEntity>()

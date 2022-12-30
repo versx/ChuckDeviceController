@@ -82,18 +82,16 @@ public static class Cooldown
             return;
         }
 
-        using (var context = factory.CreateDbContext())
-        {
-            context.Attach(account);
-            account.LastEncounterLatitude = location.Latitude;
-            account.LastEncounterLongitude = location.Longitude;
-            account.LastEncounterTime = encounterTime;
-            context.Entry(account).Property(p => p.LastEncounterLatitude).IsModified = true;
-            context.Entry(account).Property(p => p.LastEncounterLongitude).IsModified = true;
-            context.Entry(account).Property(p => p.LastEncounterTime).IsModified = true;
+        using var context = factory.CreateDbContext();
+        context.Attach(account);
+        account.LastEncounterLatitude = location.Latitude;
+        account.LastEncounterLongitude = location.Longitude;
+        account.LastEncounterTime = encounterTime;
+        context.Entry(account).Property(p => p.LastEncounterLatitude).IsModified = true;
+        context.Entry(account).Property(p => p.LastEncounterLongitude).IsModified = true;
+        context.Entry(account).Property(p => p.LastEncounterTime).IsModified = true;
 
-            await context.SaveChangesAsync();
-        }
+        await context.SaveChangesAsync();
     }
 
     public static async Task SetSpinCountAsync(IDbContextFactory<ControllerDbContext> factory, string accountUsername)
@@ -104,20 +102,18 @@ public static class Cooldown
             return;
         }
 
-        using (var context = factory.CreateDbContext())
+        using var context = factory.CreateDbContext();
+        var account = await context.Accounts.FindAsync(accountUsername);
+        if (account == null)
         {
-            var account = await context.Accounts.FindAsync(accountUsername);
-            if (account == null)
-            {
-                Console.WriteLine($"Failed to increase account spin count, unable to retrieve account");
-                return;
-            }
-
-            context.Attach(account);
-            account.Spins++;
-            context.Entry(account).Property(p => p.Spins).IsModified = true;
-            await context.SaveChangesAsync();
+            Console.WriteLine($"Failed to increase account spin count, unable to retrieve account");
+            return;
         }
+
+        context.Attach(account);
+        account.Spins++;
+        context.Entry(account).Property(p => p.Spins).IsModified = true;
+        await context.SaveChangesAsync();
     }
 }
 

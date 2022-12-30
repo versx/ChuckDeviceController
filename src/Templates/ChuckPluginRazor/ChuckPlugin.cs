@@ -32,7 +32,7 @@ public class ChuckPluginRazor : IPlugin
     // related service class.
 
     // Used for logging messages to the host application from the plugin
-    private readonly ILoggingHost _loggingHost;
+    private readonly ILoggingHost _loggingHost = null!;
 
     // Expand your plugin implementation by adding user interface elements
     // and pages to the dashboard.
@@ -40,7 +40,7 @@ public class ChuckPluginRazor : IPlugin
     // When decorated with the 'PluginBootstrapperService' attribute, the
     // property will be initalized by the host's service implementation.
     [PluginBootstrapperService(typeof(IUiHost))]
-    private readonly IUiHost _uiHost;
+    private readonly IUiHost _uiHost = null!;
 
     #endregion
 

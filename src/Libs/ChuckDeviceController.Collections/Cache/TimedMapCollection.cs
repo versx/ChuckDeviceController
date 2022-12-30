@@ -27,9 +27,9 @@ public class TimedMapCollection<TKey, TValue>
     {
         lock (_lock )
         {
-            if (_entries.ContainsKey(key))
+            if (_entries.TryGetValue(key, out var result))
             {
-                var lastIndex = _entries[key]?.FindLastIndex(value => value.Time >= time);
+                var lastIndex = result?.FindLastIndex(v => v.Time >= time);
                 if (lastIndex > -1)
                 {
                     _entries[key].Insert(lastIndex ?? 0, new(time, value));
@@ -55,9 +55,9 @@ public class TimedMapCollection<TKey, TValue>
         TValue? value = null;
         lock (_lock )
         {
-            if (_entries.ContainsKey(key))
+            if (_entries.TryGetValue(key, out var result))
             {
-                value = _entries[key].FindLast(x => x.Time >= time)?.Value;
+                value = result.FindLast(x => x.Time >= time)?.Value;
             }
         }
         return value;

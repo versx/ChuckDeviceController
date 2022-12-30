@@ -49,7 +49,9 @@ public class TestController : Controller // ControllerBase, Controller
     }
 
     // GET: Test/Details/test
+#pragma warning disable IDE0060 // Remove unused parameter
     public ActionResult Details(string name)
+#pragma warning restore IDE0060 // Remove unused parameter
     {
         return View();
     }
