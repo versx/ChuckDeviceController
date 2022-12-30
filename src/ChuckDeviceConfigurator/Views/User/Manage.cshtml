@@ -18,9 +18,12 @@
             <h4>User Account '@(Model?.UserName)'</h4>
         </div>
         <div class="float-end">
-            <a asp-action="Delete" asp-route-id="@ViewBag.UserId" class="btn btn-danger btn-sm">
-                <i class="fa-solid fa-trash"></i>&nbsp;Delete
-            </a>
+            @if (Model?.UserName != Strings.DefaultUserName)
+            {
+                <a asp-action="Delete" asp-route-id="@ViewBag.UserId" class="btn btn-danger btn-sm">
+                    <i class="fa-solid fa-trash"></i>&nbsp;Delete
+                </a>
+            }
             &nbsp;
             <button type="submit" class="btn btn-primary btn-sm">
                 <i class="fa-solid fa-floppy-disk"></i>&nbsp;Save
@@ -55,7 +58,7 @@
         </div>
         <div class="col-sm col-lg-6">
             <div class="form-floating mb-3">
-                <input asp-for="ConfirmPassword" type="password" class="form-control" placeholder=Confirmed user account password"" />
+                <input asp-for="ConfirmPassword" type="password" class="form-control" placeholder="Confirmed user account password" />
                 <label asp-for="ConfirmPassword"></label>
                 <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
             </div>
