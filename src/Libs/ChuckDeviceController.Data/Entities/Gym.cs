@@ -29,7 +29,7 @@ public class Gym : BaseFort, IGym, IWebhookEntity
     public ushort AvailableSlots { get; set; }
 
     [Column("team_id")]
-    public Team Team { get; set; }
+    public ushort Team { get; set; }
 
     [Column("in_battle")]
     public bool InBattle { get; set; }
@@ -113,7 +113,7 @@ public class Gym : BaseFort, IGym, IWebhookEntity
         Longitude = fortData.Longitude;
         IsEnabled = fortData.Enabled;
         GuardingPokemonId = Convert.ToUInt32(fortData.GuardPokemonId);
-        Team = fortData.Team;
+        Team = Convert.ToUInt16(fortData.Team);
         AvailableSlots = Convert.ToUInt16(fortData.GymDisplay?.SlotsAvailable ?? 0);
         LastModifiedTimestamp = Convert.ToUInt64(fortData.LastModifiedMs / 1000);
         IsExRaidEligible = fortData.IsExRaidEligible;
@@ -135,7 +135,7 @@ public class Gym : BaseFort, IGym, IWebhookEntity
             Url = fortData.ImageUrl;
         }
 
-        TotalCP = fortData.Team == Team.Unset
+        TotalCP = fortData.Team == 0
             ? 0
             : Convert.ToInt32(fortData?.GymDisplay?.TotalGymCp ?? 0);
 

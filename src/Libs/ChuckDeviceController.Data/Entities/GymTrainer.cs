@@ -1,6 +1,5 @@
 ﻿namespace ChuckDeviceController.Data.Entities;
 
-using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -26,7 +25,7 @@ public class GymTrainer : BaseEntity, IGymTrainer, IWebhookEntity
     public ushort Level { get; set; }
 
     [Column("team_id")]
-    public Team TeamId { get; set; }
+    public ushort TeamId { get; set; }
 
     [Column("battles_won")]
     public uint BattlesWon { get; set; }
@@ -44,10 +43,10 @@ public class GymTrainer : BaseEntity, IGymTrainer, IWebhookEntity
     public ulong Experience { get; set; }
 
     [Column("combat_rank")]
-    public ulong CombatRank { get; set; }
+    public uint CombatRank { get; set; }
 
     [Column("combat_rating")]
-    public ulong CombatRating { get; set; }
+    public double CombatRating { get; set; }
 
     [Column("has_shared_ex_pass")]
     public bool HasSharedExPass { get; set; }
@@ -75,13 +74,13 @@ public class GymTrainer : BaseEntity, IGymTrainer, IWebhookEntity
         //profileData.TimedGroupChallengeStats.Challenges[0].
         Name = profileData.Name;
         Level = Convert.ToUInt16(profileData.Level);
-        TeamId = profileData.Team;
+        TeamId = Convert.ToUInt16(profileData.Team);
         BattlesWon = Convert.ToUInt32(profileData.BattlesWon);
         KmWalked = profileData.KmWalked;
         PokemonCaught = Convert.ToUInt64(profileData.CaughtPokemon);
         Experience = Convert.ToUInt64(profileData.Experience);
-        CombatRank = Convert.ToUInt64(profileData.CombatRank);
-        CombatRating = Convert.ToUInt64(profileData.CombatRating);
+        CombatRank = Convert.ToUInt32(profileData.CombatRank);
+        CombatRating = Convert.ToDouble(profileData.CombatRating);
         HasSharedExPass = profileData.HasSharedExPass;
         GymBadgeType = Convert.ToUInt16(profileData.GymBadgeType);
     }

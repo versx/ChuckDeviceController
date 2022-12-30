@@ -13,7 +13,7 @@ public class BaseFort : BaseEntity, ICoordinateEntity, IFortEntity
         Key,
         DatabaseGenerated(DatabaseGeneratedOption.None),
     ]
-    public string Id { get; set; }
+    public string Id { get; set; } = null!;
 
     [Column("lat")]
     public double Latitude { get; set; }
@@ -67,9 +67,4 @@ public class BaseFort : BaseEntity, ICoordinateEntity, IFortEntity
         Column("updated"),
     ]
     public ulong Updated { get; set; }
-
-    public BaseFort()
-    {
-        Id = string.Empty;
-    }
 }

@@ -6,7 +6,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 using Microsoft.EntityFrameworkCore;
 using POGOProtos.Rpc;
-using Gender = POGOProtos.Rpc.PokemonDisplayProto.Types.Gender;
 
 using ChuckDeviceController.Common;
 using ChuckDeviceController.Data.Abstractions;
@@ -40,7 +39,7 @@ public class GymDefender : BaseEntity, IGymDefender, IWebhookEntity
     public ushort Costume { get; set; }
 
     [Column("gender")]
-    public Gender Gender { get; set; }
+    public ushort Gender { get; set; }
 
     [Column("cp_when_deployed")]
     public uint CpWhenDeployed { get; set; }
@@ -182,7 +181,7 @@ public class GymDefender : BaseEntity, IGymDefender, IWebhookEntity
         DisplayPokemonId = Convert.ToUInt16(pokemon.Pokemon.DisplayPokemonId);
         Form = Convert.ToUInt16(pokemon.Pokemon.PokemonDisplay.Form);
         Costume = Convert.ToUInt16(pokemon.Pokemon.PokemonDisplay.Costume);
-        Gender = pokemon.Pokemon?.PokemonDisplay?.Gender ?? Gender.Unset;
+        Gender = Convert.ToUInt16(pokemon.Pokemon.PokemonDisplay.Gender);
         CpWhenDeployed = Convert.ToUInt32(pokemon.CpWhenDeployed);
         CpNow = Convert.ToUInt32(pokemon.CpNow);
         Cp = Convert.ToUInt32(pokemon.Pokemon?.Cp ?? 0);

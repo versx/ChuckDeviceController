@@ -14,7 +14,7 @@ public interface IGymDefender : IBaseEntity
 
     ushort Costume { get; }
 
-    // TODO: Gender Gender { get; }
+    ushort Gender { get; }
 
     uint CpWhenDeployed { get; }
 

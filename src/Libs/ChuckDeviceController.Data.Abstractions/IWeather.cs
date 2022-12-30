@@ -10,7 +10,7 @@ public interface IWeather : IBaseEntity
 
     double Longitude { get; }
 
-    // TODO: WeatherCondition GameplayCondition { get; }
+    ushort GameplayCondition { get; }
 
     ushort WindDirection { get; }
 

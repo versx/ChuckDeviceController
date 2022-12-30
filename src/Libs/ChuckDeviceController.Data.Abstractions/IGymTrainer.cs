@@ -6,7 +6,7 @@ public interface IGymTrainer : IBaseEntity
 
     ushort Level { get; }
 
-    // TODO: Team TeamId { get; }
+    ushort TeamId { get; }
 
     uint BattlesWon { get; }
 
@@ -16,9 +16,9 @@ public interface IGymTrainer : IBaseEntity
 
     ulong Experience { get; }
 
-    ulong CombatRank { get; }
+    uint CombatRank { get; }
 
-    ulong CombatRating { get; }
+    double CombatRating { get; }
 
     bool HasSharedExPass { get; }
 

@@ -28,7 +28,7 @@ public interface IGym : IBaseEntity
 
     ushort AvailableSlots { get; }
 
-    // TODO: Team Team { get; }
+    ushort Team { get; }
 
     ushort? RaidLevel { get; }
 

@@ -166,7 +166,6 @@ public class Pokestop : BaseFort, IPokestop, IWebhookEntity
 
     public Pokestop()
     {
-        Id = string.Empty;
     }
 
     public Pokestop(PokemonFortProto fortData, ulong s2cellId)
@@ -232,7 +231,7 @@ public class Pokestop : BaseFort, IPokestop, IWebhookEntity
         Id = fortData.Id;
         Latitude = fortData.Latitude;
         Longitude = fortData.Longitude;
-        if ((fortData.ImageUrl?.Count ?? 0) > 0)
+        if (fortData.ImageUrl?.Any() ?? false)
         {
             var url = fortData.ImageUrl?.FirstOrDefault();
             if (Url != url)

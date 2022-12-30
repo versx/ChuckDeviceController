@@ -4,7 +4,6 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 using POGOProtos.Rpc;
-using WeatherCondition = POGOProtos.Rpc.GameplayWeatherProto.Types.WeatherCondition;
 
 using ChuckDeviceController.Caching.Memory;
 using ChuckDeviceController.Common;
@@ -34,7 +33,7 @@ public partial class Weather : BaseEntity, IWeather, ICoordinateEntity, IWebhook
     public double Longitude { get; set; }
 
     [Column("gameplay_condition")]
-    public WeatherCondition GameplayCondition { get; set; }
+    public ushort GameplayCondition { get; set; }
 
     [Column("cloud_level")]
     public ushort CloudLevel { get; set; }
@@ -90,7 +89,7 @@ public partial class Weather : BaseEntity, IWeather, ICoordinateEntity, IWebhook
         Level = s2cell.Level;
         Latitude = center.LatDegrees;
         Longitude = center.LngDegrees;
-        GameplayCondition = weatherData.GameplayWeather.GameplayCondition;
+        GameplayCondition = Convert.ToUInt16(weatherData.GameplayWeather.GameplayCondition);
         WindDirection = Convert.ToUInt16(weatherData.DisplayWeather.WindDirection);
         CloudLevel = Convert.ToUInt16(weatherData.DisplayWeather.CloudLevel);
         RainLevel = Convert.ToUInt16(weatherData.DisplayWeather.RainLevel);

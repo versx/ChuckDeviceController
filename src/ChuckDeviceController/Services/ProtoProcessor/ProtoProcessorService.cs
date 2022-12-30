@@ -125,7 +125,7 @@ public class ProtoProcessorService : TimedHostedService, IProtoProcessorService
         await Task.CompletedTask;
     }
 
-    private async Task ProcessWorkItemAsync(ProtoPayloadQueueItem payload, CancellationToken stoppingToken)
+    private async Task ProcessWorkItemAsync(ProtoPayloadQueueItem payload, CancellationToken stoppingToken = default)
     {
         if (payload?.Payload == null || payload?.Device == null)
             return;
@@ -447,12 +447,11 @@ public class ProtoProcessorService : TimedHostedService, IProtoProcessorService
         }
 
         ProtoDataStatistics.Instance.TotalProtosProcessed += (uint)processedProtos.Count;
-        var wasAdded = _dataQueue.TryAdd(new DataQueueItem
+        if (!_dataQueue.TryAdd(new DataQueueItem
         {
             Username = username,
             Data = processedProtos,
-        });
-        if (!wasAdded)
+        }))
         {
             // Failed to enqueue item with proto queue
             _logger.LogError($"Failed to enqueue entity data with data queue");
@@ -634,9 +633,9 @@ public class ProtoProcessorService : TimedHostedService, IProtoProcessorService
 
     private async Task<bool> IsAllowedToSaveDataAsync(string username)
     {
-        if (_canStoreData.ContainsKey(username))
+        if (_canStoreData.TryGetValue(username, out var value))
         {
-            return _canStoreData[username];
+            return value;
         }
 
         // Get trainer leveling status from JobControllerService using gRPC and whether we should store the data or not
