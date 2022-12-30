@@ -5,9 +5,9 @@
 <link rel="stylesheet" href="~/css/pokemon-list.css" />
 
 <div class="form-group">
-    <div class="form-group">
-        Search
-        <input type="text" class="form-control" id="search" placeholder="i.e Pikachu or 25" onkeyup="onPokemonSearch()" data-toggle="tooltip" data-html="true" title="Search by pokemon name and pokedex id.">
+    <div class="form-floating mb-3">
+        <input id="search" class="form-control" placeholder="i.e Pikachu or 25" onkeyup="onPokemonSearch()" data-toggle="tooltip" data-html="true" title="Search by pokemon name and pokedex id." />
+        <label for="search">Search</label>
     </div>
     Pokemon
     <div id="pokemon-list" name="pokemon-list" class="pokemon-list">
