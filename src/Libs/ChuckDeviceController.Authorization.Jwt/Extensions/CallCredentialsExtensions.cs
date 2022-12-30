@@ -20,6 +20,8 @@ public static class CallCredentialsExtensions
         var config = (IConfiguration?)serviceProvider.GetService(typeof(IConfiguration));
         var host = config?.GetValue<string>("ConfiguratorUrl") ?? DefaultEndpoint;
         var url = host + Strings.JwtEndpoint;
+
+        // Send HTTP request to fetch json web token to authenticate gRPC request
         var (status, json) = await NetUtils.PostAsync(url);
         if (status != HttpStatusCode.OK || json == null)
         {

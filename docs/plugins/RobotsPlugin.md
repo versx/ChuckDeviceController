@@ -1,5 +1,9 @@
 # RobotsPlugin  
 
+> Once at least one web crawler route has been configured, you can visit
+[http(s)://127.0.0.1:8881/robots.txt](http(s)://127.0.0.1:8881/robots.txt) to see what the `robots.txt` file
+will return to web crawler bots.  
+
 ### Example `appsettings.json`  
 ```json
 {
