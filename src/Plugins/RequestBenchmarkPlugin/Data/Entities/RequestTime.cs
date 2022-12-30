@@ -17,7 +17,7 @@ public class RequestTime
         Column("route"),
         Key,
     ]
-    public string Route { get; set; }
+    public string Route { get; set; } = null!;
 
     /// <summary>
     /// Gets or sets the total number of requests made to the route.

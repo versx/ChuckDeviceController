@@ -66,34 +66,34 @@
                 <div class="card-header">Blacklisted Data</div>
                 <div class="card-body">
                     <div class="form-group mb-3 pokemon">
-                        <label asp-for="Data.PokemonIds"></label> <small class="text-muted"><i>(i.e. 1_f123_c11_g1)</i></small>
-                        <textarea asp-for="Data.PokemonIds" class="form-control"></textarea>
-                        <span asp-validation-for="Data.PokemonIds" class="text-danger"></span>
+                        <label asp-for="Data!.PokemonIds"></label> <small class="text-muted"><i>(i.e. 1_f123_c11_g1)</i></small>
+                        <textarea asp-for="Data!.PokemonIds" class="form-control"></textarea>
+                        <span asp-validation-for="Data!.PokemonIds" class="text-danger"></span>
                     </div>
                     <div class="form-group mb-3 pokestops">
-                        <label asp-for="Data.PokestopIds"></label>
-                        <textarea asp-for="Data.PokestopIds" class="form-control"></textarea>
-                        <span asp-validation-for="Data.PokestopIds" class="text-danger"></span>
+                        <label asp-for="Data!.PokestopIds"></label>
+                        <textarea asp-for="Data!.PokestopIds" class="form-control"></textarea>
+                        <span asp-validation-for="Data!.PokestopIds" class="text-danger"></span>
                     </div>
                     <div class="form-group mb-3 raids">
-                        <label asp-for="Data.RaidPokemonIds"></label> <small class="text-muted"><i>(i.e. 150_f123_c11_g1)</i></small>
-                        <textarea asp-for="Data.RaidPokemonIds" class="form-control"></textarea>
-                        <span asp-validation-for="Data.RaidPokemonIds" class="text-danger"></span>
+                        <label asp-for="Data!.RaidPokemonIds"></label> <small class="text-muted"><i>(i.e. 150_f123_c11_g1)</i></small>
+                        <textarea asp-for="Data!.RaidPokemonIds" class="form-control"></textarea>
+                        <span asp-validation-for="Data!.RaidPokemonIds" class="text-danger"></span>
                     </div>
                     <div class="form-group mb-3 eggs">
-                        <label asp-for="Data.EggLevels"></label>
-                        <select asp-for="Data.EggLevels" class="form-control" multiple>
+                        <label asp-for="Data!.EggLevels"></label>
+                        <select asp-for="Data!.EggLevels" class="form-control" multiple>
                             <option value="" selected>Please select one or more</option>
                             @for (var i = 1; i < 9; i++)
                             {
                                 <option value="@i">Level @i</option>
                             }
                         </select>
-                        <span asp-validation-for="Data.EggLevels" class="text-danger"></span>
+                        <span asp-validation-for="Data!.EggLevels" class="text-danger"></span>
                     </div>
                     <div class="form-group mb-3 lures">
-                        <label asp-for="Data.LureIds"></label>
-                        <select asp-for="Data.LureIds" class="form-control" multiple>
+                        <label asp-for="Data!.LureIds"></label>
+                        <select asp-for="Data!.LureIds" class="form-control" multiple>
                             <option value="" selected>Please select one or more</option>
                             <option value="501">Normal</option>
                             <option value="502">Glacial</option>
@@ -101,33 +101,33 @@
                             <option value="504">Magnetic</option>
                             <option value="505">Rainy</option>
                         </select>
-                        <span asp-validation-for="Data.LureIds" class="text-danger"></span>
+                        <span asp-validation-for="Data!.LureIds" class="text-danger"></span>
                     </div>
                     <div class="form-group mb-3 invasions">
-                        <label asp-for="Data.InvasionIds"></label>
-                        <select asp-for="Data.InvasionIds" class="form-control" asp-items="Html.GetEnumSelectList<InvasionCharacter>()" multiple>
+                        <label asp-for="Data!.InvasionIds"></label>
+                        <select asp-for="Data!.InvasionIds" class="form-control" asp-items="Html.GetEnumSelectList<InvasionCharacter>()" multiple>
                             <option value="" selected>Please select one or more</option>
                         </select>
-                        <span asp-validation-for="Data.InvasionIds" class="text-danger"></span>
+                        <span asp-validation-for="Data!.InvasionIds" class="text-danger"></span>
                     </div>
                     <div class="form-group mb-3 gyms">
-                        <label asp-for="Data.GymTeamIds"></label>
-                        <select asp-for="Data.GymTeamIds" class="form-control" asp-items="Html.GetEnumSelectList<Team>()" multiple>
+                        <label asp-for="Data!.GymTeamIds"></label>
+                        <select asp-for="Data!.GymTeamIds" class="form-control" asp-items="Html.GetEnumSelectList<Team>()" multiple>
                             <option value="" selected>Please select one or more</option>
                         </select>
-                        <span asp-validation-for="Data.GymTeamIds" class="text-danger"></span>
+                        <span asp-validation-for="Data!.GymTeamIds" class="text-danger"></span>
                     </div>
                     <div class="form-group mb-3 gyminfo">
-                        <label asp-for="Data.GymIds"></label>
-                        <textarea asp-for="Data.GymIds" class="form-control"></textarea>
-                        <span asp-validation-for="Data.GymIds" class="text-danger"></span>
+                        <label asp-for="Data!.GymIds"></label>
+                        <textarea asp-for="Data!.GymIds" class="form-control"></textarea>
+                        <span asp-validation-for="Data!.GymIds" class="text-danger"></span>
                     </div>
                     <div class="form-group mb-3 weather">
-                        <label asp-for="Data.WeatherConditionIds"></label>
-                        <select asp-for="Data.WeatherConditionIds" class="form-control" asp-items="Html.GetEnumSelectList<WeatherCondition>()" multiple>
+                        <label asp-for="Data!.WeatherConditionIds"></label>
+                        <select asp-for="Data!.WeatherConditionIds" class="form-control" asp-items="Html.GetEnumSelectList<WeatherCondition>()" multiple>
                             <option value="" selected>Please select one or more</option>
                         </select>
-                        <span asp-validation-for="Data.WeatherConditionIds" class="text-danger"></span>
+                        <span asp-validation-for="Data!.WeatherConditionIds" class="text-danger"></span>
                     </div>
                 </div>
             </div>

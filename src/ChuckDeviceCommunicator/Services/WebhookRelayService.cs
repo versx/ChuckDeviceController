@@ -585,7 +585,7 @@ public class WebhookRelayService : IWebhookRelayService
         }
     }
 
-    private static bool IsPokemonBlacklisted(uint? pokemonId, uint? formId, uint? costumeId, ushort? genderId, List<string> blacklisted)
+    private static bool IsPokemonBlacklisted(uint? pokemonId, uint? formId, uint? costumeId, ushort? genderId, IEnumerable<string>? blacklisted = null)
     {
         if (!(blacklisted?.Any() ?? false))
             return false;
@@ -616,7 +616,7 @@ public class WebhookRelayService : IWebhookRelayService
                 if (!GeofenceService.IsPointInPolygon(pokemon.ToCoordinate(), endpoint.GeofenceMultiPolygons))
                     continue;
             }
-            if (endpoint.Data?.PokemonIds.Any() ?? false)
+            if (endpoint.Data?.PokemonIds?.Any() ?? false)
             {
                 if (IsPokemonBlacklisted(
                     pokemon.PokemonId,
@@ -644,7 +644,7 @@ public class WebhookRelayService : IWebhookRelayService
                 if (!GeofenceService.IsPointInPolygon(pokestop.ToCoordinate(), endpoint.GeofenceMultiPolygons))
                     continue;
             }
-            if (endpoint.Data?.PokestopIds.Any() ?? false)
+            if (endpoint.Data?.PokestopIds?.Any() ?? false)
             {
                 if (endpoint.Data.PokestopIds.Contains(pokestop.Id))
                     continue;
@@ -666,7 +666,7 @@ public class WebhookRelayService : IWebhookRelayService
                 if (!GeofenceService.IsPointInPolygon(lure.ToCoordinate(), endpoint.GeofenceMultiPolygons))
                     continue;
             }
-            if (endpoint.Data?.LureIds.Any() ?? false)
+            if (endpoint.Data?.LureIds?.Any() ?? false)
             {
                 if (endpoint.Data.LureIds.Contains(lure.LureId))
                     continue;
@@ -688,7 +688,7 @@ public class WebhookRelayService : IWebhookRelayService
                 if (!GeofenceService.IsPointInPolygon(pokestopWithIncident.Pokestop.ToCoordinate(), endpoint.GeofenceMultiPolygons))
                     continue;
             }
-            if (endpoint.Data?.InvasionIds.Any() ?? false)
+            if (endpoint.Data?.InvasionIds?.Any() ?? false)
             {
                 if (endpoint.Data.InvasionIds.Contains(pokestopWithIncident.Invasion.Character))
                     continue;
@@ -751,7 +751,7 @@ public class WebhookRelayService : IWebhookRelayService
                 if (!GeofenceService.IsPointInPolygon(gym.ToCoordinate(), endpoint.GeofenceMultiPolygons))
                     continue;
             }
-            if (endpoint.Data?.GymTeamIds.Any() ?? false)
+            if (endpoint.Data?.GymTeamIds?.Any() ?? false)
             {
                 if (endpoint.Data.GymTeamIds.Contains((ushort)gym.Team))
                     continue;
@@ -773,7 +773,7 @@ public class WebhookRelayService : IWebhookRelayService
                 if (!GeofenceService.IsPointInPolygon(gymInfo.ToCoordinate(), endpoint.GeofenceMultiPolygons))
                     continue;
             }
-            if (endpoint.Data?.GymIds.Any() ?? false)
+            if (endpoint.Data?.GymIds?.Any() ?? false)
             {
                 if (endpoint.Data.GymIds.Contains(gymInfo.Id))
                     continue;
@@ -831,7 +831,7 @@ public class WebhookRelayService : IWebhookRelayService
                 if (!GeofenceService.IsPointInPolygon(egg.ToCoordinate(), endpoint.GeofenceMultiPolygons))
                     continue;
             }
-            if (endpoint.Data?.EggLevels.Any() ?? false)
+            if (endpoint.Data?.EggLevels?.Any() ?? false)
             {
                 if (endpoint.Data.EggLevels.Contains(egg.RaidLevel ?? 0))
                     continue;
@@ -853,7 +853,7 @@ public class WebhookRelayService : IWebhookRelayService
                 if (!GeofenceService.IsPointInPolygon(raid.ToCoordinate(), endpoint.GeofenceMultiPolygons))
                     continue;
             }
-            if (endpoint.Data?.RaidPokemonIds.Any() ?? false)
+            if (endpoint.Data?.RaidPokemonIds?.Any() ?? false)
             {
                 if (IsPokemonBlacklisted(
                     raid.RaidPokemonId,
@@ -881,7 +881,7 @@ public class WebhookRelayService : IWebhookRelayService
                 if (!GeofenceService.IsPointInPolygon(weather.ToCoordinate(), endpoint.GeofenceMultiPolygons))
                     continue;
             }
-            if (endpoint.Data?.WeatherConditionIds.Any() ?? false)
+            if (endpoint.Data?.WeatherConditionIds?.Any() ?? false)
             {
                 if (endpoint.Data.WeatherConditionIds.Contains((ushort)weather.GameplayCondition))
                     continue;

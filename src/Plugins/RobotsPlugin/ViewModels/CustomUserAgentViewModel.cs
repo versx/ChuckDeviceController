@@ -7,10 +7,10 @@ public class CustomUserAgentViewModel
     #region Properties
 
     [DisplayName("User Agent")]
-    public string UserAgent { get; set; }
+    public string UserAgent { get; set; } = null!;
 
     [DisplayName("Route")]
-    public string Route { get; set; }
+    public string Route { get; set; } = null!;
 
     [DisplayName("Comment")]
     public string? Comment { get; set; }

@@ -136,7 +136,7 @@ public sealed class RobotsMiddleware
 
         var ipAddr = context.Request.GetIPAddress();
         var userAgent = Convert.ToString(context.Request.Headers[UserAgentHeader]);
-        _honeyPotService.OnTriggered(ipAddr, userAgent);
+        _honeyPotService.OnTriggered(ipAddr!, userAgent);
         await Task.CompletedTask;
     }
 
