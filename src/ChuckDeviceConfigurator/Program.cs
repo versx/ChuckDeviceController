@@ -251,7 +251,10 @@ builder.Services.AddDistributedMemoryCache();
 #region Hosted Services
 
 // Register available hosted services
+if (config.GetValue<bool>("AccountStatusService", false))
+{
 builder.Services.AddHostedService<AccountStatusHostedService>();
+}
 
 #endregion
 
