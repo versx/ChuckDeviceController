@@ -16,8 +16,8 @@ public class ManageApiKeyViewModel
     [DisplayName("API Key")]
     public string Key { get; set; } = null!;
 
-    [DisplayName("Expiration Date")]
-    public ulong? Expiration { get; set; } = 0;
+    [DisplayName("Expires")]
+    public DateTime? Expiration { get; set; } = null;
 
     [DisplayName("Scopes")]
     public PluginApiKeyScope Scope { get; set; } = PluginApiKeyScope.None;

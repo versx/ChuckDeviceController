@@ -30,7 +30,7 @@
         @Html.DisplayNameFor(model => model.Expiration)
     </dt>
     <dd class="col-sm-9">
-        @(Model?.Expiration == 0 ? "Never" : (Model?.Expiration ?? 0).FromSeconds().ToLocalTime())
+        @(Model.Expiration == null ? "Never" : (Model.Expiration ?? default).Date.ToLocalTime().ToString("yyyy/MM/dd"))
     </dd>
     <dt class="col-sm-3">
         @Html.DisplayNameFor(model => model.Scope)

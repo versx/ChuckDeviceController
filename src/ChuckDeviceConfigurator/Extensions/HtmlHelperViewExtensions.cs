@@ -49,7 +49,7 @@ public static class HtmlHelperViewExtensions
         // creating new action invocation context
         var routeData = new RouteData();
         var routeParams = new RouteValueDictionary(parameters ?? new { });
-        var routeValues = new RouteValueDictionary(new { area = area, controller = controller, action = action });
+        var routeValues = new RouteValueDictionary(new { area, controller, action });
         var newHttpContext = httpContextFactory.Create(currentHttpContext.Features);
 
         newHttpContext.Response.Body = new MemoryStream();
@@ -65,18 +65,18 @@ public static class HtmlHelperViewExtensions
 
         // invoke action and retreive the response body
         var invoker = actionInvokerFactory.CreateInvoker(actionContext);
-        string content = null;
+        var content = string.Empty;
 
         await invoker.InvokeAsync().ContinueWith(task => {
             if (task.IsFaulted)
             {
-                content = task.Exception.Message;
+                content = task.Exception?.Message;
             }
             else if (task.IsCompleted)
             {
                 newHttpContext.Response.Body.Position = 0;
-                using (var reader = new StreamReader(newHttpContext.Response.Body))
-                    content = reader.ReadToEnd();
+                using var reader = new StreamReader(newHttpContext.Response.Body);
+                content = reader.ReadToEnd();
             }
         });
 
@@ -88,11 +88,8 @@ public static class HtmlHelperViewExtensions
         if (httpContext == null)
             throw new ArgumentNullException(nameof(httpContext));
 
-        var service = httpContext.RequestServices.GetService(typeof(TService));
-
-        if (service == null)
-            throw new InvalidOperationException($"Could not locate service: {nameof(TService)}");
-
+        var service = httpContext.RequestServices.GetService(typeof(TService))
+            ?? throw new InvalidOperationException($"Could not locate service: {nameof(TService)}");
         return (TService)service;
     }
 }

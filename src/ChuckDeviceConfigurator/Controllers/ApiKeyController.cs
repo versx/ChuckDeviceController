@@ -43,17 +43,22 @@ public class ApiKeyController : Controller
             ModelState.AddModelError("ApiKey", $"API key does not exist with id '{id}'.");
             return View();
         }
+
         var plugins = PluginManager.Instance.Plugins
             .Where(plugin => plugin.Value.ApiKey.Id == apiKey.Id)
             .Select(plugin => plugin.Value)
             .ToList();
+        DateTime? expirationDate = apiKey.ExpirationTimestamp == 0
+            ? null
+            : apiKey.ExpirationTimestamp.FromSeconds().Date;
         var scopes = GroupedApiScopes(apiKey.Scope);
+
         var model = new ManageApiKeyViewModel
         {
             Id = apiKey.Id,
             Name = apiKey.Name,
             Key = apiKey.Key,
-            Expiration = apiKey.ExpirationTimestamp,
+            Expiration = expirationDate,
             Scope = apiKey.Scope,
             Scopes = scopes,
             IsEnabled = apiKey.IsEnabled,
@@ -85,16 +90,17 @@ public class ApiKeyController : Controller
                 return View(model);
             }
 
-            var scope = GetScope(model.Scopes);
-            var seconds = model.Expiration == 0
+            var seconds = model.Expiration == null
                 ? 0
-                : model.Expiration;
+                : (model.Expiration ?? default).ToTotalSeconds();
+            var scope = GetScope(model.Scopes);
             var pluginApiKey = _apiKeyManager.GenerateApiKey();
+
             var apiKey = new ApiKey
             {
                 Name = model.Name,
                 Key = pluginApiKey,
-                ExpirationTimestamp = seconds ?? 0,
+                ExpirationTimestamp = seconds,
                 Scope = scope,
                 IsEnabled = model.IsEnabled,
             };
@@ -120,15 +126,20 @@ public class ApiKeyController : Controller
             ModelState.AddModelError("ApiKey", $"API key does not exist with id '{id}'.");
             return View();
         }
-        var scope = GroupedApiScopes(apiKey.Scope);
+
+        DateTime? expirationDate = apiKey.ExpirationTimestamp == 0
+            ? null
+            : apiKey.ExpirationTimestamp.FromSeconds().Date;
+        var scopes = GroupedApiScopes(apiKey.Scope);
+
         var model = new ManageApiKeyViewModel
         {
             Id = apiKey.Id,
             Name = apiKey.Name,
             Key = apiKey.Key,
-            Expiration = apiKey.ExpirationTimestamp,
+            Expiration = expirationDate,
             Scope = apiKey.Scope,
-            Scopes = scope,
+            Scopes = scopes,
             IsEnabled = apiKey.IsEnabled,
         };
         return View(model);
@@ -148,10 +159,11 @@ public class ApiKeyController : Controller
                 ModelState.AddModelError("ApiKey", $"API key does not exist with id '{id}'.");
                 return View(model);
             }
+
+            var seconds = model.Expiration == null
+                ? 0
+                : (model.Expiration ?? default).ToTotalSeconds();
             var scope = GetScope(model.Scopes);
-            var seconds = model.Expiration > 0
-                ? model.Expiration ?? 0
-                : 0;
 
             apiKey.Name = model?.Name ?? string.Empty;
             apiKey.ExpirationTimestamp = seconds;
@@ -180,19 +192,24 @@ public class ApiKeyController : Controller
             ModelState.AddModelError("ApiKey", $"API key does not exist with id '{id}'.");
             return View();
         }
+
         var plugins = PluginManager.Instance.Plugins
             .Where(plugin => plugin.Value.ApiKey.Id == apiKey.Id)
             .Select(plugin => plugin.Value)
             .ToList();
-        var scope = GroupedApiScopes(apiKey.Scope);
+        DateTime? expirationDate = apiKey.ExpirationTimestamp == 0
+            ? null
+            : apiKey.ExpirationTimestamp.FromSeconds().Date;
+        var scopes = GroupedApiScopes(apiKey.Scope);
+
         var model = new ManageApiKeyViewModel
         {
             Id = apiKey.Id,
             Name = apiKey.Name,
             Key = apiKey.Key,
-            Expiration = apiKey.ExpirationTimestamp,
+            Expiration = expirationDate,
             Scope = apiKey.Scope,
-            Scopes = scope,
+            Scopes = scopes,
             IsEnabled = apiKey.IsEnabled,
             Plugins = plugins,
         };

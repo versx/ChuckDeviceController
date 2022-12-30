@@ -75,7 +75,7 @@
             </tbody>
         </table>
     </div>
-    <div class="tab-pane" id="apikeys" role="tabpanel" aria-labelledby="pills-apikeys-tab">
+    <div class="tab-pane fade" id="apikeys" role="tabpanel" aria-labelledby="pills-apikeys-tab">
         <p class="float-end">
             <a class="btn btn-success btn-sm" asp-controller="ApiKey" asp-action="Create">Create New</a>
         </p>
@@ -86,9 +86,6 @@
                 <tr>
                     <th>
                         @Html.DisplayNameFor(model => model.ApiKeys[0].Name)
-                    </th>
-                    <th>
-                        @Html.DisplayNameFor(model => model.ApiKeys[0].Key)
                     </th>
                     <th>
                         @Html.DisplayNameFor(model => model.ApiKeys[0].Scope)
@@ -113,13 +110,10 @@
                             @Html.DisplayFor(modelItem => item.Name)
                         </th>
                         <td>
-                            @Html.DisplayFor(modelItem => item.Key)
-                        </td>
-                        <td>
                             @Html.Raw(string.Join("<br>", item.Scope.ToString().Split(',')))
                         </td>
                         <td>
-                            @(item.ExpirationTimestamp == 0 ? "Never" : item.ExpirationTimestamp.FromSeconds().ToLocalTime())
+                            @(item.ExpirationTimestamp == 0 ? "Never" : item.ExpirationTimestamp.FromSeconds().Date.ToLocalTime().ToString("yyyy/MM/dd"))
                         </td>
                         <td>
                             @(Model.Plugins.Count(plugin => plugin.ApiKey.Id == item.Id))
@@ -193,17 +187,11 @@
 
             $('#table-apikeys').DataTable({
                 columnDefs: [
-                    //{ responsivePriority: 0, targets: 0 },
-                    //{ responsivePriority: 2, targets: 1, render: $.fn.dataTable.render.ellipsis(15) },
-                    //{ responsivePriority: 4, targets: 2 },
-                    //{ responsivePriority: 3, targets: 3 },
-                    //{ responsivePriority: 5, targets: 4 },
-                    //{ responsivePriority: 1, targets: -1, orderable: false },
                     { responsivePriority: 0, targets: 0 },
-                    { responsivePriority: 5, targets: 1, render: $.fn.dataTable.render.ellipsis(15) },
-                    { responsivePriority: 4, targets: 2 },
-                    { responsivePriority: 3, targets: 3 },
-                    { responsivePriority: 2, targets: 4 },
+                    //{ responsivePriority: 2, targets: 1, render: $.fn.dataTable.render.ellipsis(15) },
+                    { responsivePriority: 4, targets: 1 },
+                    { responsivePriority: 3, targets: 2 },
+                    { responsivePriority: 2, targets: 3 },
                     { responsivePriority: 1, targets: -1, orderable: false },
                 ],
                 order: [[0, 'asc']],
