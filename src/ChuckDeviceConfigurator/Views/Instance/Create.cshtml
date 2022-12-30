@@ -23,7 +23,7 @@
     </div>
     <hr />
     <div class="row">
-        <div class="col-md-6">
+        <div class="col-lg-6 col-md-12">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-floating mb-3">
                 <input asp-for="Name" class="form-control" placeholder="Instance name" />
@@ -181,7 +181,7 @@
                 <label><input type="checkbox" asp-for="Data.IsEvent"> Is Unique Event</label>
             </div>
         </div>
-        <div class="col-md-6">
+        <div class="col-lg-6 col-md-12">
             <div class="form-group mb-3">
                 <label asp-for="AssignedDevices"></label> <small class="text-muted"><i>(optional)</i></small>
                 <select asp-for="AssignedDevices" class="form-control" size="15" asp-items="@(new SelectList(ViewBag.Devices, "Uuid", "Uuid"))" placeholder="Instance assigned devices">
