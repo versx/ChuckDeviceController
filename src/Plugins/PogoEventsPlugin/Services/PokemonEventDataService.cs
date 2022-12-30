@@ -150,57 +150,57 @@ public class PokemonEventDataService : IPokemonEventDataService
         _activeEvents = e.Events
             .Cast<ActiveEvent>()
             .ToList();
-        if (_config.Enabled)
+        if (!_config.Enabled)
+            return;
+
+        // Update voice channels
+        await CreateChannelsAsync();
+
+        // TODO: Create sort by End/Start extensions
+        var events = ActiveEvents.ToList();
+        events.Sort((a, b) => DateTime.Parse(a.End).CompareTo(DateTime.Parse(b.End)));
+
+        // Post new events
+        foreach (var activeEvent in events)
         {
-            // Update voice channels
-            await CreateChannelsAsync();
+            var embed = CreateActiveEventEmbed(activeEvent);
 
-            // TODO: Create sort by End/Start extensions
-            var events = ActiveEvents.ToList();
-            events.Sort((a, b) => DateTime.Parse(a.End).CompareTo(DateTime.Parse(b.End)));
-
-            // Post new events
-            foreach (var activeEvent in events)
+            foreach (var (guildId, guildConfig) in _config.Guilds)
             {
-                var embed = CreateActiveEventEmbed(activeEvent);
-
-                foreach (var (guildId, guildConfig) in _config.Guilds)
+                var guild = await _discordClient.GetGuildAsync(guildId);
+                if (guild == null)
                 {
-                    var guild = await _discordClient.GetGuildAsync(guildId);
-                    if (guild == null)
-                    {
-                        continue;
-                    }
+                    continue;
+                }
 
-                    var channel = guild.GetChannel(guildConfig.EventsChannelId);
-                    if (guildConfig.DeletePreviousEvents)
+                var channel = guild.GetChannel(guildConfig.EventsChannelId);
+                if (guildConfig.DeletePreviousEvents)
+                {
+                    var messages = await channel.GetMessagesAsync();
+                    foreach (var message in messages)
                     {
-                        var messages = await channel.GetMessagesAsync();
-                        foreach (var message in messages)
+                        try
                         {
-                            try
-                            {
-                                await message.DeleteAsync();
-                            }
-                            catch (Exception ex)
-                            {
-                                _logger.LogError($"Error: {ex}");
-                            }
+                            await message.DeleteAsync();
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError($"Error: {ex}");
                         }
                     }
+                }
 
-                    // Send Discord embed
-                    var content = string.IsNullOrEmpty(guildConfig.Mention)
-                        ? $"<{guildConfig.Mention}>"
-                        : null;
-                    await channel.SendMessageAsync(content, embed);
+                // Send Discord embed
+                var content = string.IsNullOrEmpty(guildConfig.Mention)
+                    ? $"<{guildConfig.Mention}>"
+                    : null;
+                await channel.SendMessageAsync(content, embed);
 
-                    // Send Discord DM 
-                    foreach (var userId in guildConfig.UserIds)
-                    {
-                        var member = await guild.GetMemberAsync(userId, updateCache: true);
-                        await member.SendMessageAsync(content, embed);
-                    }
+                // Send Discord DM 
+                foreach (var userId in guildConfig.UserIds)
+                {
+                    var member = await guild.GetMemberAsync(userId, updateCache: true);
+                    await member.SendMessageAsync(content, embed);
                 }
             }
         }

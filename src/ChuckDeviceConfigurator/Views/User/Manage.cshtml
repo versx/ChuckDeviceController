@@ -12,10 +12,22 @@
 <br />
 @Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "User", ControllerText = "Users", CurrentPage = "Manage User" })
 
-<h4>User Account '@(Model?.UserName)'</h4>
-<hr />
-
 <form asp-action="Manage" asp-route-userId="@ViewBag.UserId">
+    <div class="pb-4">
+        <div class="float-start">
+            <h4>User Account '@(Model?.UserName)'</h4>
+        </div>
+        <div class="float-end">
+            <a asp-action="Delete" asp-route-id="@ViewBag.UserId" class="btn btn-danger">
+                <i class="fa-solid fa-trash"></i>&nbsp;Delete
+            </a>
+            &nbsp;
+            <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-floppy-disk"></i>&nbsp;Save
+            </button>
+        </div>
+    </div>
+    <hr />
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
     <div class="row">
         <div class="col-sm col-lg-6">

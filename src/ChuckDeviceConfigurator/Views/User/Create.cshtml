@@ -10,10 +10,18 @@
 <br />
 @Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "User", ControllerText = "Users", CurrentPage = "Create User" })
 
-<h4>User Account</h4>
-<hr />
-
 <form asp-action="Create">
+    <div class="pb-4">
+        <div class="float-start">
+            <h4>Geofence</h4>
+        </div>
+        <div class="float-end">
+            <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-floppy-disk"></i>&nbsp;Create
+            </button>
+        </div>
+    </div>
+    <hr />
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
     <div class="row">
         <div class="col-sm col-lg-6">
@@ -62,10 +70,6 @@
                 </div>
             }
         </div>
-    </div>
-    <br />
-    <div class="form-group mb-3">
-        <input type="submit" value="Create" class="btn btn-primary" />
     </div>
 </form>
 

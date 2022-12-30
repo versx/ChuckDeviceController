@@ -80,10 +80,6 @@ public class MapDbContext : DbContext
         optionsBuilder.UseTriggers(triggerOptions =>
         {
             triggerOptions.AddTrigger<PokemonInsertOrUpdateTrigger>();
-            // TODO: RaidInsertOrUpdateTrigger
-            // TODO: LureInsertOrUpdateTrigger?
-            // TODO: IncidentInsertOrUpdateTrigger
-            // TODO: QuestInsertOrUpdateTrigger
         });
         base.OnConfiguring(optionsBuilder);
     }

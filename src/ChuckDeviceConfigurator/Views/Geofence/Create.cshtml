@@ -10,28 +10,34 @@
 <br />
 @Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Geofence", ControllerText = "Geofences", CurrentPage = "Create Geofence" })
 
-<h4>Geofence</h4>
-<hr />
 <form asp-action="Create" class="pb-1">
+    <div class="pb-4">
+        <div class="float-start">
+            <h4>Geofence</h4>
+        </div>
+        <div class="float-end">
+            <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-floppy-disk"></i>&nbsp;Create
+            </button>
+        </div>
+    </div>
+    <hr />
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
     <div class="row">
-        <div class="col col-6 col-12">
+        <div class="col col-md-6 col-sm-12">
             <div class="form-floating mb-3">
                 <input asp-for="Name" class="form-control" placeholder="Geofence name" />
                 <label asp-for="Name"></label>
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
         </div>
-        <div class="col col-6 col-12">
+        <div class="col col-md-6 col-sm-12">
             <div class="form-floating mb-3">
                 <select asp-for="Type" class="form-control" asp-items="Html.GetEnumSelectList<GeofenceType>()" placeholder="Geofence type">
                 </select>
                 <label asp-for="Type"></label>
                 <span asp-validation-for="Type" class="text-danger"></span>
             </div>
-        </div>
-        <div class="col col-2 col-12">
-            <input type="submit" value="Create" class="btn btn-primary float-end" />
         </div>
     </div>
     <div class="form-group" hidden>
