@@ -10,10 +10,18 @@
 <br />
 @Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Instance", ControllerText = "Instances", CurrentPage = "Create Instance" })
 
-<h4>Instance</h4>
-<hr />
-
 <form asp-action="Create">
+    <div class="pb-4">
+        <div class="float-start">
+            <h4>Instance</h4>
+        </div>
+        <div class="float-end">
+            <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-floppy-disk"></i>&nbsp;Create
+            </button>
+        </div>
+    </div>
+    <hr />
     <div class="row">
         <div class="col-md-6">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
@@ -180,13 +188,6 @@
                     <option value="" disabled selected>Please select one</option>
                 </select>
                 <span asp-validation-for="AssignedDevices" class="text-danger"></span>
-            </div>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col">
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
             </div>
         </div>
     </div>
