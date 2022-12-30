@@ -3,7 +3,7 @@
 using Microsoft.AspNetCore.Identity;
 
 // TODO: Use custom IdentityRole
-public class UserIdentityRole : IdentityRole<string> //Guid
+public class UserIdentityRole : IdentityRole //Guid
 {
     public int DisplayIndex { get; set; }
 

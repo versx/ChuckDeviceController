@@ -94,7 +94,8 @@ public class ApiKeyManagerService : IApiKeyManagerService
             .Replace("/", "")
             .Replace("+", "")
             .Replace("=", "")
-            .AsSpan(0, LengthOfKey - Prefix.Length));
+            .AsSpan(0, LengthOfKey - Prefix.Length))
+            .ToUpper();
         return apiKey;
     }
 

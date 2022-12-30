@@ -4,7 +4,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-public class UserIdentityContext : IdentityDbContext<ApplicationUser, IdentityRole, string>
+//public class UserIdentityContext : IdentityDbContext<ApplicationUser, IdentityRole, Guid>
+public class UserIdentityContext : IdentityDbContext<ApplicationUser>
 {
     public UserIdentityContext(DbContextOptions<UserIdentityContext> options)
         : base(options)
