@@ -172,7 +172,7 @@ public class DatabaseHost : IDatabaseHost
         return null;
     }
 
-    // TODO: Refactor method(s)
+    // REVIEW: Refactor method(s)
     public async Task<IReadOnlyList<TEntity>> FindAsync<TEntity, TKey>(
         Expression<Func<TEntity, bool>> predicate,
         Expression<Func<TEntity, TKey>>? order = null,

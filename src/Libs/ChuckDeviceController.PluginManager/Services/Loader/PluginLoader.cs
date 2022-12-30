@@ -62,7 +62,7 @@ public class PluginLoader<TPlugin> : IPluginLoader
         // Loop all found plugin types and create/instantiate instances of them
         foreach (var pluginType in pluginTypes)
         {
-            // TODO: var test = services.GetParameterInstances(pluginType);
+            // REVIEW: var test = services.GetParameterInstances(pluginType);
 
             // Instantiate an instance of the plugin type
             var pluginInstance = pluginType.CreatePluginInstance(sharedServiceHosts);

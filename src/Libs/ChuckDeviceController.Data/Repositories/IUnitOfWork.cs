@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Repositories.EntityFrameworkCore;
 
-public interface IUnitOfWork : IBaseUnitOfWork<IDbContextTransaction> // TODO: Rename to 'IUnitOfWorkEfCore
+public interface IUnitOfWork : IBaseUnitOfWork<IDbContextTransaction>
 {
     #region Properties
 

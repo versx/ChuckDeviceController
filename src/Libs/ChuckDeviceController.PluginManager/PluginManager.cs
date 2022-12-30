@@ -172,7 +172,7 @@ public class PluginManager : IPluginManager
         var pluginAssemblies = _pluginFinder.LoadPluginAssemblies(pluginFinderResults);
         foreach (var result in pluginAssemblies)
         {
-            // TODO: Register sharedServiceHosts with new service collection
+            // REVIEW: Register sharedServiceHosts with new service collection
             //var serviceCollection = new ServiceCollection();
             if (result.Assembly == null)
             {

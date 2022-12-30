@@ -30,7 +30,7 @@ using ChuckDeviceController.Routing;
 using Type = System.Type;
 
 // TODO: Refactor class into separate smaller classes
-// TODO: Create MySqlConnectionFactory
+// TODO: Create MySqlConnectionFactory to replace DeviceFactory and MapFactory
 
 public class JobControllerService : IJobControllerService
 {

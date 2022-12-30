@@ -114,7 +114,7 @@ public class UiHost : IUiHost
         }
     }
 
-    // TODO: Update Dashboard stat in realtime without page refresh
+    // REVIEW: Update Dashboard stat in realtime without page refresh
     public async Task UpdateDashboardStatisticAsync(IDashboardStatsItem stats)
     {
         _dashboardStats.AddOrUpdate(stats.Name, stats, (key, oldValue) => stats);

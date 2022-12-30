@@ -33,5 +33,5 @@ public interface IDashboardTile
     /// </summary>
     string ActionName { get; }
 
-    // TODO: Add IsSeparateSection property
+    // REVIEW: Add IsSeparateSection property
 }

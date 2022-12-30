@@ -8,7 +8,7 @@ using EntityFrameworkCore.Triggered;
 using ChuckDeviceController.Data.Contexts;
 using ChuckDeviceController.Data.Entities;
 
-// TODO: Update first_seen, updated, changed, last_modified etc properties using triggers
+// REVIEW: Update first_seen, updated, changed, last_modified etc properties using triggers
 
 public class PokemonInsertOrUpdateTrigger : IBeforeSaveTrigger<Pokemon>
 {
