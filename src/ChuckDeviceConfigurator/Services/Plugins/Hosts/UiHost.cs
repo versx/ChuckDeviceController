@@ -1,5 +1,7 @@
 ﻿namespace ChuckDeviceConfigurator.Services.Plugins.Hosts;
 
+using System.Collections.Concurrent;
+
 using ChuckDeviceController.Plugin;
 
 public class PluginUiCache<T> : Dictionary<string, Dictionary<string, T>>
@@ -16,11 +18,11 @@ public class UiHost : IUiHost
     //private static readonly PluginUiCache<SidebarItem> _sidebarItems = new();
     //private static readonly PluginUiCache<IDashboardStatsItem> _dashboardStats = new();
     //private static readonly PluginUiCache<IDashboardTile> _dashboardTiles = new();
-    private static readonly Dictionary<string, SidebarItem> _sidebarItems = new();
-    private static readonly Dictionary<string, IDashboardStatsItem> _dashboardStats = new();
-    private static readonly Dictionary<string, IDashboardTile> _dashboardTiles = new();
-    private static readonly Dictionary<string, ISettingsTab> _settingsTabs = new();
-    private static readonly Dictionary<string, List<ISettingsProperty>> _settingsProperties = new();
+    private static readonly ConcurrentDictionary<string, SidebarItem> _sidebarItems = new();
+    private static readonly ConcurrentDictionary<string, IDashboardStatsItem> _dashboardStats = new();
+    private static readonly ConcurrentDictionary<string, IDashboardTile> _dashboardTiles = new();
+    private static readonly ConcurrentDictionary<string, ISettingsTab> _settingsTabs = new();
+    private static readonly ConcurrentDictionary<string, List<ISettingsProperty>> _settingsProperties = new();
 
     #endregion
 
@@ -43,7 +45,7 @@ public class UiHost : IUiHost
     public UiHost()
     {
         // Load host applications default sidebar nav headers
-        Task.Run(async () => await LoadDefaultUiAsync());
+        Task.Run(LoadDefaultUiAsync).Wait();
     }
 
     #endregion
@@ -62,30 +64,22 @@ public class UiHost : IUiHost
 
     public async Task AddSidebarItemAsync(SidebarItem item)
     {
-        if (!_sidebarItems.ContainsKey(item.Text))
+        _sidebarItems.AddOrUpdate(item.Text, item, (key, oldValue) =>
         {
-            _sidebarItems.Add(item.Text, item);
-            return;
-        }
+            // Add dropdown items to existing items
+            var newDropdownItems = new List<SidebarItem>();
+            if (oldValue.DropdownItems != null)
+            {
+                newDropdownItems.AddRange(oldValue.DropdownItems);
+            }
+            if (item.DropdownItems != null)
+            {
+                newDropdownItems.AddRange(item.DropdownItems);
+            }
+            _sidebarItems[item.Text].DropdownItems = newDropdownItems;
 
-        if (!item.IsDropdown)
-        {
-            _logger.LogWarning($"Sidebar item '{item.Text}' already registered");
-            return;
-        }
-
-        // Add dropdown items to existing items
-        var existingItem = _sidebarItems[item.Text];
-        var newDropdownItems = new List<SidebarItem>();
-        if (existingItem.DropdownItems != null)
-        {
-            newDropdownItems.AddRange(existingItem.DropdownItems);
-        }
-        if (item.DropdownItems != null)
-        {
-            newDropdownItems.AddRange(item.DropdownItems);
-        }
-        _sidebarItems[item.Text].DropdownItems = newDropdownItems;
+            return oldValue;
+        });
         await Task.CompletedTask;
     }
 
@@ -104,13 +98,11 @@ public class UiHost : IUiHost
     // TODO: Remove UpdateDashboardStatisticsAsync and add updaterExpression to update value at an interval
     public async Task AddDashboardStatisticAsync(IDashboardStatsItem stats)
     {
-        if (_dashboardStats.ContainsKey(stats.Name))
+        if (!_dashboardStats.TryAdd(stats.Name, stats))
         {
             // Already exists with name
             return;
         }
-
-        _dashboardStats.Add(stats.Name, stats);
         await Task.CompletedTask;
     }
 
@@ -122,16 +114,10 @@ public class UiHost : IUiHost
         }
     }
 
+    // TODO: Update Dashboard stat in realtime without page refresh
     public async Task UpdateDashboardStatisticAsync(IDashboardStatsItem stats)
     {
-        if (!_dashboardStats.ContainsKey(stats.Name))
-        {
-            // Does not exist
-            return;
-        }
-
-        _dashboardStats[stats.Name] = stats;
-        // TODO: Update Dashboard stat in realtime without page refresh
+        _dashboardStats.AddOrUpdate(stats.Name, stats, (key, oldValue) => stats);
         await Task.CompletedTask;
     }
 
@@ -141,13 +127,11 @@ public class UiHost : IUiHost
 
     public async Task AddDashboardTileAsync(IDashboardTile tile)
     {
-        if (_dashboardTiles.ContainsKey(tile.Text))
+        if (!_dashboardTiles.TryAdd(tile.Text, tile))
         {
             // Already exists with name
             return;
         }
-
-        _dashboardTiles.Add(tile.Text, tile);
         await Task.CompletedTask;
     }
 
@@ -165,27 +149,21 @@ public class UiHost : IUiHost
 
     public async Task AddSettingsTabAsync(SettingsTab tab)
     {
-        if (_settingsTabs.ContainsKey(tab.Id))
+        if (!_settingsTabs.TryAdd(tab.Id, tab))
         {
             // Already exists with tab id
             return;
         }
-
-        _settingsTabs.Add(tab.Id, tab);
         await Task.CompletedTask;
     }
 
     public async Task AddSettingsPropertyAsync(string tabId, SettingsProperty property)
     {
-        if (!_settingsProperties.ContainsKey(tabId))
+        _settingsProperties.AddOrUpdate(tabId, new List<ISettingsProperty>() { property }, (key, oldValue) =>
         {
-            _settingsProperties.Add(tabId, new List<ISettingsProperty>());
-        }
-
-        if (!_settingsProperties[tabId].Contains(property))
-        {
-            _settingsProperties[tabId].Add(property);
-        }
+            oldValue.Add(property);
+            return oldValue;
+        });
         await Task.CompletedTask;
     }
 

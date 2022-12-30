@@ -220,28 +220,26 @@ public class TthFinderInstanceController : IJobController
 
     private List<Coordinate> GetSpawnpointCoordinates(IBoundingBox bbox, bool onlyUnknown)
     {
-        using (var context = _factory.CreateDbContext())
-        {
-            // Get all spawnpoints within area's bounding box
-            var spawnpoints = context.Spawnpoints
-                .AsEnumerable()
-                .Where(spawn => bbox.IsInBoundingBox(spawn.Latitude, spawn.Longitude));
-            // Get all spawnpoints or only spawnpoints with unknown despawn times if specified
-            var list =
-            (
-                onlyUnknown
-                    ? spawnpoints.Where(spawn => spawn.DespawnSecond == null)
-                    : spawnpoints
-            ).ToList();
+        using var context = _factory.CreateDbContext();
+        // Get all spawnpoints within area's bounding box
+        var spawnpoints = context.Spawnpoints
+            .AsEnumerable()
+            .Where(spawn => bbox.IsInBoundingBox(spawn.Latitude, spawn.Longitude));
+        // Get all spawnpoints or only spawnpoints with unknown despawn times if specified
+        var list =
+        (
+            onlyUnknown
+                ? spawnpoints.Where(spawn => spawn.DespawnSecond == null)
+                : spawnpoints
+        ).ToList();
 
-            // Cache all existing spawnpoints
-            _spawnpoints = new(list.ToDictionary(x => x.Id, y => y.DespawnSecond));
+        // Cache all existing spawnpoints
+        _spawnpoints = new(list.ToDictionary(x => x.Id, y => y.DespawnSecond));
 
-            var coords = list
-                .Select(spawn => spawn.ToCoordinate())
-                .ToList();
-            return coords;
-        }
+        var coords = list
+            .Select(spawn => spawn.ToCoordinate())
+            .ToList();
+        return coords;
     }
 
     #endregion
