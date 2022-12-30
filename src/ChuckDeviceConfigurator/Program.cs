@@ -62,6 +62,10 @@ config.Bind("Jwt", jwtConfig);
 var identityConfig = GetDefaultIdentityOptions();
 config.Bind("UserAccounts", identityConfig);
 
+// SendGrid email sender service options
+var emailConfig = new AuthMessageSenderOptions();
+config.Bind("EmailService", emailConfig);
+
 #endregion
 
 #region Logger
@@ -187,7 +191,7 @@ builder.Services.AddSwaggerGen(options =>
 
 #region Configuration
 
-builder.Services.Configure<AuthMessageSenderOptions>(config.GetSection("Keys"));
+builder.Services.Configure<AuthMessageSenderOptions>(config.GetSection("EmailService"));
 builder.Services.Configure<EntityMemoryCacheConfig>(config.GetSection("Cache"));
 builder.Services.Configure<JwtAuthConfig>(config.GetSection("Jwt"));
 builder.Services.Configure<LeafletMapConfig>(config.GetSection("Map"));
@@ -230,7 +234,10 @@ builder.Services.AddSingleton<IMemoryCacheService, GenericMemoryCacheService>();
 builder.Services.AddSingleton<IWebhookControllerService, WebhookControllerService>();
 builder.Services.AddSingleton<ITimeZoneService, TimeZoneService>();
 builder.Services.AddSingleton<IJobControllerService, JobControllerService>();
-builder.Services.AddTransient<IEmailSender, SendGridEmailSender>();
+if (emailConfig.Enabled)
+{
+    builder.Services.AddTransient<IEmailSender, SendGridEmailSender>();
+}
 //builder.Services.AddSingleton<IRouteGenerator, RouteGenerator>();
 builder.Services.AddTransient<IRouteCalculator, RouteCalculator>();
 
@@ -253,7 +260,7 @@ builder.Services.AddDistributedMemoryCache();
 // Register available hosted services
 if (config.GetValue<bool>("AccountStatusService", false))
 {
-builder.Services.AddHostedService<AccountStatusHostedService>();
+    builder.Services.AddHostedService<AccountStatusHostedService>();
 }
 
 #endregion

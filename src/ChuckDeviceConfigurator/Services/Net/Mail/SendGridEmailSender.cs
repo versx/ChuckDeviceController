@@ -1,19 +1,14 @@
 ﻿namespace ChuckDeviceConfigurator.Services.Net.Mail;
 
 using System.Threading.Tasks;
-using ChuckDeviceConfigurator;
 
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.Extensions.Options;
-
 using SendGrid;
 using SendGrid.Helpers.Mail;
 
 public class SendGridEmailSender : IEmailSender
 {
-    private const string FromEmailAddress = "versx@ver.sx";
-    private const string DefaultApplicationName = "ChuckDeviceConfigurator";
-
     private readonly ILogger<IEmailSender> _logger;
 
     public AuthMessageSenderOptions Options { get; }
@@ -38,8 +33,8 @@ public class SendGridEmailSender : IEmailSender
     public async Task Execute(string apiKey, string toEmail, string subject, string message)
     {
         var client = new SendGridClient(apiKey);
-        var fromName = Strings.AssemblyName ?? DefaultApplicationName;
-        var fromEmail = new EmailAddress(FromEmailAddress, fromName);
+        var fromName = Options.FromName ?? Strings.AssemblyName;
+        var fromEmail = new EmailAddress(Options.FromEmailAddress, fromName);
 
         var msg = new SendGridMessage
         {
