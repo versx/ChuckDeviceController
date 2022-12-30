@@ -328,68 +328,68 @@ public class TestPlugin : IPlugin, IDatabaseEvents, IJobControllerServiceEvents,
         //TestConfigurationHost();
 
         // Add dashboard stats
-        var stats = new List<IDashboardStatsItem>
-        {
-            new DashboardStatsItem("Test", "100", isHtml: false),
-            new DashboardStatsItem("Test2", "<b><u>1,000</u></b>", isHtml: true),
-            //new DashboardStatsItem("Test3", "<b>2,000</b>", isHtml: false),
-        };
-        await _uiHost.AddDashboardStatisticsAsync(stats);
+        //var stats = new List<IDashboardStatsItem>
+        //{
+        //    new DashboardStatsItem("Test", "100", isHtml: false),
+        //    new DashboardStatsItem("Test2", "<b><u>1,000</u></b>", isHtml: true),
+        //    //new DashboardStatsItem("Test3", "<b>2,000</b>", isHtml: false),
+        //};
+        //await _uiHost.AddDashboardStatisticsAsync(stats);
 
         // Register new sidebar headers
-        var pluginSidebarItems = new List<SidebarItem>
-        {
-            new(
-                // Dropdown header text that is displayed in the sidebar
-                text: "Test",
-                // Dropdown header display index in the sidebar
-                displayIndex: 0,
-                // Dropdown header Fontawesome icon
-                icon: "fa-solid fa-fw fa-microscope",
-                // Yes we want this to be used as a dropdown and not just
-                // a single sidebar entry
-                isDropdown: true,
-                // List of children sidebar item
-                dropdownItems: new List<SidebarItem>
-                {
-                    // Sidebar item #1
-                    new("Page", "Test", "Index", displayIndex: 0, icon: "fa-solid fa-fw fa-vial"),
-                    // Sidebar item #2
-                    new(
-                        // Text that is displayed in the sidebar
-                        "Details",
-                        // 'Test' is the MVC view controller 'TestController.cs'
-                        "Test",
-                        // 'Details' is the controller action (method name) that is executed when the navbar header is clicked
-                        "Details",
-                        // Display index in the sidebar
-                        displayIndex: 1,
-                        // Fontawesome icon to include (optional)
-                        icon: "fa-solid fa-fw fa-hammer",
-                        // Whether the sidebar item is disabled and not clickable
-                        isDisabled: true
-                    ),
-                }
-            ),
-            new SidebarItem
-            {
-                Text = "Sep",
-                DisplayIndex = 998,
-                IsSeparator = true,
-            },
-        };
-        await _uiHost.AddSidebarItemsAsync(pluginSidebarItems);
+        //var pluginSidebarItems = new List<SidebarItem>
+        //{
+        //    new(
+        //        // Dropdown header text that is displayed in the sidebar
+        //        text: "Test",
+        //        // Dropdown header display index in the sidebar
+        //        displayIndex: 0,
+        //        // Dropdown header Fontawesome icon
+        //        icon: "fa-solid fa-fw fa-microscope",
+        //        // Yes we want this to be used as a dropdown and not just
+        //        // a single sidebar entry
+        //        isDropdown: true,
+        //        // List of children sidebar item
+        //        dropdownItems: new List<SidebarItem>
+        //        {
+        //            // Sidebar item #1
+        //            new("Page", "Test", "Index", displayIndex: 0, icon: "fa-solid fa-fw fa-vial"),
+        //            // Sidebar item #2
+        //            new(
+        //                // Text that is displayed in the sidebar
+        //                "Details",
+        //                // 'Test' is the MVC view controller 'TestController.cs'
+        //                "Test",
+        //                // 'Details' is the controller action (method name) that is executed when the navbar header is clicked
+        //                "Details",
+        //                // Display index in the sidebar
+        //                displayIndex: 1,
+        //                // Fontawesome icon to include (optional)
+        //                icon: "fa-solid fa-fw fa-hammer",
+        //                // Whether the sidebar item is disabled and not clickable
+        //                isDisabled: true
+        //            ),
+        //        }
+        //    ),
+        //    new SidebarItem
+        //    {
+        //        Text = "Sep",
+        //        DisplayIndex = 998,
+        //        IsSeparator = true,
+        //    },
+        //};
+        //await _uiHost.AddSidebarItemsAsync(pluginSidebarItems);
 
-        // Add/register dashboard tiles
-        var pluginTile = new DashboardTile
-        (
-            text: "Test",
-            value: "5,000",
-            icon: "fa-solid fa-fw fa-hammer",
-            controllerName: "Test",
-            actionName: "Index"
-        );
-        await _uiHost.AddDashboardTileAsync(pluginTile);
+        //// Add/register dashboard tiles
+        //var pluginTile = new DashboardTile
+        //(
+        //    text: "Test",
+        //    value: "5,000",
+        //    icon: "fa-solid fa-fw fa-hammer",
+        //    controllerName: "Test",
+        //    actionName: "Index"
+        //);
+        //await _uiHost.AddDashboardTileAsync(pluginTile);
 
         var settingsTab = new SettingsTab
         {
