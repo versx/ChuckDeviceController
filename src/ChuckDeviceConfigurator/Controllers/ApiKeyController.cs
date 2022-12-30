@@ -250,7 +250,7 @@ public class ApiKeyController : Controller
             .GetValues<PluginApiKeyScope>()
             .Select(scope =>
             {
-                var attr = scope.GetAttribute<DisplayAttribute>();
+                var attr = scope.GetAttribute<DisplayAttribute>()!;
                 var model = new ApiKeyScopeViewModel
                 {
                     GroupName = attr.GroupName!,

@@ -12,10 +12,18 @@
 <br />
 @Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Plugin", ControllerText = "Api Keys", Fragment = "apikeys", CurrentPage = "Create API Key" })
 
-<h4>API Key</h4>
-<hr />
-
 <form asp-action="Create">
+    <div class="pb-4">
+        <div class="float-start">
+            <h4>API Key</h4>
+        </div>
+        <div class="float-end">
+            <button type="submit" class="btn btn-primary btn-sm">
+                <i class="fa-solid fa-floppy-disk"></i>&nbsp;Create
+            </button>
+        </div>
+    </div>
+    <hr />
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
     <div class="row">
         <div class="col-sm col-lg-6">
@@ -72,9 +80,6 @@
     <br />
     <div class="checkbox mb-3">
         <label><input type="checkbox" asp-for="IsEnabled" checked> Enabled</label>
-    </div>
-    <div class="form-group mb-3">
-        <input type="submit" value="Create" class="btn btn-primary" />
     </div>
 </form>
 

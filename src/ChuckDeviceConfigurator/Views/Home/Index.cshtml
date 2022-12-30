@@ -9,14 +9,14 @@
     var dashboardTiles = Convert.ToString(data)?.FromJson<List<DashboardTile>>();
 }
 
-<h1 class="display-4 text-center">Dashboard</h1>
-<div class="w-75" style="float: none; margin: 0 auto;">
+<h1 class="text-center">Dashboard</h1>
+<div class="w-75" style="margin: 0 auto;">
     <div class="card text-center">
         <div class="card-header text-center"><b>General</b></div>
         <div class="card-body">
             <div class="container">
                 <div class="row justify-content-center">
-                    <div class="col-md-3 p-1">
+                    <div class="col-lg-3 col-md-6 col-sm-12 p-1">
                         <div class="list-group">
                             <a class="list-group-item" asp-controller="Plugin" asp-action="Index">
                                 <h3 class="pull-right"><i class="fas fa-puzzle-piece"></i></h3>
@@ -25,7 +25,7 @@
                             </a>
                         </div>
                     </div>
-                    <div class="col-md-3 p-1">
+                    <div class="col-lg-3 col-md-6 col-sm-12 p-1">
                         <div class="list-group">
                             <a class="list-group-item" asp-controller="Device" asp-action="Index">
                                 <h3 class="pull-right"><i class="fas fa-mobile-alt"></i></h3>
@@ -34,7 +34,7 @@
                             </a>
                         </div>
                     </div>
-                    <div class="col-md-3 p-1">
+                    <div class="col-lg-3 col-md-6 col-sm-12 p-1">
                         <div class="list-group">
                             <a class="list-group-item" asp-controller="DeviceGroup" asp-action="Index">
                                 <h3 class="pull-right"><i class="fas fa-layer-group"></i></h3>
@@ -43,7 +43,7 @@
                             </a>
                         </div>
                     </div>
-                    <div class="col-md-3 p-1">
+                    <div class="col-lg-3 col-md-6 col-sm-12 p-1">
                         <div class="list-group">
                             <a class="list-group-item" asp-controller="Instance" asp-action="Index">
                                 <h3 class="pull-right"><i class="fas fa-cubes-stacked"></i></h3>
@@ -54,7 +54,7 @@
                     </div>
                 </div>
                 <div class="row justify-content-center">
-                    <div class="col-md-4 p-1">
+                    <div class="col-lg-4 col-md-6 col-sm-12 p-1">
                         <div class="list-group">
                             <a class="list-group-item" asp-controller="Account" asp-action="Index">
                                 <h3 class="pull-right"><i class="fas fa-user"></i></h3>
@@ -63,7 +63,7 @@
                             </a>
                         </div>
                     </div>
-                    <div class="col-md-4 p-1">
+                    <div class="col-lg-4 col-md-6 col-sm-12 p-1">
                         <div class="list-group">
                             <a class="list-group-item" asp-controller="Assignment" asp-action="Index">
                                 <h3 class="pull-right"><i class="fas fa-cog"></i></h3>
@@ -72,7 +72,7 @@
                             </a>
                         </div>
                     </div>
-                    <div class="col-md-4 p-1">
+                    <div class="col-lg-4 col-md-6 col-sm-12 p-1">
                         <div class="list-group">
                             <a class="list-group-item" asp-controller="AssignmentGroup" asp-action="Index">
                                 <h3 class="pull-right"><i class="fas fa-cogs"></i></h3>
@@ -83,7 +83,7 @@
                     </div>
                 </div>
                 <div class="row justify-content-center">
-                    <div class="col-md-3 p-1">
+                    <div class="col-lg-3 col-md-6 col-sm-12 p-1">
                         <div class="list-group">
                             <a class="list-group-item" asp-controller="Geofence" asp-action="Index">
                                 <h3 class="pull-right"><i class="fas fa-map-marked"></i></h3>
@@ -92,7 +92,7 @@
                             </a>
                         </div>
                     </div>
-                    <div class="col-md-3 p-1">
+                    <div class="col-lg-3 col-md-6 col-sm-12 p-1">
                         <div class="list-group">
                             <a class="list-group-item" asp-controller="IvList" asp-action="Index">
                                 <h3 class="pull-right"><i class="fas fa-list"></i></h3>
@@ -101,7 +101,7 @@
                             </a>
                         </div>
                     </div>
-                    <div class="col-md-3 p-1">
+                    <div class="col-lg-3 col-md-6 col-sm-12 p-1">
                         <div class="list-group">
                             <a class="list-group-item" asp-controller="Webhook" asp-action="Index">
                                 <h3 class="pull-right"><i class="fas fa-circle-nodes"></i></h3>
@@ -110,7 +110,7 @@
                             </a>
                         </div>
                     </div>
-                    <div class="col-md-3 p-1">
+                    <div class="col-lg-3 col-md-6 col-sm-12 p-1">
                         <div class="list-group">
                             <a class="list-group-item" asp-controller="User" asp-action="Index">
                                 <h3 class="pull-right"><i class="fas fa-users"></i></h3>
@@ -125,7 +125,7 @@
                     <div class="row justify-content-center">
                     @foreach (var tile in dashboardTiles)
                     {
-                        <div class="col-md-3 p-1">
+                        <div class="col-lg-3 col-md-6 col-sm-12 p-1">
                             <div class="list-group">
                                 <a class="list-group-item" asp-controller="@tile.ControllerName" asp-action="@tile.ActionName">
                                     <h3 class="pull-right"><i class="@tile.Icon"></i></h3>

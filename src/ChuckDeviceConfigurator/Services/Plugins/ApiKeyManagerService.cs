@@ -89,6 +89,7 @@ public class ApiKeyManagerService : IApiKeyManagerService
 
     public string GenerateApiKey()
     {
+        // TODO: Replace with validatable method
         var bytes = RandomNumberGenerator.GetBytes(NumberOfSecureBytesToGenerate);
         var apiKey = string.Concat(Prefix, Convert.ToBase64String(bytes)
             .Replace("/", "")

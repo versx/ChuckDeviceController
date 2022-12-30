@@ -12,10 +12,22 @@
 <br />
 @Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Plugin", ControllerText = "Api Keys", Fragment = "apikeys", CurrentPage = "Edit API Key" })
 
-<h4>API Key</h4>
-<hr />
-
 <form asp-action="Edit">
+    <div class="pb-4">
+        <div class="float-start">
+            <h4>API Key '@Model?.Name'</h4>
+        </div>
+        <div class="float-end">
+            <a asp-action="Delete" asp-route-id="@Model?.Name" class="btn btn-danger btn-sm">
+                <i class="fa-solid fa-trash"></i>&nbsp;Delete
+            </a>
+            &nbsp;
+            <button type="submit" class="btn btn-primary btn-sm">
+                <i class="fa-solid fa-floppy-disk"></i>&nbsp;Save
+            </button>
+        </div>
+    </div>
+    <hr />
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
     <div class="row">
         <div class="col-sm col-lg-6">
@@ -48,7 +60,7 @@
                     <li class="list-group-item border-0 py-0">
                         <label class="form-label"><b>@groupName</b></label>
                         <ul class="list-group list-group-flush">
-                            @for (var j = 0; j < Model.Scopes[groupName].Count; j++)
+                            @for (var j = 0; j < Model?.Scopes[groupName].Count; j++)
                             {
                                 <li class="list-group-item border-0 py-0">
                                     <div class="row">
@@ -77,9 +89,6 @@
     <br />
     <div class="checkbox mb-3">
         <label><input type="checkbox" asp-for="IsEnabled"> Enabled</label>
-    </div>
-    <div class="form-group mb-3">
-        <input type="submit" value="Save" class="btn btn-primary" />
     </div>
 </form>
 
