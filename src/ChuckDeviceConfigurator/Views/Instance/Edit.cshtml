@@ -264,7 +264,7 @@ function handleInstanceTypeChanged(instanceTypeId) {
             !isCircle && geofence.Type === 'Geofence' ||
             instanceTypeId == @((int)InstanceType.Custom)) {
             // Create new select option for valid geofence
-            const option = new Option(geofence.Name, geofence.Name);
+            const option = new Option(geofence.name, geofence.name);
             // Add select option to geofences multi select element
             $('#Geofences').append(option);
         }
