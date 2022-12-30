@@ -32,8 +32,6 @@ public class ControllerDbContext : DbContext
 
     public DbSet<IvList> IvLists { get; set; } = null!;
 
-    public DbSet<Plugin> Plugins { get; set; } = null!;
-
     public DbSet<Webhook> Webhooks { get; set; } = null!;
 
     #endregion

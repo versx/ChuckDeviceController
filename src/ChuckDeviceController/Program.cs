@@ -126,8 +126,6 @@ builder.Services.AddScoped<MySqlConnection>(options =>
     var connection = new MySqlConnection(connectionString);
     //Task.Run(connection.OpenAsync).Wait();
     connection.Open();
-
-    // TODO: EntityRepository - Interlocked.Increment(ref _instanceCount);
     return connection;
 });
 

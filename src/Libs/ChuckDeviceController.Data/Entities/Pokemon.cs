@@ -28,6 +28,8 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
 
     #endregion
 
+    private readonly DittoDetector _dittoDetector;
+
     #region Properties
 
     [
@@ -199,6 +201,7 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
 
     public Pokemon()
     {
+        _dittoDetector = new DittoDetector(this);
     }
 
     public static Pokemon ParsePokemonFromWild(WildPokemonProto wildPokemon, ulong cellId, string username, bool isEvent)
@@ -216,7 +219,7 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
             CellId = cellId,
             SeenType = SeenType.Wild,
         };
-        pokemon.SetPokemonDisplay(wildPokemon.Pokemon?.PokemonDisplay);
+        pokemon.SetPokemonDisplay(pokemon.PokemonId, wildPokemon.Pokemon?.PokemonDisplay);
         return pokemon;
     }
 
@@ -235,7 +238,7 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
             CellId = cellId,
             IsExpireTimestampVerified = false,
         };
-        pokemon.SetPokemonDisplay(nearbyPokemon.PokemonDisplay);
+        pokemon.SetPokemonDisplay(pokemon.PokemonId, nearbyPokemon.PokemonDisplay);
 
         //if (pokemon.IsDitto)
         //{
@@ -302,7 +305,7 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
             CellId = cellId,
             SeenType = SeenType.LureWild,
         };
-        pokemon.SetPokemonDisplay(mapPokemon.PokemonDisplay);
+        pokemon.SetPokemonDisplay(pokemon.PokemonId, mapPokemon.PokemonDisplay);
         
         // Get Pokestop via spawnpoint id
         var pokestop = await EntityRepository.GetEntityAsync<string, Pokestop>(connection, spawnpointId, memCache);
@@ -317,7 +320,7 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
 
         if (mapPokemon.ExpirationTimeMs > 0)
         {
-            pokemon.ExpireTimestamp = Convert.ToUInt64((0 + Convert.ToUInt64(mapPokemon.ExpirationTimeMs)) / 1000);
+            pokemon.ExpireTimestamp = Convert.ToUInt64(mapPokemon.ExpirationTimeMs) / 1000;
             pokemon.IsExpireTimestampVerified = true;
         }
         else
@@ -504,7 +507,7 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
         if (HasIvChanges)
         {
             // Although capture change values are player specific, set them to the Pokemon
-            // Should remove them eventually though.
+            // REVIEW: Should remove them eventually though.
             if (encounterData.CaptureProbability != null)
             {
                 Capture1 = encounterData.CaptureProbability.CaptureProbability[0];
@@ -516,20 +519,23 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
             var cpMultiplier = encounterData.Pokemon.Pokemon.CpMultiplier;
             Level = CalculateLevel(cpMultiplier);
 
-            IsDitto = IsDittoDisguised(this);
+            //IsDitto = IsDittoDisguised(this);
+            IsDitto = _dittoDetector.IsDisguised();
             if (IsDitto)
             {
                 // Set default Ditto attributes
-                SetDittoAttributes(PokemonId, Weather ?? 0, Level ?? 0);
+                //SetDittoAttributes(PokemonId, Weather ?? 0, Level ?? 0);
+                _dittoDetector.SetAttributes(PokemonId, Weather ?? 0, Level ?? 0, ClearEncounterDetails);
             }
         }
 
+        var now = DateTime.UtcNow.ToTotalSeconds();
         var wildPokemon = encounterData.Pokemon;
         var spawnId = Convert.ToUInt64(wildPokemon.SpawnPointId, 16);
         SpawnId = spawnId;
         SeenType = SeenType.Encounter;
-        Updated = DateTime.UtcNow.ToTotalSeconds();
-        Changed = Updated;
+        Updated = now;
+        Changed = now;
     }
 
     public void AddDiskEncounter(DiskEncounterOutProto diskEncounterData, string username)
@@ -594,10 +600,12 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
             var cpMultiplier = diskEncounterData.Pokemon?.CpMultiplier ?? 0;
             Level = CalculateLevel(cpMultiplier);
 
-            IsDitto = IsDittoDisguised(this);
+            //IsDitto = IsDittoDisguised(this);
+            IsDitto = _dittoDetector.IsDisguised();
             if (IsDitto)
             {
-                SetDittoAttributes(PokemonId, Weather ?? 0, Level ?? 0);
+                //SetDittoAttributes(PokemonId, Weather ?? 0, Level ?? 0);
+                _dittoDetector.SetAttributes(PokemonId, Weather ?? 0, Level ?? 0, ClearEncounterDetails);
             }
         }
 
@@ -608,8 +616,8 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
 
     public async Task UpdateAsync(Pokemon? oldPokemon, IMemoryCacheService memCache, bool updateIv = false)
     {
+        bool setIvForWeather;
         var updateIV = updateIv;
-        var setIvForWeather = false;
         var now = DateTime.UtcNow.ToTotalSeconds();
         Updated = now;
 
@@ -751,12 +759,14 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
                 Capture3 = oldPokemon.Capture3;
                 IsShiny = oldPokemon.IsShiny;
                 SeenType = oldPokemon.SeenType;
-                IsDitto = IsDittoDisguised(oldPokemon);
+                //IsDitto = IsDittoDisguised(oldPokemon);
+                IsDitto = _dittoDetector.IsDisguised(oldPokemon);
 
                 if (IsDitto)
                 {
                     Console.WriteLine($"oldPokemon {Id} Ditto found, disguised as {PokemonId}");
-                    SetDittoAttributes(PokemonId, oldPokemon.Weather ?? 0, oldPokemon.Level ?? 0);
+                    //SetDittoAttributes(PokemonId, oldPokemon.Weather ?? 0, oldPokemon.Level ?? 0);
+                    _dittoDetector.SetAttributes(PokemonId, oldPokemon.Weather ?? 0, oldPokemon.Level ?? 0, ClearEncounterDetails);
                 }
             }
             else if ((AttackIV != null && oldPokemon?.AttackIV == null) ||
@@ -968,7 +978,7 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
         return level;
     }
 
-    private void SetPokemonDisplay(PokemonDisplayProto? pokemonDisplay)
+    private void SetPokemonDisplay(uint pokemonId, PokemonDisplayProto? pokemonDisplay)
     {
         var hasDisplay = pokemonDisplay != null;
         Form = hasDisplay
@@ -980,9 +990,13 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
         Gender = hasDisplay
             ? Convert.ToUInt16(pokemonDisplay?.Gender ?? PokemonDisplayProto.Types.Gender.Unset)
             : (ushort)0;
-        Weather = hasDisplay
-            ? Convert.ToUInt16(pokemonDisplay?.WeatherBoostedCondition ?? GameplayWeatherProto.Types.WeatherCondition.None)
-            : (ushort)0;
+
+        SetWeather(Convert.ToUInt16(pokemonDisplay?.WeatherBoostedCondition ?? GameplayWeatherProto.Types.WeatherCondition.None));
+
+        if (PokemonId == 0 || !IsDitto)
+        {
+            PokemonId = pokemonId;
+        }
     }
 
     private void SetExpirationTimestamp()
@@ -1010,7 +1024,7 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
                 if (weatherCondition == 3)
                 {
                     Console.WriteLine($"Both Ditto and disguised Pokemon are weather boosted but Ditto was not weather boosted: None -> Boosted");
-                    Level += 5;
+                    Level ??= 0 + 5;
                     ClearEncounterDetails();
                 }
                 else if (Weather == 3)
@@ -1018,7 +1032,7 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
                     Console.WriteLine($"Both Ditto and disguised Pokemon were weather boosted but Ditto is not weather boosted: Boosted -> None");
                     if (Level >= 5)
                     {
-                        Level -= 5;
+                        Level ??= Convert.ToUInt16(0 - 5);
                     }
                     ClearEncounterDetails();
                 }
@@ -1065,61 +1079,61 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
 
     #region Ditto Detection
 
-    private void SetDittoAttributes(uint displayPokemonId, ushort weather, ushort level)
-    {
-        DisplayPokemonId = displayPokemonId;
-        PokemonId = DittoPokemonId;
-        Form = 0;
-        Move1 = DittoTransformFastMove;
-        Move2 = DittoStruggleChargeMove;
-        Gender = 3;
-        Costume = 0;
-        Size = null;
-        Weight = null;
-        if (weather == 0 && level > 30)
-        {
-            Console.WriteLine($"Pokemon {Id} is a weather boosted Ditto at level {level} - reset IV is needed");
-            Level -= 5;
-            ClearEncounterDetails();
-        }
-    }
+    //private void SetDittoAttributes(uint displayPokemonId, ushort weather, ushort level)
+    //{
+    //    DisplayPokemonId = displayPokemonId;
+    //    PokemonId = DittoPokemonId;
+    //    Form = 0;
+    //    Move1 = DittoTransformFastMove;
+    //    Move2 = DittoStruggleChargeMove;
+    //    Gender = 3;
+    //    Costume = 0;
+    //    Size = null;
+    //    Weight = null;
+    //    if (weather == 0 && level > 30)
+    //    {
+    //        Console.WriteLine($"Pokemon {Id} is a weather boosted Ditto at level {level} - reset IV is needed");
+    //        Level ??= Convert.ToUInt16(0 - 5);
+    //        ClearEncounterDetails();
+    //    }
+    //}
 
-    public static bool IsDittoDisguised(Pokemon pokemon)
-    {
-        if (pokemon.PokemonId == DittoPokemonId)
-        {
-            Console.WriteLine($"Pokemon {pokemon.Id} was already detected as Ditto.");
-            return true;
-        }
+    //public static bool IsDittoDisguised(Pokemon pokemon)
+    //{
+    //    if (pokemon.PokemonId == DittoPokemonId)
+    //    {
+    //        Console.WriteLine($"Pokemon {pokemon.Id} was already detected as Ditto.");
+    //        return true;
+    //    }
 
-        var level = pokemon.Level;
-        var isUnderLevelBoosted = level > 0 && level < WeatherBoostMinLevel;
-        var isUnderIvStatBoosted = level > 0 &&
-            (pokemon.AttackIV < WeatherBoostMinIvStat ||
-             pokemon.DefenseIV < WeatherBoostMinIvStat ||
-             pokemon.StaminaIV < WeatherBoostMinIvStat);
-        var isWeatherBoosted = pokemon.Weather > 0;
-        var isOverLevel = level > 30;
+    //    var level = pokemon.Level;
+    //    var isUnderLevelBoosted = level > 0 && level < WeatherBoostMinLevel;
+    //    var isUnderIvStatBoosted = level > 0 &&
+    //        (pokemon.AttackIV < WeatherBoostMinIvStat ||
+    //         pokemon.DefenseIV < WeatherBoostMinIvStat ||
+    //         pokemon.StaminaIV < WeatherBoostMinIvStat);
+    //    var isWeatherBoosted = pokemon.Weather > 0;
+    //    var isOverLevel = level > 30;
 
-        if (isWeatherBoosted)
-        {
-            if (isUnderLevelBoosted || isUnderIvStatBoosted)
-            {
-                Console.WriteLine($"Pokemon {pokemon.Id} Ditto found, disguised as {pokemon.PokemonId}");
-                return true;
-            }
-        }
-        else
-        {
-            if (isOverLevel)
-            {
-                Console.WriteLine($"Pokemon {pokemon.Id} weather boosted Ditto found, disguised as {pokemon.PokemonId}");
-                return true;
-            }
-        }
+    //    if (isWeatherBoosted)
+    //    {
+    //        if (isUnderLevelBoosted || isUnderIvStatBoosted)
+    //        {
+    //            Console.WriteLine($"Pokemon {pokemon.Id} Ditto found, disguised as {pokemon.PokemonId}");
+    //            return true;
+    //        }
+    //    }
+    //    else
+    //    {
+    //        if (isOverLevel)
+    //        {
+    //            Console.WriteLine($"Pokemon {pokemon.Id} weather boosted Ditto found, disguised as {pokemon.PokemonId}");
+    //            return true;
+    //        }
+    //    }
 
-        return false;
-    }
+    //    return false;
+    //}
 
     #endregion
 
@@ -1194,44 +1208,59 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
     }
 }
 
-/*
 public class DittoDetector
 {
-    private const uint DittoPokemonId = (ushort)HoloPokemonId.Ditto; // 132
-    private const ushort DittoTransformFastMove = (ushort)HoloPokemonMove.TransformFast; // 242
-    private const ushort DittoStruggleChargeMove = (ushort)HoloPokemonMove.Struggle; // 133
-    private const uint WeatherBoostMinLevel = 6;
-    private const uint WeatherBoostMinIvStat = 4;
+    #region Constants
+
+    public const uint DittoPokemonId = (ushort)HoloPokemonId.Ditto; // 132
+    public const ushort DittoTransformFastMove = (ushort)HoloPokemonMove.TransformFast; // 242
+    public const ushort DittoStruggleChargeMove = (ushort)HoloPokemonMove.Struggle; // 133
+    public const uint WeatherBoostMinLevel = 6;
+    public const uint WeatherBoostMinIvStat = 4;
+
+    #endregion
+
+    #region Variables
 
     private readonly Pokemon _pokemon;
+
+    #endregion
+
+    #region Constructors
 
     public DittoDetector(Pokemon pokemon)
     {
         _pokemon = pokemon;
     }
 
-    public bool IsDittoDisguised()
+    #endregion
+
+    #region Public Methods
+
+    public bool IsDisguised() => IsDisguised(_pokemon);
+
+    public bool IsDisguised(Pokemon oldPokemon)
     {
-        if (_pokemon.PokemonId == DittoPokemonId)
+        if (oldPokemon.PokemonId == DittoPokemonId)
         {
-            Console.WriteLine($"Pokemon {_pokemon.Id} was already detected as Ditto.");
+            Console.WriteLine($"Pokemon {oldPokemon.Id} was already detected as Ditto.");
             return true;
         }
 
-        var level = _pokemon.Level;
+        var level = oldPokemon.Level;
         var isUnderLevelBoosted = level > 0 && level < WeatherBoostMinLevel;
         var isUnderIvStatBoosted = level > 0 &&
-            (_pokemon.AttackIV < WeatherBoostMinIvStat ||
-             _pokemon.DefenseIV < WeatherBoostMinIvStat ||
-             _pokemon.StaminaIV < WeatherBoostMinIvStat);
-        var isWeatherBoosted = _pokemon.Weather > 0;
+            (oldPokemon.AttackIV < WeatherBoostMinIvStat ||
+             oldPokemon.DefenseIV < WeatherBoostMinIvStat ||
+             oldPokemon.StaminaIV < WeatherBoostMinIvStat);
+        var isWeatherBoosted = oldPokemon.Weather > 0;
         var isOverLevel = level > 30;
 
         if (isWeatherBoosted)
         {
             if (isUnderLevelBoosted || isUnderIvStatBoosted)
             {
-                Console.WriteLine($"Pokemon {_pokemon.Id} Ditto found, disguised as {_pokemon.PokemonId}");
+                Console.WriteLine($"Pokemon {oldPokemon.Id} Ditto found, disguised as {oldPokemon.PokemonId}");
                 return true;
             }
         }
@@ -1239,12 +1268,33 @@ public class DittoDetector
         {
             if (isOverLevel)
             {
-                Console.WriteLine($"Pokemon {_pokemon.Id} weather boosted Ditto found, disguised as {_pokemon.PokemonId}");
+                Console.WriteLine($"Pokemon {oldPokemon.Id} weather boosted Ditto found, disguised as {oldPokemon.PokemonId}");
                 return true;
             }
         }
 
         return false;
     }
+
+    public void SetAttributes(uint displayPokemonId, ushort weather, ushort level, Action clearEncounterDetails)
+    {
+        _pokemon.DisplayPokemonId = displayPokemonId;
+        _pokemon.PokemonId = DittoPokemonId;
+        _pokemon.Form = 0;
+        _pokemon.Move1 = DittoTransformFastMove;
+        _pokemon.Move2 = DittoStruggleChargeMove;
+        _pokemon.Gender = 3;
+        _pokemon.Costume = 0;
+        _pokemon.Size = null;
+        _pokemon.Weight = null;
+        if (weather == 0 && level > 30)
+        {
+            Console.WriteLine($"Pokemon {_pokemon.Id} is a weather boosted Ditto at level {level} - reset IV is needed");
+            _pokemon.Level ??= Convert.ToUInt16(0 - 5);
+            //ClearEncounterDetails();
+            clearEncounterDetails();
+        }
+    }
+
+    #endregion
 }
-*/
