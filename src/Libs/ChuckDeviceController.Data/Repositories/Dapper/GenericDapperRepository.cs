@@ -69,7 +69,8 @@ public class GenericDapperRepository<TEntity> : IGenericRepository<TEntity>, IGe
     #region Asynchronous Repository Pattern
 
     public async Task<IEnumerable<TEntity>> FindAsync(
-        Expression<Func<TEntity, bool>>? filter = null,
+        //Expression<Func<TEntity, bool>>? filter = null,
+        Func<TEntity, bool>? filter = null,
         Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null)
     {
         await Task.CompletedTask;

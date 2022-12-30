@@ -10,7 +10,8 @@ public interface IGenericRepositoryAsync<TEntity>
     Task<TEntity?> FindByIdAsync<TKey>(TKey id);
 
     Task<IEnumerable<TEntity>> FindAsync(
-        Expression<Func<TEntity, bool>>? filter = null,
+        //Expression<Func<TEntity, bool>>? filter = null,
+        Func<TEntity, bool>? filter = null,
         Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null
     );
 

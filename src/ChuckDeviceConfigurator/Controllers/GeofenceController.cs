@@ -191,7 +191,6 @@ public class GeofenceController : Controller
             _geofenceService.Edit(geofence, id);
 
             // Get list of instances that have geofence
-            // TODO: Fix geofences error
             var instancesWithGeofence = await _uow.Instances.FindAsync(instance => instance.Geofences.Contains(geofence.Name));
             foreach (var instance in instancesWithGeofence)
             {
@@ -201,7 +200,7 @@ public class GeofenceController : Controller
 
             return RedirectToAction(nameof(Index));
         }
-        catch (Exception ex)
+        catch //(Exception ex)
         {
             ModelState.AddModelError("Geofence", $"Unknown error occurred while editing geofence '{id}'.");
 
@@ -248,7 +247,6 @@ public class GeofenceController : Controller
             _geofenceService.Delete(id);
 
             // Get list of instances that have geofence
-            // TODO: Fix geofences error
             var instancesWithGeofence = await _uow.Instances.FindAsync(instance => instance.Geofences.Contains(geofence.Name));
             foreach (var instance in instancesWithGeofence)
             {
@@ -260,7 +258,7 @@ public class GeofenceController : Controller
 
             return RedirectToAction(nameof(Index));
         }
-        catch (Exception ex)
+        catch //(Exception ex)
         {
             ModelState.AddModelError("Geofence", $"Unknown error occurred while deleting geofence '{id}'.");
             return View(geofence);

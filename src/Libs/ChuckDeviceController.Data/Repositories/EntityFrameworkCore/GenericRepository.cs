@@ -83,13 +83,14 @@ public class GenericRepository<TDbContext, TEntity> : IGenericRepository<TEntity
     #region Asynchronous Repository Pattern
 
     public async Task<IEnumerable<TEntity>> FindAsync(
-        Expression<Func<TEntity, bool>>? filter = null,
+        //Expression<Func<TEntity, bool>>? filter = null,
+        Func<TEntity, bool>? filter = null,
         Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null)
     {
         IQueryable<TEntity> query = _context.Set<TEntity>();
 
-        if (filter != null) query = query.Where(filter);
         if (orderBy != null) query = orderBy(query);
+        if (filter != null) return query.Where(filter); // NOTES: Crappy workaround
 
         return await Task.FromResult(query);
     }
