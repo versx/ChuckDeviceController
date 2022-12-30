@@ -36,8 +36,8 @@ public class PluginManager : IPluginManager
     private IServiceCollection _services = null!;
     private IWebHostEnvironment _webHostEnv = null!;
     private readonly PluginFinder<IPlugin> _pluginFinder;
-    private Func<IReadOnlyList<IApiKey>> _getApiKeysFunc;
-    //private Func<IReadOnlyList<IPlugin>> _getPluginStatesFunc;
+    private Func<IReadOnlyList<IApiKey>> _getApiKeysFunc = null!;
+    private Func<IReadOnlyList<IPluginState>> _getPluginStatesFunc = null!;
 
     #endregion
 
@@ -120,8 +120,6 @@ public class PluginManager : IPluginManager
             RootPluginsDirectory = Options.RootPluginsDirectory,
             ValidFileTypes = new[] { PluginFinderOptions.DefaultPluginFileType },
         });
-
-        _getApiKeysFunc = null!;
     }
 
     #endregion
@@ -144,11 +142,16 @@ public class PluginManager : IPluginManager
         }
     }
 
-    public async Task<IServiceCollection> LoadPluginsAsync(IServiceCollection services, IWebHostEnvironment env, Func<IReadOnlyList<IApiKey>> apiKeysFunc)
+    public async Task<IServiceCollection> LoadPluginsAsync(
+        IServiceCollection services,
+        IWebHostEnvironment env,
+        Func<IReadOnlyList<IApiKey>> apiKeysFunc,
+        Func<IReadOnlyList<IPluginState>> pluginsFunc)
     {
         _services = services;
         _webHostEnv = env;
         _getApiKeysFunc = apiKeysFunc;
+        _getPluginStatesFunc = pluginsFunc;
 
         var pluginFinderResults = _pluginFinder.FindAssemliesWithPlugins();
         if (!(pluginFinderResults?.Any() ?? false))
@@ -167,6 +170,16 @@ public class PluginManager : IPluginManager
             //.AddSessionStateTempDataProvider();
 
         var apiKeys = _getApiKeysFunc();
+        var pluginStates = pluginsFunc();
+        var disabledPlugins = pluginStates
+            .Where(x => x.State == PluginState.Disabled)
+            .Select(x => x.FullPath.ToLower())
+            .ToList();
+
+        // Filter any disabled plugins and do not load them.
+        // TODO: Show them on plugins page still
+        pluginFinderResults = pluginFinderResults
+            .Where(x => !disabledPlugins.Contains(x.AssemblyFullPath.ToLower()));
 
         // Load all valid plugin assemblies found in their own AssemblyLoadContext
         var pluginAssemblies = _pluginFinder.LoadPluginAssemblies(pluginFinderResults);
@@ -239,10 +252,11 @@ public class PluginManager : IPluginManager
     public async Task RegisterPluginAsync(PluginHost pluginHost)
     {
         var plugin = pluginHost.Plugin;
-        if (_plugins.ContainsKey(plugin.Name))
+        // Check if plugin is already cached
+        if (_plugins.TryGetValue(plugin.Name, out var value))
         {
             // Check if version is higher than current, if so replace existing
-            var oldVersion = _plugins[pluginHost.Plugin.Name].Plugin.Version;
+            var oldVersion = value.Plugin.Version;
             var newVersion = plugin.Version;
             if (oldVersion > newVersion)
             {
@@ -265,11 +279,14 @@ public class PluginManager : IPluginManager
                 return;
             }
         }
-
-        if (!_plugins.TryAdd(plugin.Name, pluginHost))
+        else
         {
-            _logger.LogError($"Failed to load plugin '{plugin.Name}' v{plugin.Version} by {plugin.Author}.");
-            return;
+            // First time loading plugin, add to cache
+            if (!_plugins.TryAdd(plugin.Name, pluginHost))
+            {
+                _logger.LogError($"Failed to load plugin '{plugin.Name}' v{plugin.Version} by {plugin.Author}.");
+                return;
+            }
         }
 
         _logger.LogInformation($"Plugin '{plugin.Name}' v{plugin.Version} by {plugin.Author} initialized and registered to plugin manager cache.");

@@ -37,7 +37,11 @@ public interface IPluginManager
 
     void Configure(WebApplication appBuilder);
 
-    Task<IServiceCollection> LoadPluginsAsync(IServiceCollection services, IWebHostEnvironment env, Func<IReadOnlyList<IApiKey>> apiKeysFunc);
+    Task<IServiceCollection> LoadPluginsAsync(
+        IServiceCollection services,
+        IWebHostEnvironment env,
+        Func<IReadOnlyList<IApiKey>> apiKeysFunc,
+        Func<IReadOnlyList<IPluginState>> pluginsFunc);
 
     Task LoadPluginAsync(string filePath, Func<IReadOnlyList<IApiKey>> apiKeysFunc);
 

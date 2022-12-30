@@ -336,13 +336,13 @@ var getApiKeysFunc = new Func<List<ApiKey>>(() =>
 });
 
 // Load plugin states from SQLite database
-//var getPluginsFunc = new Func<List<Plugin>>(() =>
-//{
-//    var controllerContext = serviceProvider.GetRequiredService<IDbContextFactory<PluginDbContext>>();
-//    using var context = controllerContext.CreateDbContext();
-//    var plugins = context.Plugins.ToList();
-//    return plugins;
-//});
+var getPluginsFunc = new Func<List<Plugin>>(() =>
+{
+    var controllerContext = serviceProvider.GetRequiredService<IDbContextFactory<PluginDbContext>>();
+    using var context = controllerContext.CreateDbContext();
+    var plugins = context.Plugins.ToList();
+    return plugins;
+});
 
 // Instantiate 'IPluginManager' singleton with configurable options
 var pluginManager = PluginManager.InstanceWithOptions(new PluginManagerOptions
@@ -358,7 +358,7 @@ pluginManager.PluginHostStateChanged += OnPluginHostStateChanged;
 
 // Find plugins, register plugin services, load plugin assemblies,
 // call OnLoad callback and register with 'IPluginManager' cache
-await pluginManager.LoadPluginsAsync(builder.Services, builder.Environment, getApiKeysFunc);
+await pluginManager.LoadPluginsAsync(builder.Services, builder.Environment, getApiKeysFunc, getPluginsFunc);
 
 // Start the job controller service after all plugins have loaded. (TODO: Add PluginsLoadedComplete event?)
 // This is so all custom IJobController's provided via plugins have been registered.
