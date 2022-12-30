@@ -201,7 +201,7 @@
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 <script>
 // TODO: Move all reusable methods to wwwroot/js/*
-const existingInstanceTypeId = @((int)Model?.Type);
+const existingInstanceTypeId = @((int)(Model?.Type ?? 0));
 hideAllElements(existingInstanceTypeId);
 handleInstanceTypeChanged(existingInstanceTypeId);
 

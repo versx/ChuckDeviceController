@@ -28,7 +28,9 @@ public class WebhookRelayService : IWebhookRelayService
     private readonly ILogger<IWebhookRelayService> _logger;
     private readonly IGrpcClient<WebhookEndpoint.WebhookEndpointClient, WebhookEndpointRequest, WebhookEndpointResponse> _grpcWebhookClient;
     private readonly SafeCollection<Webhook> _webhookEndpoints = new();
+    // Timer used to check received webhooks to process
     private readonly Timer _timer;
+    // Timer used to request configured webhook endpoints via configurator
     private readonly Timer _requestTimer;
     private ulong _totalWebhooksSent;
 
@@ -66,6 +68,9 @@ public class WebhookRelayService : IWebhookRelayService
     /// </summary>
     public ulong TotalSent => _totalWebhooksSent;
 
+    /// <summary>
+    /// Gets the configuration options for the service.
+    /// </summary>
     public WebhookRelayConfig Options { get; }
 
     #endregion
@@ -88,7 +93,7 @@ public class WebhookRelayService : IWebhookRelayService
         _requestTimer = new Timer(Options.EndpointsIntervalS * 1000);
         _requestTimer.Elapsed += async (sender, e) => await SendWebhookEndpointsRequestAsync();
 
-        Task.Run(async () => await StartAsync()).Wait();
+        Task.Run(StartAsync).Wait();
     }
 
     #endregion

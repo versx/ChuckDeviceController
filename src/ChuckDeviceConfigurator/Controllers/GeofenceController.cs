@@ -112,6 +112,7 @@ public class GeofenceController : Controller
             await _uow.Geofences.AddAsync(geofence);
             await _uow.CommitAsync();
 
+            // Add geofence to geofence service cache
             _geofenceService.Add(geofence);
 
             return RedirectToAction(nameof(Index));

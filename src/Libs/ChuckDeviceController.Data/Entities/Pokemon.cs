@@ -204,133 +204,6 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
         _dittoDetector = new DittoDetector(this);
     }
 
-    public static Pokemon ParsePokemonFromWild(WildPokemonProto wildPokemon, ulong cellId, string username, bool isEvent)
-    {
-        var spawnId = Convert.ToUInt64(wildPokemon.SpawnPointId, 16);
-        var pokemon = new Pokemon
-        {
-            Id = wildPokemon.EncounterId.ToString(),
-            PokemonId = Convert.ToUInt16(wildPokemon.Pokemon.PokemonId),
-            Latitude = wildPokemon.Latitude,
-            Longitude = wildPokemon.Longitude,
-            SpawnId = spawnId,
-            IsEvent = isEvent,
-            Username = username,
-            CellId = cellId,
-            SeenType = SeenType.Wild,
-        };
-        pokemon.SetPokemonDisplay(pokemon.PokemonId, wildPokemon.Pokemon?.PokemonDisplay);
-        return pokemon;
-    }
-
-    public static async Task<Pokemon> ParsePokemonFromNearby(MySqlConnection connection, IMemoryCacheService memCache, NearbyPokemonProto nearbyPokemon, ulong cellId, string username, bool isEvent)
-    {
-        var pokestopId = string.IsNullOrEmpty(nearbyPokemon.FortId)
-            ? null
-            : nearbyPokemon.FortId;
-        var pokemon = new Pokemon
-        {
-            Id = Convert.ToString(nearbyPokemon.EncounterId),
-            PokemonId = Convert.ToUInt16(nearbyPokemon.PokedexNumber),
-            PokestopId = pokestopId,
-            IsEvent = isEvent,
-            Username = username,
-            CellId = cellId,
-            IsExpireTimestampVerified = false,
-        };
-        pokemon.SetPokemonDisplay(pokemon.PokemonId, nearbyPokemon.PokemonDisplay);
-
-        //if (pokemon.IsDitto)
-        //{
-        //    return pokemon;
-        //}
-
-        //if (oldWeather != null && oldPokemonId != 0)
-        //{
-        //    if (pokemon.SeenType == SeenType.Wild)
-        //    {
-        //        return pokemon;
-        //    }
-        //    else if (pokemon.SeenType == SeenType.Encounter)
-        //    {
-        //        pokemon.SeenType = SeenType.Wild;
-        //        // Pokemon changed or is weather boosted, reset encounter details
-        //        pokemon.ClearEncounterDetails();
-        //        Console.WriteLine($"Pokemon '{pokemon.Id}' cleared encounter details");
-        //        return pokemon;
-        //    }
-        //}
-
-        // Determine the location of the Pokemon
-        if (string.IsNullOrEmpty(pokestopId))
-        {
-            if (!EntityConfiguration.Instance.EnableMapPokemon)
-            {
-                return null!;
-            }
-            // Set Pokemon location to S2 cell coordinate as an approximation
-            var latlng = cellId.ToCoordinate();
-            pokemon.Latitude = latlng.Latitude;
-            pokemon.Longitude = latlng.Longitude;
-            pokemon.SeenType = SeenType.NearbyCell;
-        }
-        else
-        {
-            var pokestop = await EntityRepository.GetEntityAsync<string, Pokestop>(connection, pokestopId, memCache);
-            if (pokestop == null)
-            {
-                // Failed to fetch Pokestop for nearby Pokemon in order to find location, skipping
-                return null!;
-            }
-            pokemon.Latitude = pokestop.Latitude;
-            pokemon.Longitude = pokestop.Longitude;
-            pokemon.SeenType = SeenType.NearbyStop;
-        }
-
-        pokemon.SetExpirationTimestamp();
-        pokemon.ClearEncounterDetails();
-        return pokemon;
-    }
-
-    public static async Task<Pokemon> ParsePokemonFromMap(MySqlConnection connection, IMemoryCacheService memCache, MapPokemonProto mapPokemon, ulong cellId, string username, bool isEvent)
-    {
-        var encounterId = Convert.ToUInt64(mapPokemon.EncounterId);
-        var spawnpointId = mapPokemon.SpawnpointId;
-        var pokemon = new Pokemon
-        {
-            Id = encounterId.ToString(),
-            PokemonId = Convert.ToUInt32(mapPokemon.PokedexTypeId),
-            IsEvent = isEvent,
-            Username = username,
-            CellId = cellId,
-            SeenType = SeenType.LureWild,
-        };
-        pokemon.SetPokemonDisplay(pokemon.PokemonId, mapPokemon.PokemonDisplay);
-        
-        // Get Pokestop via spawnpoint id
-        var pokestop = await EntityRepository.GetEntityAsync<string, Pokestop>(connection, spawnpointId, memCache);
-        if (pokestop == null)
-        {
-            Console.WriteLine($"Failed to fetch Pokestop by spawnpoint ID '{spawnpointId}' for map/lure Pokemon '{pokemon.Id}' to find location, skipping");
-            return null!;
-        }
-        pokemon.PokestopId = pokestop.Id;
-        pokemon.Latitude = pokestop.Latitude;
-        pokemon.Longitude = pokestop.Longitude;
-
-        if (mapPokemon.ExpirationTimeMs > 0)
-        {
-            pokemon.ExpireTimestamp = Convert.ToUInt64(mapPokemon.ExpirationTimeMs) / 1000;
-            pokemon.IsExpireTimestampVerified = true;
-        }
-        else
-        {
-            pokemon.IsExpireTimestampVerified = false;
-        }
-
-        return pokemon;
-    }
-
     //public Pokemon(WildPokemonProto wildPokemon, ulong cellId, string username, bool isEvent)
     //{
     //    IsEvent = isEvent;
@@ -1077,63 +950,134 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
 
     #endregion
 
-    #region Ditto Detection
+    #region Static Parsers
 
-    //private void SetDittoAttributes(uint displayPokemonId, ushort weather, ushort level)
-    //{
-    //    DisplayPokemonId = displayPokemonId;
-    //    PokemonId = DittoPokemonId;
-    //    Form = 0;
-    //    Move1 = DittoTransformFastMove;
-    //    Move2 = DittoStruggleChargeMove;
-    //    Gender = 3;
-    //    Costume = 0;
-    //    Size = null;
-    //    Weight = null;
-    //    if (weather == 0 && level > 30)
-    //    {
-    //        Console.WriteLine($"Pokemon {Id} is a weather boosted Ditto at level {level} - reset IV is needed");
-    //        Level ??= Convert.ToUInt16(0 - 5);
-    //        ClearEncounterDetails();
-    //    }
-    //}
+    public static Pokemon ParsePokemonFromWild(WildPokemonProto wildPokemon, ulong cellId, string username, bool isEvent)
+    {
+        var spawnId = Convert.ToUInt64(wildPokemon.SpawnPointId, 16);
+        var pokemon = new Pokemon
+        {
+            Id = wildPokemon.EncounterId.ToString(),
+            PokemonId = Convert.ToUInt16(wildPokemon.Pokemon.PokemonId),
+            Latitude = wildPokemon.Latitude,
+            Longitude = wildPokemon.Longitude,
+            SpawnId = spawnId,
+            IsEvent = isEvent,
+            Username = username,
+            CellId = cellId,
+            SeenType = SeenType.Wild,
+        };
+        pokemon.SetPokemonDisplay(pokemon.PokemonId, wildPokemon.Pokemon?.PokemonDisplay);
+        return pokemon;
+    }
 
-    //public static bool IsDittoDisguised(Pokemon pokemon)
-    //{
-    //    if (pokemon.PokemonId == DittoPokemonId)
-    //    {
-    //        Console.WriteLine($"Pokemon {pokemon.Id} was already detected as Ditto.");
-    //        return true;
-    //    }
+    public static async Task<Pokemon> ParsePokemonFromNearby(MySqlConnection connection, IMemoryCacheService memCache, NearbyPokemonProto nearbyPokemon, ulong cellId, string username, bool isEvent)
+    {
+        var pokestopId = string.IsNullOrEmpty(nearbyPokemon.FortId)
+            ? null
+            : nearbyPokemon.FortId;
+        var pokemon = new Pokemon
+        {
+            Id = Convert.ToString(nearbyPokemon.EncounterId),
+            PokemonId = Convert.ToUInt16(nearbyPokemon.PokedexNumber),
+            PokestopId = pokestopId,
+            IsEvent = isEvent,
+            Username = username,
+            CellId = cellId,
+            IsExpireTimestampVerified = false,
+        };
+        pokemon.SetPokemonDisplay(pokemon.PokemonId, nearbyPokemon.PokemonDisplay);
 
-    //    var level = pokemon.Level;
-    //    var isUnderLevelBoosted = level > 0 && level < WeatherBoostMinLevel;
-    //    var isUnderIvStatBoosted = level > 0 &&
-    //        (pokemon.AttackIV < WeatherBoostMinIvStat ||
-    //         pokemon.DefenseIV < WeatherBoostMinIvStat ||
-    //         pokemon.StaminaIV < WeatherBoostMinIvStat);
-    //    var isWeatherBoosted = pokemon.Weather > 0;
-    //    var isOverLevel = level > 30;
+        //if (pokemon.IsDitto)
+        //{
+        //    return pokemon;
+        //}
 
-    //    if (isWeatherBoosted)
-    //    {
-    //        if (isUnderLevelBoosted || isUnderIvStatBoosted)
-    //        {
-    //            Console.WriteLine($"Pokemon {pokemon.Id} Ditto found, disguised as {pokemon.PokemonId}");
-    //            return true;
-    //        }
-    //    }
-    //    else
-    //    {
-    //        if (isOverLevel)
-    //        {
-    //            Console.WriteLine($"Pokemon {pokemon.Id} weather boosted Ditto found, disguised as {pokemon.PokemonId}");
-    //            return true;
-    //        }
-    //    }
+        //if (oldWeather != null && oldPokemonId != 0)
+        //{
+        //    if (pokemon.SeenType == SeenType.Wild)
+        //    {
+        //        return pokemon;
+        //    }
+        //    else if (pokemon.SeenType == SeenType.Encounter)
+        //    {
+        //        pokemon.SeenType = SeenType.Wild;
+        //        // Pokemon changed or is weather boosted, reset encounter details
+        //        pokemon.ClearEncounterDetails();
+        //        Console.WriteLine($"Pokemon '{pokemon.Id}' cleared encounter details");
+        //        return pokemon;
+        //    }
+        //}
 
-    //    return false;
-    //}
+        // Determine the location of the Pokemon
+        if (string.IsNullOrEmpty(pokestopId))
+        {
+            if (!EntityConfiguration.Instance.EnableMapPokemon)
+            {
+                return null!;
+            }
+            // Set Pokemon location to S2 cell coordinate as an approximation
+            var latlng = cellId.ToCoordinate();
+            pokemon.Latitude = latlng.Latitude;
+            pokemon.Longitude = latlng.Longitude;
+            pokemon.SeenType = SeenType.NearbyCell;
+        }
+        else
+        {
+            var pokestop = await EntityRepository.GetEntityAsync<string, Pokestop>(connection, pokestopId, memCache);
+            if (pokestop == null)
+            {
+                // Failed to fetch Pokestop for nearby Pokemon in order to find location, skipping
+                return null!;
+            }
+            pokemon.Latitude = pokestop.Latitude;
+            pokemon.Longitude = pokestop.Longitude;
+            pokemon.SeenType = SeenType.NearbyStop;
+        }
+
+        pokemon.SetExpirationTimestamp();
+        pokemon.ClearEncounterDetails();
+        return pokemon;
+    }
+
+    public static async Task<Pokemon> ParsePokemonFromMap(MySqlConnection connection, IMemoryCacheService memCache, MapPokemonProto mapPokemon, ulong cellId, string username, bool isEvent)
+    {
+        var encounterId = Convert.ToUInt64(mapPokemon.EncounterId);
+        var spawnpointId = mapPokemon.SpawnpointId;
+        var pokemon = new Pokemon
+        {
+            Id = encounterId.ToString(),
+            PokemonId = Convert.ToUInt32(mapPokemon.PokedexTypeId),
+            IsEvent = isEvent,
+            Username = username,
+            CellId = cellId,
+            SeenType = SeenType.LureWild,
+        };
+        pokemon.SetPokemonDisplay(pokemon.PokemonId, mapPokemon.PokemonDisplay);
+
+        // Get Pokestop via spawnpoint id
+        var pokestop = await EntityRepository.GetEntityAsync<string, Pokestop>(connection, spawnpointId, memCache);
+        if (pokestop == null)
+        {
+            Console.WriteLine($"Failed to fetch Pokestop by spawnpoint ID '{spawnpointId}' for map/lure Pokemon '{pokemon.Id}' to find location, skipping");
+            return null!;
+        }
+        pokemon.PokestopId = pokestop.Id;
+        pokemon.Latitude = pokestop.Latitude;
+        pokemon.Longitude = pokestop.Longitude;
+
+        if (mapPokemon.ExpirationTimeMs > 0)
+        {
+            pokemon.ExpireTimestamp = Convert.ToUInt64(mapPokemon.ExpirationTimeMs) / 1000;
+            pokemon.IsExpireTimestampVerified = true;
+        }
+        else
+        {
+            pokemon.IsExpireTimestampVerified = false;
+        }
+
+        return pokemon;
+    }
 
     #endregion
 
@@ -1145,7 +1089,7 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
 
     #endregion
 
-    #region Comparison Methods
+    #region IEquatable Implementation
 
     public bool Equals(Pokemon? other)
     {
@@ -1196,6 +1140,8 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
 
     #endregion
 
+    #region Public Overrides
+
     public override string ToString()
     {
         var sb = new StringBuilder();
@@ -1206,6 +1152,8 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
         var id = sb.ToString();
         return id;
     }
+
+    #endregion
 }
 
 public class DittoDetector

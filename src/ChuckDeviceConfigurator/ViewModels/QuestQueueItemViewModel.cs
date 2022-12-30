@@ -4,7 +4,7 @@ using System.ComponentModel;
 
 public class QuestQueueViewModel
 {
-    public string? Name { get; set; }
+    public string Name { get; set; } = null!;
 
     public List<QuestQueueItemViewModel> Queue { get; set; } = new();
 

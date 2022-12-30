@@ -48,23 +48,21 @@ public class SendGridEmailSender : IEmailSender
 
         // Disable click tracking.
         // See https://sendgrid.com/docs/User_Guide/Settings/tracking.html
-        msg.SetClickTracking(false, false);
+        msg.SetClickTracking(enable: false, enableText: false);
 
         //var json = msg.Serialize();
         //msg.SetFooterSetting(true, "html", "text");
         //msg.SetGoogleAnalytics(true, "");
+        // TODO: Add GoogleAnalytics config option
 
         var response = await client.SendEmailAsync(msg);
-        var responseMessage = response.IsSuccessStatusCode
-            ? $"Successfully queued email to send to '{toEmail}'"
-            : $"Failed to send email to '{toEmail}'";
         if (response.IsSuccessStatusCode)
         {
-            _logger.LogInformation(responseMessage);
+            _logger.LogInformation($"Successfully queued email to send to '{toEmail}'");
         }
         else
         {
-            _logger.LogError(responseMessage);
+            _logger.LogError($"Failed to send email to '{toEmail}'");
         }
     }
 }

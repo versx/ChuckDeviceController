@@ -23,7 +23,6 @@ namespace ChuckDeviceConfigurator.Areas.Identity.Pages.Account
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IEmailSender _sender;
         private readonly AuthMessageSenderOptions _options;
-        // TODO: Use _options for registration
 
         public RegisterConfirmationModel(
             UserManager<ApplicationUser> userManager,
@@ -45,7 +44,7 @@ namespace ChuckDeviceConfigurator.Areas.Identity.Pages.Account
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        public bool DisplayConfirmAccountLink { get; set; }
+        public bool DisplayConfirmAccountLink => !_options.Enabled || _sender is null;
 
         /// <summary>
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
@@ -68,8 +67,9 @@ namespace ChuckDeviceConfigurator.Areas.Identity.Pages.Account
             }
 
             Email = email;
-            // Once you add a real email sender, you should remove this code that lets you confirm the account
-            DisplayConfirmAccountLink = _options.Enabled && _sender is null;
+
+            // Display account confirmation link if email sender is not enabled
+            // or email sending service has not been registered
             if (DisplayConfirmAccountLink)
             {
                 var userId = await _userManager.GetUserIdAsync(user);

@@ -26,7 +26,7 @@ public class ManageInstanceViewModel
     public ManageInstanceDataViewModel Data { get; set; } = new();
 
     [DisplayName("Assigned Devices")]
-    public List<string>? AssignedDevices { get; set; } = new(); // optional
+    public List<string>? AssignedDevices { get; set; } = new();
 }
 
 public class ManageInstanceDataViewModel
@@ -121,5 +121,5 @@ public class ManageInstanceDataViewModel
 
     // Custom
     [DisplayName("Custom Instance Type")]
-    public string? CustomInstanceType { get; set; } = "custom";
+    public string? CustomInstanceType { get; set; } = Strings.DefaultCustomInstanceType; //"custom";
 }
