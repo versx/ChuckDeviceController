@@ -68,7 +68,7 @@ string? LastHost
 double? LastLatitude
 double? LastLongitude
 ulong? LastSeen // Last job request requested
-bool IsPendingAccountSwitch // used internally
+bool IsPendingAccountSwitch // Used internally
 ```
 
 ### IDeviceGroup  
@@ -155,7 +155,7 @@ ulong Updated
 uint? RaidPokemonId
 uint GuardingPokemonId
 ushort AvailableSlots
-// TODO: Team Team
+ushort Team
 ushort? RaidLevel
 bool IsEnabled
 bool IsExRaidEligible
@@ -188,7 +188,7 @@ ushort PokemonId
 ushort DisplayPokemonId
 ushort Form
 ushort Costume
-// TODO: Gender Gender
+ushort Gender
 uint CpWhenDeployed
 uint CpNow
 uint Cp
@@ -230,7 +230,7 @@ Properties:
 ```cs
 string Name
 ushort Level
-// TODO: Team TeamId
+ushort TeamId
 uint BattlesWon
 double KmWalked
 ulong PokemonCaught
@@ -372,7 +372,7 @@ long Id
 ushort Level
 double Latitude
 double Longitude
-// TODO: WeatherCondition GameplayCondition
+ushort GameplayCondition
 ushort WindDirection
 ushort CloudLevel
 ushort RainLevel
