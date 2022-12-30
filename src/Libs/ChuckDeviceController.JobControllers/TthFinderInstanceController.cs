@@ -19,6 +19,8 @@ using ChuckDeviceController.Geometry.Models.Abstractions;
 using ChuckDeviceController.JobControllers.Tasks;
 using ChuckDeviceController.Routing;
 
+// REVIEW: Consider removing class in favor of FindyJumpyPlugin
+
 /*
  * TODO: TthFinder logic
  * - Keep running until all spawnpoint tth are found

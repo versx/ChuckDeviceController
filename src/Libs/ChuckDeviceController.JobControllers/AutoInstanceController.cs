@@ -68,7 +68,7 @@ public class AutoInstanceController : IJobController
 
     public bool IgnoreS2CellBootstrap { get; }
 
-    public bool RequireAccountEnabled { get; } // TODO: Make 'RequireAccountEnabled' configurable via Instance.Data
+    public bool RequireAccountEnabled { get; }
 
     public bool UseWarningAccounts { get; }
 
@@ -115,6 +115,7 @@ public class AutoInstanceController : IJobController
         LogoutDelay = instance.Data?.LogoutDelay == 0
             ? Strings.DefaultLogoutDelay
             : instance.Data?.LogoutDelay ?? Strings.DefaultLogoutDelay;
+        RequireAccountEnabled = true; // TODO: Make 'RequireAccountEnabled' configurable via Instance.Data
 
         _logger = new Logger<AutoInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
         _mapFactory = mapFactory;

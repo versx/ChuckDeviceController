@@ -32,9 +32,16 @@ public sealed class RequestBenchmarkMiddleware
             return;
         }
 
-        // TODO: Add config option to ignore custom defined paths
-
         var route = context.Request.Path.ToString();
+        if (_config.IgnoredCustomRoutes?.Any() ?? false)
+        {
+            if (_config.IgnoredCustomRoutes.Contains(route))
+            {
+                await _next(context);
+                return;
+            }
+        }
+
         var benchmark = _benchmarkService.Benchmarks.ContainsKey(route)
             ? _benchmarkService.Benchmarks[route]
             : new(route);

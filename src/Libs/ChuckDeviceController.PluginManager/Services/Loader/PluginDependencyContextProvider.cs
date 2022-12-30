@@ -101,6 +101,7 @@ public class PluginDependencyContextProvider : IPluginDependencyContextProvider
 
     private static void CheckFrameworkCompatibility(string hostFramework, string pluginFramework, bool ignorePlatformInconsistencies)
     {
+        // NOTES: MIGRATIONS
         // TODO: Add conditional to ignore compatibility check when adding migrations
         //return;
 

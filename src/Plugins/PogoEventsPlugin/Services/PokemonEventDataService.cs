@@ -156,7 +156,6 @@ public class PokemonEventDataService : IPokemonEventDataService
         // Update voice channels
         await CreateChannelsAsync();
 
-        // TODO: Create sort by End/Start extensions
         var events = ActiveEvents.ToList();
         events.Sort((a, b) => DateTime.Parse(a.End).CompareTo(DateTime.Parse(b.End)));
 

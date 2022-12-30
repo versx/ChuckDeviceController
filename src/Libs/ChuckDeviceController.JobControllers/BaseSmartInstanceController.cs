@@ -169,8 +169,7 @@ public abstract class BaseSmartInstanceController : IJobController, ILureInstanc
             : Convert.ToInt32(Math.Round(Convert.ToDouble(_random.Next(ushort.MinValue, ushort.MaxValue) % Coordinates.Count)));
 
         var shouldAdvance = true;
-        // TODO: Random from 0 to Coordinates.Count
-        var offsetValue = _random.Next(ushort.MinValue, ushort.MaxValue) % 100;
+        var offsetValue = _random.Next(0, Coordinates.Count) % 100;
         if (offsetValue < 5)
         {
             // Use a light hand and 25% of the time try to space out devices
@@ -228,16 +227,11 @@ public abstract class BaseSmartInstanceController : IJobController, ILureInstanc
     internal ICoordinate SmartRoute(string uuid)
     {
         var now = DateTime.UtcNow.ToTotalSeconds();
-        // TODO: ContainsKey check is probably redundant since we add the device to the current
-        // device list in the GetTaskAsync method. Need to confirm but 99.99% possitive the random
-        // index is never used.
-        // Which I guess if we remove AddDevice from GetTask, random index would be generated.
-
         // Check if current device cache contains device and that the last route index is greater
         // than 0 as well as more than one device is assigned to the instance. Otherwise give the
         // device a random route index to start from.
-        var currentUuidIndex = _currentUuid.ContainsKey(uuid) && _currentUuid.Count > 0
-            ? _currentUuid[uuid].LastRouteIndex
+        var currentUuidIndex = _currentUuid.TryGetValue(uuid, out var value) && !_currentUuid.IsEmpty
+            ? value.LastRouteIndex
             : _random.Next(0, Coordinates.Count);
 
         _currentUuid[uuid].LastRouteIndex = currentUuidIndex;
