@@ -20,9 +20,12 @@
     </dt>
     <dd class="col-sm-9">
         <div class="input-group">
-            @Html.TextBoxFor(model => model.Key, new { type = "password", @class = "form-control" })
-            <button id="toggle-button" class="btn btn-outline-secondary btn-sm" onclick="toggleVisibility();">
+            @Html.TextBoxFor(model => model.Key, new { type = "password", @class = "form-control", @readonly = true })
+            <button id="toggle-button" class="btn btn-outline-secondary btn-sm" onclick="toggleVisibility();" data-bs-toggle="tooltip" data-bs-placement="top" title="Toggle API key visibility">
                 <i id="toggle-icon" class="fa fa-fw fa-eye-slash"></i>
+            </button>
+            <button class="btn btn-outline-secondary btn-sm" onclick="copyToClipboard('@(Model.Key)');" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to clipboard">
+                <i class="fa fa-fw fa-copy"></i>
             </button>
         </div>
     </dd>

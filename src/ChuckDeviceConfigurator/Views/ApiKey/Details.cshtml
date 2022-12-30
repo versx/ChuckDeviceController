@@ -13,6 +13,9 @@
 <div>
     <h4>API Key '@Model?.Name'</h4>
     <div>
+        <button class="btn btn-primary" onclick="copyToClipboard('@(Model?.Key)');">
+            <i class="fa-solid fa-copy"></i>&nbsp;Copy Key
+        </button>
         <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn btn-primary">
             <i class="fa-solid fa-pen-to-square"></i>&nbsp;Edit
         </a>
@@ -24,3 +27,5 @@
 
 <hr />
 @Html.DisplayForModel("ApiKeyDetails")
+
+<script src="/js/clipboard.js"></script>

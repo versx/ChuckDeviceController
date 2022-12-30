@@ -127,6 +127,11 @@
                                     <i class="fa-solid fa-bars"></i>
                                 </button>
                                 <ul class="dropdown-menu" aria-labelledby="dropdownGroup">
+                                        <li>
+                                            <button class="dropdown-item" onclick="copyToClipboard('@(item.Key)');">
+                                                <i class="fa-solid fa-copy"></i>&nbsp;Copy Key
+                                            </button>
+                                        </li>
                                     <li><a class="dropdown-item" asp-controller="ApiKey" asp-action="Details" asp-route-id="@item.Id"><i class="fa-solid fa-circle-info"></i>&nbsp;Details</a></li>
                                     <li><a class="dropdown-item" asp-controller="ApiKey" asp-action="Edit" asp-route-id="@item.Id"><i class="fa-solid fa-pen-to-square"></i>&nbsp;Edit</a></li>
                                     <li><a class="dropdown-item" asp-controller="ApiKey" asp-action="Delete" asp-route-id="@item.Id"><i class="fa-solid fa-trash"></i>&nbsp;Delete</a></li>
@@ -141,6 +146,7 @@
 </div>
 
 @section Scripts {
+    <script src="/js/clipboard.js"></script>
     <script>
         $(document).ready(function() {
             // Credits: https://stackoverflow.com/a/19015027
