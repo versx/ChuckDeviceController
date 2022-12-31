@@ -90,6 +90,7 @@ table > tbody > tr > td > a {
 }
 
 .account-link,
+#sidebar ul li form > button,
 #sidebar ul li a {
     padding: 10px;
     font-size: 1.1em;
@@ -97,6 +98,7 @@ table > tbody > tr > td > a {
     color: #fff;
 }
 .account-link:hover,
+#sidebar ul li form:hover > button,
 #sidebar ul li a:hover {
     color: #7386D5;
     background: #fff;

@@ -61,9 +61,9 @@
             else
             {
                 <li class="nav-item">
-                    <a class="@(item.IsDisabled ? "disabled" : "")" asp-area="" asp-controller="@item.ControllerName" asp-action="@item.ActionName">
+                    <a class="@((item?.IsDisabled ?? false) ? "disabled" : "")" asp-area="" asp-controller="@item?.ControllerName" asp-action="@item?.ActionName">
                         @Html.Raw(string.IsNullOrEmpty(item?.Icon) ? "" : $"<i class='{item.Icon}'></i>")
-                        @item.Text
+                        @item?.Text
                     </a>
                 </li>
             }

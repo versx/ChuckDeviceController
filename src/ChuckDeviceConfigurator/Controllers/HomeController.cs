@@ -57,7 +57,7 @@ public class HomeController : Controller
             Geofences = (ulong)_deviceContext.Geofences.LongCount(),
             Instances = (ulong)_deviceContext.Instances.LongCount(),
             IvLists = (ulong)_deviceContext.IvLists.LongCount(),
-            Plugins = (ulong)PluginManager.Instance.Plugins.LongCount(),
+            Plugins = (ulong)PluginManager.Instance.Plugins.Count,
             Webhooks = (ulong)_deviceContext.Webhooks.LongCount(),
             Users = (ulong)_userManager.Users.LongCount(),
 

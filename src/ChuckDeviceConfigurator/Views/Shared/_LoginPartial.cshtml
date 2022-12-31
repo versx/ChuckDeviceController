@@ -7,9 +7,12 @@
 @if (SignInManager.IsSignedIn(User))
 {
     <li class="nav-item" style="align-self: center;">
-        @if (UserManager.GetUserAsync(User)?.Result?.ProfilePicture != null)
+        @{
+            var user = await UserManager.GetUserAsync(User);
+        }
+        @if (user?.ProfilePicture != null)
         {
-            <img style="width:40px;height:40px; object-fit:cover; border-radius:30px" src="data:image/*;base64,@(Convert.ToBase64String(UserManager.GetUserAsync(User).Result.ProfilePicture))">
+            <img style="width:40px;height:40px; object-fit:cover; border-radius:30px" src="data:image/*;base64,@(Convert.ToBase64String(user.ProfilePicture))">
         }
     </li>
     <li class="nav-item">
@@ -20,15 +23,13 @@
         <ul class="collapse list-unstyled" id="userSubmenu">
             <li>
                 <a class="dropdown-item account-link" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage Account">
-                    <i class="fa-solid fa-fw fa-address-card"></i>
-                    Account
+                    <i class="fa-solid fa-fw fa-address-card"></i>&nbsp;Account
                 </a>
             </li>
             <li>
-                <form class="form-inline dropdown-item" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
-                    <button type="submit" class="btn btn-sm account-link" title="Logout">
-                        <i class="fa-solid fa-fw fa-arrow-right-from-bracket"></i>
-                        Logout
+                <form class="form-inline dropdown-item account-link py-0 ps-3" style="font-size: 0.9em;" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                    <button type="submit" class="btn btn-sm" title="Logout">
+                        <i class="fa-solid fa-fw fa-arrow-right-from-bracket"></i>&nbsp;Logout
                     </button>
                 </form>
             </li>
