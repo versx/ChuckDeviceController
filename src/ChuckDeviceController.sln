@@ -111,7 +111,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckDeviceController.Data.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckDeviceController.Http.Proxy", "Libs\ChuckDeviceController.Http.Proxy\ChuckDeviceController.Http.Proxy.csproj", "{6275F519-C9DE-4966-A434-726FD13A3287}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChuckDeviceController.Caching.Memory", "Libs\ChuckDeviceController.Caching.Memory\ChuckDeviceController.Caching.Memory.csproj", "{EA17A760-782F-4DA7-804B-0D5C1B1391AC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckDeviceController.Caching.Memory", "Libs\ChuckDeviceController.Caching.Memory\ChuckDeviceController.Caching.Memory.csproj", "{EA17A760-782F-4DA7-804B-0D5C1B1391AC}"
+EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "Deploy\docker-compose", "Deploy\docker-compose.dcproj", "{9C323C96-E4D8-4556-9BA9-39F4360CA0AE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -323,6 +325,10 @@ Global
 		{EA17A760-782F-4DA7-804B-0D5C1B1391AC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EA17A760-782F-4DA7-804B-0D5C1B1391AC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EA17A760-782F-4DA7-804B-0D5C1B1391AC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9C323C96-E4D8-4556-9BA9-39F4360CA0AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9C323C96-E4D8-4556-9BA9-39F4360CA0AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9C323C96-E4D8-4556-9BA9-39F4360CA0AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9C323C96-E4D8-4556-9BA9-39F4360CA0AE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

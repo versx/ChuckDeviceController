@@ -1,20 +1,12 @@
 {
-  "iisSettings": {
-    "windowsAuthentication": false,
-    "anonymousAuthentication": true,
-    "iisExpress": {
-      "applicationUrl": "http://localhost:28550",
-      "sslPort": 44342
-    }
-  },
   "profiles": {
     "ChuckDeviceConfigurator": {
       "commandName": "Project",
       "launchBrowser": true,
-      "applicationUrl": "http://localhost:24472",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
-      }
+      },
+      "applicationUrl": "http://localhost:24472"
     },
     "IIS Express": {
       "commandName": "IISExpress",
@@ -22,6 +14,21 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
+    },
+    "Docker": {
+      "commandName": "Docker",
+      "launchBrowser": true,
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}",
+      "publishAllPorts": true,
+      "useSSL": true
+    }
+  },
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+      "applicationUrl": "http://localhost:28550",
+      "sslPort": 44342
     }
   }
 }

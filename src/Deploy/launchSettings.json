@@ -1,0 +1,14 @@
+{
+  "profiles": {
+    "Docker Compose": {
+      "commandName": "DockerCompose",
+      "commandVersion": "1.0",
+      "serviceActions": {
+        "chuckdeviceconfigurator": "StartDebugging",
+        "chuckdevicecontroller": "StartDebugging",
+        "chuckdevicecommunicator": "StartDebugging",
+        "chuckdeviceproxy": "StartDebugging"
+      }
+    }
+  }
+}
