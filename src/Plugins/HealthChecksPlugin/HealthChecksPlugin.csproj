@@ -10,6 +10,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\Libs\ChuckDeviceController.Data.Common\ChuckDeviceController.Data.Common.csproj" />
+		<ProjectReference Include="..\..\Libs\ChuckDeviceController.Extensions.Json\ChuckDeviceController.Extensions.Json.csproj" />
 		<ProjectReference Include="..\..\Libs\ChuckDeviceController.Plugin\ChuckDeviceController.Plugin.csproj">
 			<Private>false</Private>
 			<ExcludeAssets>runtime</ExcludeAssets>
@@ -17,11 +18,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="AspNetCore.HealthChecks.System" Version="6.0.5" />
-	  <PackageReference Include="AspNetCore.HealthChecks.UI" Version="6.0.5" />
-	  <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="6.0.5" />
-	  <PackageReference Include="AspNetCore.HealthChecks.UI.Core" Version="6.0.5" />
-	  <PackageReference Include="AspNetCore.HealthChecks.UI.InMemory.Storage" Version="6.0.5" />
+	  <PackageReference Include="AspNetCore.HealthChecks.UI" Version="7.0.0-rc2.6" />
+	  <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="7.0.0-rc2.6" />
+	  <PackageReference Include="AspNetCore.HealthChecks.UI.Core" Version="7.0.0-rc2.6" />
+	  <PackageReference Include="AspNetCore.HealthChecks.UI.InMemory.Storage" Version="7.0.0-rc2.6" />
 	  <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="7.0.1" />
 	</ItemGroup>
 

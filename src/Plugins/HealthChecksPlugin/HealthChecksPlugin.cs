@@ -6,6 +6,7 @@ using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 using ChuckDeviceController.Data.Common;
 using ChuckDeviceController.Plugin;
@@ -73,23 +74,29 @@ public class HealthChecksPlugin : IPlugin
     {
         try
         {
+            //appBuilder.UseHealthChecks("/api/health");
             appBuilder
                 .UseRouting()
                 .UseEndpoints(config =>
                 {
-                    //config.MapControllers();
-                    config.MapHealthChecks("/api/health");//, new HealthCheckOptions
-                    //{
-                    //    //AllowCachingResponses = true,
-                    //    //Predicate = _ => true,
-                    //    //ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse,
-                    //});
+                    config.MapControllers();
+                    config.MapHealthChecks("/health"); // api/health
+                    //config.MapHealthChecksUI();
+                    //config.MapHealthChecks("/api/health");
                     config.MapHealthChecksUI(options =>
                     {
-                        options.UIPath = "/health";
-                        options.ApiPath = "/health/api";
+                        options.UIPath = "/health-ui";
+                        //options.ApiPath = "/api/health";
+                        options.ResourcesPath = "/health";
                     });
                 });
+
+            //appBuilder.UseHealthChecks("/health", new HealthCheckOptions
+            //{
+            //    //Predicate = p => true,
+            //    //ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse,
+            //});
+            //appBuilder.UseHealthChecksUI();
         }
         catch (Exception ex)
         {
@@ -119,28 +126,37 @@ public class HealthChecksPlugin : IPlugin
     {
         try
         {
+            services.AddHealthChecks();
+            //services.AddControllers();
             services
-                .AddHealthChecks()
-                .AddProcessHealthCheck(Process.GetCurrentProcess().ProcessName, p => p.Length >= 1, "Application Process");
-            services
-                .AddHealthChecksUI()
+                .AddHealthChecksUI(options =>
+                {
+                    // Sets the Health Check endpoint
+                    options.AddHealthCheckEndpoint("Health Checks API", "/health");
+                    // Sets the time interval in which HealthCheck will be triggered
+                    //options.SetEvaluationTimeInSeconds(5);
+                    // Sets the maximum number of records displayed in history
+                    options.MaximumHistoryEntriesPerEndpoint(10);
+                })
                 .AddInMemoryStorage();
-                //.Services
-                //.AddHealthChecks()
-                //.AddProcessHealthCheck(Process.GetCurrentProcess().ProcessName, p => p.Length >= 1, "Application Process");
-                //.AddProcessAllocatedMemoryHealthCheck((int)Environment.WorkingSet)
-                //.AddDiskStorageHealthCheck(options =>
-                //{
-                //    options.CheckAllDrives = true;
-                //    foreach (var drive in DriveInfo.GetDrives())
-                //    {
-                //        if (drive.IsReady && drive.TotalSize > 0 && drive.DriveType == DriveType.Fixed)
-                //        {
-                //            options.AddDrive(drive.RootDirectory.Name, 1024);
-                //        }
-                //    }
-                //})
-                //.AddWorkingSetHealthCheck(1024 * 1024 * 1024, "Process Working Set");
+            //.AddWorkingSetHealthCheck(1024 * 1024 * 1024, "Process Working Set")
+            //.AddProcessHealthCheck(Process.GetCurrentProcess().ProcessName, p => p.Length >= 1, "Application Process")
+            //.AddProcessAllocatedMemoryHealthCheck((int)Environment.WorkingSet)
+            //.AddDiskStorageHealthCheck(options =>
+            //{
+            //    options.CheckAllDrives = true;
+            //    foreach (var drive in DriveInfo.GetDrives())
+            //    {
+            //        if (drive.IsReady && drive.TotalSize > 0 && drive.DriveType == DriveType.Fixed)
+            //        {
+            //            options.AddDrive(drive.RootDirectory.Name, 1024);
+            //        }
+            //    }
+            //});
+
+            //services
+            //     .AddHealthChecksUI()
+            //     .AddInMemoryStorage();
         }
         catch (Exception ex)
         {
