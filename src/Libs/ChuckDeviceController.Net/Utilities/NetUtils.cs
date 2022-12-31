@@ -9,18 +9,19 @@ public static class NetUtils
     public const string DefaultMimeType = "application/json";
     private const uint DefaultRequestTimeoutS = 15;
 
-    public static string? Get(string url, uint timeoutS = DefaultRequestTimeoutS)
+    public static string? Get(string url, string? bearerToken = null, uint timeoutS = DefaultRequestTimeoutS)
     {
-        return GetAsync(url, timeoutS).Result;
+        return GetAsync(url, bearerToken, timeoutS).Result;
     }
 
     /// <summary>
     /// Sends a HTTP GET request to the specified url.
     /// </summary>
     /// <param name="url">Url to send the request to.</param>
+    /// <param name="bearerToken"></param>
     /// <param name="timeoutS">Maximum time to wait for request before aborting.</param>
     /// <returns>Returns the response string of the HTTP GET request.</returns>
-    public static async Task<string?> GetAsync(string url, uint timeoutS = DefaultRequestTimeoutS)
+    public static async Task<string?> GetAsync(string url, string? bearerToken = null, uint timeoutS = DefaultRequestTimeoutS)
     {
         try
         {
@@ -30,6 +31,10 @@ public static class NetUtils
             client.DefaultRequestHeaders.Add(HttpRequestHeader.Accept.ToString(), DefaultMimeType);
             client.DefaultRequestHeaders.Add(HttpRequestHeader.ContentType.ToString(), DefaultMimeType);
             client.DefaultRequestHeaders.Add(HttpRequestHeader.UserAgent.ToString(), DefaultUserAgent);
+            if (bearerToken != null)
+            {
+                client.DefaultRequestHeaders.Add(HttpRequestHeader.Authorization.ToString(), $"Bearer {bearerToken}");
+            }
             client.Timeout = TimeSpan.FromSeconds(timeoutS);
             return await client.GetStringAsync(url);
         }
