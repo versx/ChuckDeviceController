@@ -1091,9 +1091,9 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
                             AddEntity(SqlQueryType.GymTrainerOnMergeUpdate, gymTrainer);
                             ProtoDataStatistics.Instance.TotalGymTrainersProcessed++;
 
-                            if (webhooks.ContainsKey(WebhookType.GymTrainers))
+                            if (webhooks.TryGetValue(WebhookType.GymTrainers, out var value))
                             {
-                                webhooks[WebhookType.GymTrainers].Add(gymTrainer);
+                                value.Add(gymTrainer);
                             }
                             else
                             {
@@ -1106,9 +1106,9 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
                             AddEntity(SqlQueryType.GymDefenderOnMergeUpdate, gymDefender);
                             ProtoDataStatistics.Instance.TotalGymDefendersProcessed++;
 
-                            if (webhooks.ContainsKey(WebhookType.GymDefenders))
+                            if (webhooks.TryGetValue(WebhookType.GymDefenders, out var value))
                             {
-                                webhooks[WebhookType.GymDefenders].Add(gymDefender);
+                                value.Add(gymDefender);
                             }
                             else
                             {
@@ -1472,13 +1472,13 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
     {
         foreach (var (key, value) in input)
         {
-            if (output!.ContainsKey(key))
+            if (output.TryGetValue(key, out var result))
             {
-                output[key].Add((T2)value);
+                result.Add(value);
             }
             else
             {
-                output.Add(key, new List<T2> { (T2)value });
+                output.Add(key, new List<T2> { value });
             }
         }
     }
