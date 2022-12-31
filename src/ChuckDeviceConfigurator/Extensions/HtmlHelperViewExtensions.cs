@@ -54,7 +54,7 @@ public static class HtmlHelperViewExtensions
 
         newHttpContext.Response.Body = new MemoryStream();
 
-        foreach (var router in helper.ViewContext.RouteData.Routers)
+        foreach (var router in helper.ViewContext!.RouteData.Routers)
             routeData.PushState(router, null, null);
 
         routeData.PushState(null, routeValues, null);
@@ -67,7 +67,7 @@ public static class HtmlHelperViewExtensions
         var invoker = actionInvokerFactory.CreateInvoker(actionContext);
         var content = string.Empty;
 
-        await invoker.InvokeAsync().ContinueWith(task => {
+        await invoker!.InvokeAsync().ContinueWith(task => {
             if (task.IsFaulted)
             {
                 content = task.Exception?.Message;

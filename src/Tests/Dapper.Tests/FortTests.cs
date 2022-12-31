@@ -95,7 +95,7 @@ internal class FortTests
         return (attrib?.Name ?? member.Name).ToLower();
     }
 
-    private IEnumerable<string> GetPropertyNames<TEntity>(
+    private static IEnumerable<string> GetPropertyNames<TEntity>(
         TEntity entity,
         IEnumerable<string>? includedProperties = null,
         IEnumerable<string>? ignoredProperties = null)

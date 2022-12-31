@@ -164,8 +164,8 @@ public abstract class BaseSmartInstanceController : IJobController, ILureInstanc
 
     internal ICoordinate SplitRoute(string uuid)
     {
-        var currentUuidIndex = _currentUuid.ContainsKey(uuid)
-            ? _currentUuid[uuid].LastRouteIndex
+        var currentUuidIndex = _currentUuid.TryGetValue(uuid, out var value)
+            ? value.LastRouteIndex
             : Convert.ToInt32(Math.Round(Convert.ToDouble(_random.Next(ushort.MinValue, ushort.MaxValue) % Coordinates.Count)));
 
         var shouldAdvance = true;
@@ -232,7 +232,7 @@ public abstract class BaseSmartInstanceController : IJobController, ILureInstanc
         // device a random route index to start from.
         var currentUuidIndex = _currentUuid.TryGetValue(uuid, out var value) && !_currentUuid.IsEmpty
             ? value.LastRouteIndex
-            : _random.Next(0, Coordinates.Count);
+            : _random.Next(0, Coordinates.Count - 1);
 
         _currentUuid[uuid].LastRouteIndex = currentUuidIndex;
         _currentUuid[uuid].LastSeen = now;
