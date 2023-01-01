@@ -1,0 +1,46 @@
+﻿@model UserAgentRouteViewModel
+@{
+    ViewData["Title"] = "Create User Agent Route";
+}
+
+<h1>Create User Agent Route</h1>
+
+<p>@Html.ValidationMessage("Route", new { @class = "text-danger" })</p>
+
+<br />
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Robot", ControllerText = "User Agent Routes", Action = "Details", CurrentPage = "Create User Agent Route", Id = Model?.UserAgent })
+
+<h4>User Agent Route</h4>
+<hr />
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-floating mb-3">
+                <input asp-for="UserAgent" class="form-control" placeholder="" readonly />
+                <label asp-for="UserAgent"></label>
+                <span asp-validation-for="UserAgent" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3">
+                <input asp-for="Route" class="form-control" placeholder="" />
+                <label asp-for="Route"></label>
+                <span asp-validation-for="Route" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3">
+                <input asp-for="Comment" class="form-control" placeholder="" />
+                <label asp-for="Comment"></label>
+                <span asp-validation-for="Comment" class="text-danger"></span>
+            </div>
+            <div class="checkbox mb-3">
+                <label><input type="checkbox" asp-for="IsAllowed"> Is Allowed</label>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

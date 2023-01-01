@@ -82,6 +82,7 @@ public interface IRobots
     ///     Updates a previously added allowed or denied route, if found.
     /// </summary>
     /// <param name="userAgent">Name of the user agent.</param>
+    /// <param name="id"></param>
     /// <param name="route">Route that will be removed.</param>
     /// <param name="isAllowed">Whether the route is allowed or denied.</param>
     /// <param name="comment"></param>
@@ -89,15 +90,14 @@ public interface IRobots
     ///     Returns <c>true</c> if the route was updated successfully,
     ///     otherwise <c>false</c>.
     /// </returns>
-    bool UpdateRoute(string userAgent, string route, bool isAllowed, string? comment = null);
+    bool UpdateRoute(string userAgent, string id, string route, bool isAllowed, string? comment = null);
 
     /// <summary>
     ///     Removes a previously added allowed or denied route, if found.
     /// </summary>
-    /// <param name="userAgent">Name of the user agent.</param>
-    /// <param name="route">Route that will be removed.</param>
+    /// <param name="id"></param>
     /// <returns>Returns <c>true</c> if the route was removed.</returns>
-    bool RemoveRoute(string userAgent, string route);
+    bool RemoveRoute(string id);
 
     /// <summary>
     ///     Saves the web crawler robots config data.
@@ -107,4 +107,26 @@ public interface IRobots
     ///     otherwise <c>false</c>.
     /// </returns>
     bool SaveData();
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="userAgent"></param>
+    /// <returns></returns>
+    bool UserAgentExists(string userAgent);
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="userAgent"></param>
+    /// <param name="route"></param>
+    /// <returns></returns>
+    bool CustomRouteExists(string userAgent, string route);
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="route"></param>
+    /// <returns></returns>
+    bool DeniedRouteExists(string userAgent, string route);
 }

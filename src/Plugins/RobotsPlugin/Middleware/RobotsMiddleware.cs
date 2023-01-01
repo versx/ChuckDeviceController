@@ -96,8 +96,8 @@ public sealed class RobotsMiddleware
 
         var route = context.GetRoute(toLower: true);
         if (Options.UseHoneyPotService &&
-            !string.IsNullOrEmpty(Options.HoneyPotRoute)
-            && route.StartsWith(Options.HoneyPotRoute))
+            !string.IsNullOrEmpty(Options.HoneyPotRoute) &&
+            route.StartsWith(Options.HoneyPotRoute))
         {
             // Robot found honey pot route, log UserAgent and IP to keep track of
             await HandleHoneyPotRouteResponse(context);

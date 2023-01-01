@@ -8,14 +8,19 @@ public sealed class DeniedRoute
     #region Properties
 
     /// <summary>
+    /// 
+    /// </summary>
+    public Guid Id { get; }
+
+    /// <summary>
     /// Route being denied
     /// </summary>
-    public string Route { get; private set; }
+    public string Route { get; }
 
     /// <summary>
     /// User agent name being denied
     /// </summary>
-    public string UserAgent { get; private set; }
+    public string UserAgent { get; }
 
     #endregion
 
@@ -24,12 +29,13 @@ public sealed class DeniedRoute
     /// <summary>
     /// Default constructor
     /// </summary>
+    /// <param name="id"></param>
     /// <param name="route"></param>
     /// <param name="userAgent"></param>
     /// <exception cref="ArgumentNullException">Raised if route is null or empty</exception>
     /// <exception cref="ArgumentNullException">Raised if userAgent is null or empty</exception>
     /// <exception cref="ArgumentException">Raised if route is not a valid partial uri</exception>
-    public DeniedRoute(string route, string userAgent)
+    public DeniedRoute(Guid id, string route, string userAgent)
     {
         if (string.IsNullOrEmpty(route))
             throw new ArgumentNullException(nameof(route));
@@ -40,6 +46,7 @@ public sealed class DeniedRoute
         if (!Uri.TryCreate(route, UriKind.Relative, out _))
             throw new ArgumentException("route must be a partial Uri", nameof(route));
 
+        Id = id;
         Route = route;
         UserAgent = userAgent;
     }

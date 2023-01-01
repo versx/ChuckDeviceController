@@ -6,6 +6,8 @@ public class RobotRouteData : IRobotRouteData
 {
     #region Properties
 
+    public Guid Id { get; private set; }
+
     public string UserAgent { get; set; }
 
     public string? Comment { get; set; }
@@ -20,7 +22,7 @@ public class RobotRouteData : IRobotRouteData
 
     #region Constructors
 
-    public RobotRouteData(string userAgent, string route, string? comment = null, bool isAllowed = false, bool isCustom = false)
+    public RobotRouteData(Guid id, string userAgent, string route, string? comment = null, bool isAllowed = false, bool isCustom = false)
     {
         if (string.IsNullOrEmpty(userAgent))
         {
@@ -35,6 +37,7 @@ public class RobotRouteData : IRobotRouteData
             throw new ArgumentException($"Route '{route}' must be a partial Uri", nameof(route));
         }
 
+        Id = id;
         UserAgent = userAgent;
         Comment = comment ?? string.Empty;
         Route = route;

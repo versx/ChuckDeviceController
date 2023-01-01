@@ -82,6 +82,9 @@ public class RobotsPlugin : IPlugin
             DisplayIndex = 999,
         });
 
+        var tile = new DashboardTile("Robots", "0", "fa-solid fa-fw fa-robot", "Robot");
+        await _uiHost.AddDashboardTileAsync(tile);
+
         await _authHost.RegisterRole(RobotsRoleName, 5);
     }
 

@@ -2,9 +2,12 @@
 
 using System.ComponentModel;
 
-public class CustomUserAgentViewModel
+public class UserAgentRouteViewModel
 {
     #region Properties
+
+    [DisplayName("ID")]
+    public Guid? Id { get; set; } = Guid.Empty;
 
     [DisplayName("User Agent")]
     public string UserAgent { get; set; } = null!;
@@ -25,11 +28,11 @@ public class CustomUserAgentViewModel
 
     #region Constructor
 
-    public CustomUserAgentViewModel()
+    public UserAgentRouteViewModel()
     {
     }
 
-    public CustomUserAgentViewModel(string userAgent, string route, string? comment = null, bool isAllowed = false, bool isCustom = false)
+    public UserAgentRouteViewModel(Guid id, string userAgent, string route, string? comment = null, bool isAllowed = false, bool isCustom = false)
     {
         if (string.IsNullOrEmpty(userAgent))
             throw new ArgumentNullException(nameof(userAgent));
@@ -37,6 +40,7 @@ public class CustomUserAgentViewModel
         if (string.IsNullOrEmpty(route))
             throw new ArgumentNullException(nameof(route));
 
+        Id = id;
         UserAgent = userAgent;
         Route = route;
         Comment = comment ?? string.Empty;

@@ -1,0 +1,45 @@
+﻿@model UserAgentRouteViewModel
+@{
+    ViewData["Title"] = "Delete User Agent Route " + Model?.Route;
+}
+
+<h1>User Agent Route Details</h1>
+
+<p>@Html.ValidationMessage("Route", new { @class = "text-danger" })</p>
+
+<br />
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Robot", ControllerText = "User Agent Routes", Action = "Details", CurrentPage = "User Agent Route Details", Id = Model?.UserAgent })
+
+<hr />
+<dl class="row">
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.UserAgent)
+    </dt>
+    <dd class="col-sm-10">
+        @Html.DisplayFor(model => model.UserAgent)
+    </dd>
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.Route)
+    </dt>
+    <dd class="col-sm-10">
+        @Html.DisplayFor(model => model.Route)
+    </dd>
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.Comment)
+    </dt>
+    <dd class="col-sm-10">
+        @Html.DisplayFor(model => model.Comment)
+    </dd>
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.IsAllowed)
+    </dt>
+    <dd class="col-sm-10">
+        @(Model?.IsAllowed ?? false ? "Yes" : "No")
+    </dd>
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.IsCustom)
+    </dt>
+    <dd class="col-sm-10">
+        @(Model?.IsCustom ?? false ? "Yes" : "No")
+    </dd>
+</dl>

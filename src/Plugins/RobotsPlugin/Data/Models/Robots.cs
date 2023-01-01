@@ -2,13 +2,14 @@
 
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 
-using Abstractions;
-using Extensions;
-
 using ChuckDeviceController.Plugin;
 using ChuckDeviceController.Plugin.Helpers.Attributes;
-using ChuckDeviceController.Plugin.Services;
 using ChuckDeviceController.Plugin.Helpers.Extensions;
+using ChuckDeviceController.Plugin.Services;
+
+using Abstractions;
+using Extensions;
+using Utilities;
 
 [
     PluginService(
@@ -117,7 +118,7 @@ public class Robots : IRobots
         {
             if (!string.IsNullOrEmpty(routeData.Comment))
             {
-                result.Add($"#{routeData.Comment}");
+                result.Add($"# {routeData.Comment}");
             }
 
             if (routeData.IsAllowed)
@@ -147,13 +148,13 @@ public class Robots : IRobots
             return false;
         }
 
-        _customRoutes.Add(new RobotRouteData(userAgent, route, comment, isAllowed: isAllowed, isCustom: true));
+        _customRoutes.Add(new RobotRouteData(Guid.NewGuid(), userAgent, route, comment, isAllowed: isAllowed, isCustom: true));
         AddCustomRoutesToKnownAgents();
 
         return true;
     }
 
-    public bool UpdateRoute(string userAgent, string route, bool isAllowed, string? comment = null)
+    public bool UpdateRoute(string userAgent, string id, string route, bool isAllowed, string? comment = null)
     {
         if (string.IsNullOrEmpty(userAgent))
         {
@@ -168,13 +169,14 @@ public class Robots : IRobots
             throw new ArgumentException($"UserAgent '{userAgent}' is not registered.", nameof(userAgent));
         }
 
-        var customRoute = _customRoutes.FirstOrDefault(r => r.UserAgent.Equals(userAgent) && r.Route.Equals(route));
+        var customRoute = _customRoutes.FirstOrDefault(r => r.Id.ToString() == id);
         if (customRoute == null)
             return false;
 
         var index = _customRoutes.IndexOf(customRoute);
         if (index > -1)
         {
+            customRoute.Route = route;
             customRoute.Comment = comment ?? null;
             customRoute.IsAllowed = isAllowed;
 
@@ -187,22 +189,14 @@ public class Robots : IRobots
         return false;
     }
 
-    public bool RemoveRoute(string userAgent, string route)
+    public bool RemoveRoute(string id)
     {
-        if (string.IsNullOrEmpty(userAgent))
+        if (string.IsNullOrEmpty(id))
         {
-            throw new ArgumentNullException(nameof(userAgent));
-        }
-        if (string.IsNullOrEmpty(route))
-        {
-            throw new ArgumentNullException(nameof(route));
-        }
-        if (!UserAgents.Contains(userAgent))
-        {
-            throw new ArgumentException($"UserAgent '{userAgent}' is not registered.", nameof(userAgent));
+            throw new ArgumentNullException(nameof(id));
         }
 
-        var customRoute = _customRoutes.FirstOrDefault(r => r.UserAgent.Equals(userAgent) && r.Route.Equals(route));
+        var customRoute = _customRoutes.FirstOrDefault(r => r.Id.ToString() == id);
         if (customRoute == null)
             return false;
 
@@ -226,6 +220,28 @@ public class Robots : IRobots
             DefaultRobotsFolderName,
             DefaultRobotsFileName
         );
+    }
+
+    #endregion
+
+    #region Helpers
+
+    public bool DeniedRouteExists(string userAgent, string route)
+    {
+        var exists = DeniedRoutes.Any(dr => Utils.IsEqual(dr.UserAgent, userAgent) && Utils.IsEqual(dr.Route, route));
+        return exists;
+    }
+
+    public bool CustomRouteExists(string userAgent, string route)
+    {
+        var exists = CustomRoutes.Any(cr => Utils.IsEqual(cr.UserAgent, userAgent) && Utils.IsEqual(cr.Route, route));
+        return exists;
+    }
+
+    public bool UserAgentExists(string userAgent)
+    {
+        var exists = UserAgents.Any(a => Utils.IsEqual(a, userAgent));
+        return exists;
     }
 
     #endregion
@@ -293,7 +309,7 @@ public class Robots : IRobots
 
             foreach (var data in routeData)
             {
-                _deniedRobotRoutes.Add(new DeniedRoute($"{data.Route.ToLower()}", data.UserAgent));
+                _deniedRobotRoutes.Add(new DeniedRoute(data.Id, $"{data.Route.ToLower()}", data.UserAgent));
             }
         }
         return result;
@@ -341,7 +357,7 @@ public class Robots : IRobots
     {
         if (!userAgents.ContainsKey(denyRobotAttribute.UserAgent))
         {
-            userAgents.Add(denyRobotAttribute.UserAgent, new List<IRobotRouteData>());
+            userAgents.Add(denyRobotAttribute.UserAgent, new());
         }
 
         var route = denyRobotAttribute.Route;
@@ -351,6 +367,7 @@ public class Robots : IRobots
         }
 
         userAgents[denyRobotAttribute.UserAgent].Add(new RobotRouteData(
+            Guid.NewGuid(),
             denyRobotAttribute.UserAgent,
             route,
             denyRobotAttribute.Comment
