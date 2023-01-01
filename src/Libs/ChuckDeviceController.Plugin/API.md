@@ -194,8 +194,6 @@
     - [AddSidebarItemAsync(header)](#M-ChuckDeviceController-Plugin-IUiHost-AddSidebarItemAsync-ChuckDeviceController-Plugin-SidebarItem- 'ChuckDeviceController.Plugin.IUiHost.AddSidebarItemAsync(ChuckDeviceController.Plugin.SidebarItem)')
     - [AddSidebarItemsAsync(headers)](#M-ChuckDeviceController-Plugin-IUiHost-AddSidebarItemsAsync-System-Collections-Generic-IEnumerable{ChuckDeviceController-Plugin-SidebarItem}- 'ChuckDeviceController.Plugin.IUiHost.AddSidebarItemsAsync(System.Collections.Generic.IEnumerable{ChuckDeviceController.Plugin.SidebarItem})')
     - [GetSettingsPropertyValue\`\`1(name)](#M-ChuckDeviceController-Plugin-IUiHost-GetSettingsPropertyValue``1-System-String- 'ChuckDeviceController.Plugin.IUiHost.GetSettingsPropertyValue``1(System.String)')
-    - [UpdateDashboardStatisticAsync(stat)](#M-ChuckDeviceController-Plugin-IUiHost-UpdateDashboardStatisticAsync-ChuckDeviceController-Plugin-IDashboardStatsItem- 'ChuckDeviceController.Plugin.IUiHost.UpdateDashboardStatisticAsync(ChuckDeviceController.Plugin.IDashboardStatsItem)')
-    - [UpdateDashboardStatisticsAsync(stats)](#M-ChuckDeviceController-Plugin-IUiHost-UpdateDashboardStatisticsAsync-System-Collections-Generic-IEnumerable{ChuckDeviceController-Plugin-IDashboardStatsItem}- 'ChuckDeviceController.Plugin.IUiHost.UpdateDashboardStatisticsAsync(System.Collections.Generic.IEnumerable{ChuckDeviceController.Plugin.IDashboardStatsItem})')
 - [IWebPlugin](#T-ChuckDeviceController-Plugin-IWebPlugin 'ChuckDeviceController.Plugin.IWebPlugin')
     - [Configure(appBuilder)](#M-ChuckDeviceController-Plugin-IWebPlugin-Configure-Microsoft-AspNetCore-Builder-WebApplication- 'ChuckDeviceController.Plugin.IWebPlugin.Configure(Microsoft.AspNetCore.Builder.WebApplication)')
     - [ConfigureMvcBuilder(mvcBuilder)](#M-ChuckDeviceController-Plugin-IWebPlugin-ConfigureMvcBuilder-Microsoft-Extensions-DependencyInjection-IMvcBuilder- 'ChuckDeviceController.Plugin.IWebPlugin.ConfigureMvcBuilder(Microsoft.Extensions.DependencyInjection.IMvcBuilder)')
@@ -2614,34 +2612,6 @@ Gets the value of a settings property by name.
 | Name | Description |
 | ---- | ----------- |
 | T | Expected return type of the settings property. |
-
-<a name='M-ChuckDeviceController-Plugin-IUiHost-UpdateDashboardStatisticAsync-ChuckDeviceController-Plugin-IDashboardStatsItem-'></a>
-### UpdateDashboardStatisticAsync(stat) `method`
-
-##### Summary
-
-Update an existing item
-on the dashboard front page.
-
-##### Parameters
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| stat | [ChuckDeviceController.Plugin.IDashboardStatsItem](#T-ChuckDeviceController-Plugin-IDashboardStatsItem 'ChuckDeviceController.Plugin.IDashboardStatsItem') | Dashboard statistics item to update. |
-
-<a name='M-ChuckDeviceController-Plugin-IUiHost-UpdateDashboardStatisticsAsync-System-Collections-Generic-IEnumerable{ChuckDeviceController-Plugin-IDashboardStatsItem}-'></a>
-### UpdateDashboardStatisticsAsync(stats) `method`
-
-##### Summary
-
-Update a list of existing items
-on the dashboard front page.
-
-##### Parameters
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| stats | [System.Collections.Generic.IEnumerable{ChuckDeviceController.Plugin.IDashboardStatsItem}](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Collections.Generic.IEnumerable 'System.Collections.Generic.IEnumerable{ChuckDeviceController.Plugin.IDashboardStatsItem}') | List of dashboard statistic items to update. |
 
 <a name='T-ChuckDeviceController-Plugin-IWebPlugin'></a>
 ## IWebPlugin `type`
