@@ -36,6 +36,7 @@ nav:
         - Screenshots: screenshots.md
         - Install Requirements: requirements.md
         - Getting Started: getting-started.md
+        - Docker: docker.md
     - Applications:
         - ChuckDeviceConfigurator: applications/configurator.md
         - ChuckDeviceController: applications/controller.md
