@@ -14,6 +14,8 @@ using ChuckDeviceController.Plugin;
 [PluginApiKey("CDC-328TVvD7o85TNbNhjLE0JysVMbOxjXKT")]
 public class ClockPlugin : IPlugin
 {
+    private readonly IUiHost _uiHost;
+
     #region Metadata Properties
 
     public string Name => "ClockPlugin";
@@ -26,6 +28,11 @@ public class ClockPlugin : IPlugin
 
     #endregion
 
+    public ClockPlugin(IUiHost uiHost)
+    {
+        _uiHost = uiHost;
+    }
+
     #region ASP.NET Core Configuration Callback Methods
 
     public void Configure(WebApplication appBuilder)
@@ -36,7 +43,6 @@ public class ClockPlugin : IPlugin
     public void ConfigureServices(IServiceCollection services)
     {
         // Unused with .NET Core plugins, only used with ASP.NET Core plugins
-        services.AddHostedService<ClockHostedService>();
     }
 
     public void ConfigureMvcBuilder(IMvcBuilder mvcBuilder)
@@ -48,9 +54,14 @@ public class ClockPlugin : IPlugin
 
     #region Implementation Methods
 
-    public void OnLoad()
+    public async void OnLoad()
     {
         // Call any UI additions to add to the host here
+        var timeStat = new DashboardStatsItem(
+            "Current Time",
+            valueUpdater: new Func<string>(() => DateTime.Now.ToLongTimeString())
+        );
+        await _uiHost.AddDashboardStatisticAsync(timeStat);
     }
 
     public void OnReload()

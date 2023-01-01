@@ -1,5 +1,7 @@
 ﻿namespace ChuckDeviceController.Plugin;
 
+using System.Text.Json.Serialization;
+
 /// <summary>
 /// Dashboard tile interface contract to display
 /// custom tile-like elements on the dashboard.
@@ -32,6 +34,13 @@ public interface IDashboardTile
     /// when the navbar header is clicked.
     /// </summary>
     string ActionName { get; }
+
+    /// <summary>
+    ///     Gets the function to update the value for the
+    ///     dashboard tile.
+    /// </summary>
+    [JsonIgnore]
+    Func<string> ValueUpdater { get; }
 
     // REVIEW: Add IsSeparateSection property
 }

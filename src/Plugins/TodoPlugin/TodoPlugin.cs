@@ -21,6 +21,7 @@ public class TodoPlugin : IPlugin
 
     private readonly IUiHost _uiHost;
     private readonly IAuthorizeHost _authHost;
+    private WebApplication _app = null!;
 
     #endregion
 
@@ -50,6 +51,7 @@ public class TodoPlugin : IPlugin
 
     public void Configure(WebApplication appBuilder)
     {
+        _app = appBuilder;
     }
 
     public void ConfigureServices(IServiceCollection services)
@@ -77,7 +79,14 @@ public class TodoPlugin : IPlugin
         };
         await _uiHost.AddSidebarItemAsync(navbarHeader);
 
-        var tile = new DashboardTile("Todos", "0", "fa-solid fa-fw fa-list", "Todo");
+        //var tile = new DashboardTile("Todos", "0", "fa-solid fa-fw fa-list", "Todo");
+        var tile = new DashboardTile("Todos", "fa-solid fa-fw fa-list", "Todo", valueUpdater: new Func<string>(() =>
+        {
+            using var scope = _app.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<TodoDbContext>();
+            var count = context.Todos.Count().ToString("N0");
+            return count;
+        }));
         await _uiHost.AddDashboardTileAsync(tile);
 
         await _authHost.RegisterRole(TodoRoleName, 2);

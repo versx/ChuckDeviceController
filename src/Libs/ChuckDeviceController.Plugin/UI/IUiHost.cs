@@ -68,20 +68,6 @@ public interface IUiHost
     /// <param name="stats">List of dashboard statistic items to add.</param>
     Task AddDashboardStatisticsAsync(IEnumerable<IDashboardStatsItem> stats);
 
-    /// <summary>
-    /// Update an existing <seealso cref="IDashboardStatsItem"/> item
-    /// on the dashboard front page.
-    /// </summary>
-    /// <param name="stat">Dashboard statistics item to update.</param>
-    Task UpdateDashboardStatisticAsync(IDashboardStatsItem stat);
-
-    /// <summary>
-    /// Update a list of existing <seealso cref="IDashboardStatsItem"/> items
-    /// on the dashboard front page.
-    /// </summary>
-    /// <param name="stats">List of dashboard statistic items to update.</param>
-    Task UpdateDashboardStatisticsAsync(IEnumerable<IDashboardStatsItem> stats);
-
     #endregion
 
     #region Dashboard Tiles

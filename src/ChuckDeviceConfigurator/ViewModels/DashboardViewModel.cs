@@ -154,4 +154,6 @@ public class DashboardViewModel
     public string? Started { get; set; }
 
     public IReadOnlyList<IDashboardStatsItem> PluginDashboardStats { get; set; } = new List<IDashboardStatsItem>();
+
+    public IReadOnlyList<IDashboardTile> PluginDashboardTiles { get; set; } = new List<IDashboardTile>();
 }

@@ -87,15 +87,6 @@ public class UiHost : IUiHost
 
     #region Dashboard Statistics
 
-    public async Task AddDashboardStatisticsAsync(IEnumerable<IDashboardStatsItem> stats)
-    {
-        foreach (var stat in stats)
-        {
-            await AddDashboardStatisticAsync(stat);
-        }
-    }
-
-    // TODO: Remove UpdateDashboardStatisticsAsync and add updaterExpression to update value at an interval
     public async Task AddDashboardStatisticAsync(IDashboardStatsItem stats)
     {
         if (!_dashboardStats.TryAdd(stats.Name, stats))
@@ -106,19 +97,12 @@ public class UiHost : IUiHost
         await Task.CompletedTask;
     }
 
-    public async Task UpdateDashboardStatisticsAsync(IEnumerable<IDashboardStatsItem> stats)
+    public async Task AddDashboardStatisticsAsync(IEnumerable<IDashboardStatsItem> stats)
     {
         foreach (var stat in stats)
         {
-            await UpdateDashboardStatisticAsync(stat);
+            await AddDashboardStatisticAsync(stat);
         }
-    }
-
-    // REVIEW: Update Dashboard stat in realtime without page refresh
-    public async Task UpdateDashboardStatisticAsync(IDashboardStatsItem stats)
-    {
-        _dashboardStats.AddOrUpdate(stats.Name, stats, (key, oldValue) => stats);
-        await Task.CompletedTask;
     }
 
     #endregion

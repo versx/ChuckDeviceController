@@ -4,9 +4,6 @@
 @model DashboardViewModel
 @{
     ViewData["Title"] = "Dashboard";
-
-    var data = Html.RenderAction("GetTiles", "Helper");
-    var dashboardTiles = Convert.ToString(data)?.FromJson<List<DashboardTile>>();
 }
 
 <h1 class="text-center">Dashboard</h1>
@@ -120,10 +117,10 @@
                         </div>
                     </div>
                 </div>
-                @if (dashboardTiles != null)
+                @if (Model.PluginDashboardTiles.Any())
                 {
                     <div class="row justify-content-center">
-                    @foreach (var tile in dashboardTiles)
+                    @foreach (var tile in Model.PluginDashboardTiles)
                     {
                         <div class="col-lg-3 col-md-6 col-sm-12 p-1">
                             <div class="list-group">
@@ -194,14 +191,21 @@
                         @Html.DisplayNameFor(model => model.Weather)
                         <span class="badge rounded-pill bg-primary">@Html.DisplayFor(model => model.Weather)</span>
                     </li>
-                    @foreach (var statsItem in Model.PluginDashboardStats)
+                    @if (Model.PluginDashboardStats.Any())
                     {
-                        <li class="list-group-item d-flex justify-content-between">
-                            @(statsItem.IsHtml ? Html.Raw(statsItem.Name) : statsItem.Name)
-                            <span class="badge rounded-pill bg-primary">
-                                @(statsItem.IsHtml ? Html.Raw(statsItem.Value) : @statsItem.Value)
-                            </span>
-                        </li>
+                        foreach (var statsItem in Model.PluginDashboardStats)
+                        {
+                            <li class="list-group-item d-flex justify-content-between">
+                                @(
+                                statsItem.IsHtml ? Html.Raw(statsItem.Name) : statsItem.Name
+                                )
+                                <span class="badge rounded-pill bg-primary">
+                                    @(
+                                    statsItem.IsHtml ? Html.Raw(statsItem.Value) : @statsItem.Value
+                                    )
+                                </span>
+                            </li>
+                        }
                     }
                 </ul>
             </div>

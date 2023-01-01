@@ -3,12 +3,13 @@ namespace RobotsPlugin;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
-using Configuration;
-using Extensions;
-
 using ChuckDeviceController.Common;
 using ChuckDeviceController.Data.Common;
 using ChuckDeviceController.Plugin;
+
+using Configuration;
+using Data.Abstractions;
+using Extensions;
 
 [PluginApiKey("CDC-328TVvD7o85TNbNhjLE0JysVMbOxjXKT")]
 [StaticFilesLocation(StaticFilesLocation.External, StaticFilesLocation.External)]
@@ -22,6 +23,7 @@ public class RobotsPlugin : IPlugin
     private readonly IUiHost _uiHost;
     private readonly IConfiguration _config;
     private readonly IAuthorizeHost _authHost;
+    private WebApplication _app = null!;
 
     #endregion
 
@@ -53,6 +55,7 @@ public class RobotsPlugin : IPlugin
 
     public void Configure(WebApplication appBuilder)
     {
+        _app = appBuilder;
         appBuilder.UseRobots();
     }
 
@@ -82,7 +85,13 @@ public class RobotsPlugin : IPlugin
             DisplayIndex = 999,
         });
 
-        var tile = new DashboardTile("Robots", "0", "fa-solid fa-fw fa-robot", "Robot");
+        var tile = new DashboardTile("Robots", "fa-solid fa-fw fa-robot", "Robot", valueUpdater: new Func<string>(() =>
+        //var tile = new DashboardTile("Robots", "0", "fa-solid fa-fw fa-robot", "Robot", valueUpdater: new Func<string>(() =>
+        {
+            var robots = _app.Services.GetRequiredService<IRobots>();
+            var count = robots.CustomRoutes.Count().ToString("N0");
+            return count;
+        }));
         await _uiHost.AddDashboardTileAsync(tile);
 
         await _authHost.RegisterRole(RobotsRoleName, 5);

@@ -1,5 +1,7 @@
 ﻿namespace ChuckDeviceController.Plugin;
 
+using System.Text.Json.Serialization;
+
 /// <summary>
 /// Dashboard statistics item interface contract for
 /// displaying information on the front page.
@@ -21,4 +23,11 @@ public interface IDashboardStatsItem
     /// and value properties include raw HTML or not.
     /// </summary>
     bool IsHtml { get; }
+
+    /// <summary>
+    /// Gets the function to update the value for the
+    /// dashboard tile.
+    /// </summary>
+    [JsonIgnore]
+    Func<string> ValueUpdater { get; }
 }

@@ -1,5 +1,7 @@
 ﻿namespace ChuckDeviceController.Plugin;
 
+using System.Text.Json.Serialization;
+
 /// <summary>
 /// <see cref="IDashboardStatsItem"/> class implementation
 /// for displaying information on the front page.
@@ -14,7 +16,7 @@ public class DashboardStatsItem : IDashboardStatsItem
     /// <summary>
     /// Gets the value of the statistic.
     /// </summary>
-    public string Value { get; }
+    public string Value => ValueUpdater != null ? ValueUpdater() : string.Empty;
 
     /// <summary>
     /// Gets a value determining whether the name
@@ -23,15 +25,22 @@ public class DashboardStatsItem : IDashboardStatsItem
     public bool IsHtml { get; }
 
     /// <summary>
+    /// Gets the function to update the value for the
+    /// dashboard statistic item.
+    /// </summary>
+    [JsonIgnore]
+    public Func<string> ValueUpdater { get; }
+
+    /// <summary>
     /// Instantiates a new instance of the <see cref="DashboardStatsItem"/> class.
     /// </summary>
     /// <param name="name">Name of the statistic.</param>
-    /// <param name="value">Value of the statistic.</param>
     /// <param name="isHtml">Whether or not the name or value contains raw HTML.</param>
-    public DashboardStatsItem(string name, string value, bool isHtml = false)
+    /// <param name="valueUpdater">Function to update the value for the dashboard statistic item.</param>
+    public DashboardStatsItem(string name, bool isHtml = false, Func<string> valueUpdater = default!)
     {
         Name = name;
-        Value = value;
         IsHtml = isHtml;
+        ValueUpdater = valueUpdater;
     }
 }

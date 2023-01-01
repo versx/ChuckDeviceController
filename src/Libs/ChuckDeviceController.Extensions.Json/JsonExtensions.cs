@@ -8,8 +8,18 @@ public static class JsonExtensions
 {
     private static readonly JsonSerializerOptions _jsonOptions = GetDefaultOptions(prettyPrint: false, converters: null);
 
-    public static T? FromJson<T>(this string json) =>
-        JsonSerializer.Deserialize<T>(json, _jsonOptions);
+    public static T? FromJson<T>(this string json)
+    {
+        try
+        {
+            var obj = JsonSerializer.Deserialize<T>(json, _jsonOptions);
+            return obj;
+        }
+        catch //(Exception ex)
+        {
+            return default;
+        }
+    }
 
     public static T? FromJson<T>(this string json, IEnumerable<JsonConverter>? converters = null)
     {

@@ -75,6 +75,7 @@ public class HomeController : Controller
             Weather = (ulong)_mapContext.Weather.LongCount(),
 
             PluginDashboardStats = _uiHost.DashboardStatsItems,
+            PluginDashboardTiles = _uiHost.DashboardTiles,
 
             Uptime = uptime.ToTotalSeconds().ToReadableString(includeAgoText: false),
             Started = $"{uptimeLocal.ToLongDateString()} {uptimeLocal.ToLongTimeString()}",
