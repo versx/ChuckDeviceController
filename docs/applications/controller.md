@@ -43,6 +43,8 @@ Soft deletes Pokestop and Gym forts that have not been seen within S2 cells. Thi
     // Size limit of memory cache.
     "SizeLimit": 10240
   },
+  // ChuckDeviceconfigurator endpoint url.
+  "ConfiguratorUrl": "http://127.0.0.1:8881",
   // Database connection strings.
   "ConnectionStrings": {
     "DefaultConnection": "Uid=cdcuser;Password=cdcpass123;Host=127.0.0.1;Port=3306;Database=cdcdb;old guids=true;Allow User Variables=true;"
@@ -55,7 +57,7 @@ Soft deletes Pokestop and Gym forts that have not been seen within S2 cells. Thi
     "CommandTimeoutS": 30,
     // Maximum timeout in seconds before a connection is determined as a leak.
     // When a connection is assumed a leak, it is aborted.
-    "ConnectionLeakTimeoutS": 120,
+    "ConnectionLeakTimeoutS": 300,
     // Maximum timeout in seconds before a connection is aborted.
     "ConnectionTimeoutS": 30,
     // Maximum amount of retries upon failed connection.
@@ -162,6 +164,10 @@ Soft deletes Pokestop and Gym forts that have not been seen within S2 cells. Thi
       "AllowArQuests": true,
       // Determines whether to process map/lure Pokemon encounters.
       "ProcessMapPokemon": true,
+      // Determines whether to process gym defenders or not.
+      "ProcessGymDefenders": true,
+      // Determines whether to process gym trainers or not.
+      "ProcessGymTrainers": true,
       // Proto processing queue settings.
       "Queue": {
         // Maximum amount of protos to batch when processing.
@@ -187,6 +193,12 @@ Soft deletes Pokestop and Gym forts that have not been seen within S2 cells. Thi
       "DecimalPrecision": 4,
       // Concurrency level for processing data entities. Basically how many parsers active at once.
       "ParsingConcurrencyLevel": 15,
+      // Concurrency level for bulk inserting.
+      "EntityInsertConcurrencyLevel": 5,
+      // Concurrency level of data entity queries to the database.
+      "EntityQueryConcurrencyLevel": 10,
+      // Maximum time to wait in seconds before timeout when querying data entities.
+      "EntityQueryWaitTimeS": 15,
       // Determines whether or not to process player account protos.
       "ProcessPlayerData": true,
       // Determines whether or not to process S2 cell protos.
@@ -225,7 +237,14 @@ Soft deletes Pokestop and Gym forts that have not been seen within S2 cells. Thi
         "MaximumSizeWarning": 1024,
         // Maximum queue capacity.
         "MaximumQueueCapacity": 10240
-      }
+      },
+      // The amount of time to leave S2 cells in cache before updating it in
+      // the database when it has been seen before the specified interval.
+      "CellScanIntervalS": 900,
+      // The amount of time to leave S2 client weather cells in cache before
+      // updating it in the database when it has been seen before the
+      // specified interval.
+      "WeatherCellScanIntervalS": 1800
     },
     // Data entity consumer service settings.
     "Consumer": {
@@ -237,7 +256,7 @@ Soft deletes Pokestop and Gym forts that have not been seen within S2 cells. Thi
       // Not currently used.
       "ShowProcessingCount": true,
       // Decimal precision of benchmark times when `ShowProcessingTimes` is enabled.
-      "DecimalPrecision": 3,
+      "DecimalPrecision": 4,
       // Not currently used. Transactions are always used.
       "UseTransactions": true,
       // Data entity consumer processing queue settings.

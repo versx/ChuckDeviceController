@@ -32,6 +32,7 @@ Checks all accounts with any of the following status and marks the interested co
 ## Configuration  
 ```json
 {
+  "AccountStatusService": true,
   // Hosts allowed to access.
   "AllowedHosts": "*",
   // Default 3rd party authentication options.
@@ -94,6 +95,18 @@ Checks all accounts with any of the following status and marks the interested co
     // Timeout in seconds between attemping failed connections.
     "RetryIntervalS": 10
   },
+  // SendGrid email sending service, used for registration and password recovery.
+  "EmailService": {
+    // Determines whether sending emails for account confirmation and password recovery
+    // will be enabled or not.
+    "Enabled": false,
+    // Display name in the 'From' field of the email sent.
+    "FromName": "",
+    // The email address sending the email and shown in the 'From' field of the email sent.
+    "FromEmailAddress": "",
+    // The SendGrid API key.
+    "SendGridKey": ""
+  },
   // Json web tokens authentication settings.
   "Jwt": {
     // Determines whether JWT authentication is enabled or not.
@@ -124,11 +137,6 @@ Checks all accounts with any of the following status and marks the interested co
       }
     }
   },
-  // API keys.
-  "Keys": {
-    // SendGrid email service API key.
-    "SendGridKey": ""
-  },
   // Locale to load and use.
   "Locale": "en",
   /* Reference: https://learn.microsoft.com/en-us/aspnet/core/fundamentals/logging/?view=aspnetcore-7.0 */
@@ -136,6 +144,7 @@ Checks all accounts with any of the following status and marks the interested co
     "LogLevel": {
       "Default": "Debug",
       "Microsoft.AspNetCore": "Warning",
+      "Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware": "None",
       "Microsoft.EntityFrameworkCore": "Warning"
     },
     "ColorConsole": {
