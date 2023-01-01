@@ -55,9 +55,9 @@ Apple Silicon:
 ## <u>Install SQL Database</u>  
 
 ### MySQL  
-[Download Installer](https://dev.mysql.com/downloads/installer)  
+[https://dev.mysql.com/downloads/installer](https://dev.mysql.com/downloads/installer)  
 
 or
 
 ### MariaDB  
-[Download Installer](https://mariadb.org/download/?t=mariadb)
+[https://mariadb.org/download/?t=mariadb](https://mariadb.org/download/?t=mariadb)
