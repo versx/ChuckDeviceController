@@ -43,7 +43,7 @@
                 <p id="instance-type-description" class="text-muted"></p>
             </div>
             <div class="form-floating mb-3 custom">
-                <select asp-for="Data.CustomInstanceType" class="form-control" asp-items="@(new SelectList(ViewBag.CustomInstanceTypes))" placeholder="Custom instance type">
+                <select asp-for="Data.CustomInstanceType" class="form-control" asp-items="@(new SelectList(ViewBag.CustomInstanceTypes.ToList(), "Key", "Key"))" placeholder="Custom instance type">
                     <option value="" disabled>Please select one</option>
                 </select>
                 <label asp-for="Data.CustomInstanceType"></label>

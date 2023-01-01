@@ -1,6 +1,7 @@
 ﻿namespace ChuckDeviceConfigurator.Services.Jobs;
 
 using System.Collections.Concurrent;
+using System.Reflection;
 
 using Microsoft.EntityFrameworkCore;
 using POGOProtos.Rpc;
@@ -68,7 +69,20 @@ public class JobControllerService : IJobControllerService
     /// <summary>
     /// Gets a list of all registered custom job controller instance types.
     /// </summary>
-    public IReadOnlyList<string> CustomInstanceTypes => _pluginInstances.Keys.ToList();
+    //public IReadOnlyList<string> CustomInstanceTypes => _pluginInstances.Keys.ToList();
+    public IReadOnlyDictionary<string, GeofenceType> CustomInstanceTypes
+    {
+        get
+        {
+            var custom = _pluginInstances.ToDictionary(x => x.Key, pair =>
+            {
+                var attr = pair.Value.GetCustomAttribute<GeofenceTypeAttribute>();
+                var geofenceType = attr?.Type ?? GeofenceType.Geofence;
+                return geofenceType;
+            });
+            return custom;
+        }
+    }
 
     public IServiceProvider Services { get; internal set; }
 
@@ -319,7 +333,8 @@ public class JobControllerService : IJobControllerService
                 }
                 break;
             case InstanceType.Custom:
-                var customInstanceType = Convert.ToString(instance.Data?["custom_instance_type"]);
+                //var customInstanceType = Convert.ToString(instance.Data?["custom_instance_type"]);
+                var customInstanceType = instance.Data?.CustomInstanceType;
                 if (string.IsNullOrEmpty(customInstanceType))
                 {
                     _logger.LogError($"[{instance.Name}] Plugin job controller instance type is not set, unable to initialize job controller instance");

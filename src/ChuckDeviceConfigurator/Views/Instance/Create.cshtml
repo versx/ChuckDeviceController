@@ -39,7 +39,7 @@
                 <p id="instance-type-description" class="text-muted"></p>
             </div>
             <div class="form-floating mb-3 custom">
-                <select asp-for="Data.CustomInstanceType" class="form-control" asp-items="@(new SelectList(ViewBag.CustomInstanceTypes))" placeholder="Custom instance type">
+                <select asp-for="Data.CustomInstanceType" id="Data.CustomInstanceType" class="form-control" asp-items="@(new SelectList(ViewBag.CustomInstanceTypes.Keys))" placeholder="Custom instance type">
                     <option value="" disabled selected>Please select one</option>
                 </select>
                 <label asp-for="Data.CustomInstanceType"></label>
@@ -216,6 +216,7 @@ for (const type of types) {
 $('#Type').change(function() {
     const instanceTypeId = this.value;
     hideAllElements(instanceTypeId);
+
     handleInstanceTypeChanged(instanceTypeId);
 
     setInstanceDescription(parseInt(instanceTypeId));
@@ -269,6 +270,11 @@ function handleInstanceTypeChanged(instanceTypeId) {
         if (isCircle && geofence.Type === 'Circle' ||
             !isCircle && geofence.Type === 'Geofence' ||
             instanceTypeId == @((int)InstanceType.Custom)) {
+            // TODO: Check if custom instance type is geofence or circle
+            //if (instanceTypeId == @((int)InstanceType.Custom)) {
+            //    const customTypeName = document.getElementById('Data.CustomInstanceType').value;
+            //    console.log('custom type name:', customTypeName);
+            //}
             // Create new select option for valid geofence
             const option = new Option(geofence.name, geofence.name);
             // Add select option to geofences multi select element

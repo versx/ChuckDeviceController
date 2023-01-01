@@ -2,6 +2,7 @@
 
 using ChuckDeviceController.Common.Jobs;
 using ChuckDeviceController.Data.Abstractions;
+using ChuckDeviceController.Data.Common;
 
 /// <summary>
 /// Plugin host handler contract used to interact with and manage the
@@ -22,7 +23,8 @@ public interface IJobControllerServiceHost : IInstanceServiceHost
     /// <summary>
     /// Gets a list of all registered custom job controller instance types.
     /// </summary>
-    IReadOnlyList<string> CustomInstanceTypes { get; }
+    //IReadOnlyList<string> CustomInstanceTypes { get; }
+    IReadOnlyDictionary<string, GeofenceType> CustomInstanceTypes { get; }
 
 
     /// <summary>
