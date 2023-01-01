@@ -4,17 +4,19 @@
 ## Contents
 
 - [DashboardStatsItem](#T-ChuckDeviceController-Plugin-DashboardStatsItem 'ChuckDeviceController.Plugin.DashboardStatsItem')
-    - [#ctor(name,value,isHtml)](#M-ChuckDeviceController-Plugin-DashboardStatsItem-#ctor-System-String,System-String,System-Boolean- 'ChuckDeviceController.Plugin.DashboardStatsItem.#ctor(System.String,System.String,System.Boolean)')
+    - [#ctor(name,isHtml,valueUpdater)](#M-ChuckDeviceController-Plugin-DashboardStatsItem-#ctor-System-String,System-Boolean,System-Func{System-String}- 'ChuckDeviceController.Plugin.DashboardStatsItem.#ctor(System.String,System.Boolean,System.Func{System.String})')
     - [IsHtml](#P-ChuckDeviceController-Plugin-DashboardStatsItem-IsHtml 'ChuckDeviceController.Plugin.DashboardStatsItem.IsHtml')
     - [Name](#P-ChuckDeviceController-Plugin-DashboardStatsItem-Name 'ChuckDeviceController.Plugin.DashboardStatsItem.Name')
     - [Value](#P-ChuckDeviceController-Plugin-DashboardStatsItem-Value 'ChuckDeviceController.Plugin.DashboardStatsItem.Value')
+    - [ValueUpdater](#P-ChuckDeviceController-Plugin-DashboardStatsItem-ValueUpdater 'ChuckDeviceController.Plugin.DashboardStatsItem.ValueUpdater')
 - [DashboardTile](#T-ChuckDeviceController-Plugin-DashboardTile 'ChuckDeviceController.Plugin.DashboardTile')
-    - [#ctor(text,value,icon,controllerName,actionName)](#M-ChuckDeviceController-Plugin-DashboardTile-#ctor-System-String,System-String,System-String,System-String,System-String- 'ChuckDeviceController.Plugin.DashboardTile.#ctor(System.String,System.String,System.String,System.String,System.String)')
+    - [#ctor(text,icon,controllerName,actionName,valueUpdater)](#M-ChuckDeviceController-Plugin-DashboardTile-#ctor-System-String,System-String,System-String,System-String,System-Func{System-String}- 'ChuckDeviceController.Plugin.DashboardTile.#ctor(System.String,System.String,System.String,System.String,System.Func{System.String})')
     - [ActionName](#P-ChuckDeviceController-Plugin-DashboardTile-ActionName 'ChuckDeviceController.Plugin.DashboardTile.ActionName')
     - [ControllerName](#P-ChuckDeviceController-Plugin-DashboardTile-ControllerName 'ChuckDeviceController.Plugin.DashboardTile.ControllerName')
     - [Icon](#P-ChuckDeviceController-Plugin-DashboardTile-Icon 'ChuckDeviceController.Plugin.DashboardTile.Icon')
     - [Text](#P-ChuckDeviceController-Plugin-DashboardTile-Text 'ChuckDeviceController.Plugin.DashboardTile.Text')
     - [Value](#P-ChuckDeviceController-Plugin-DashboardTile-Value 'ChuckDeviceController.Plugin.DashboardTile.Value')
+    - [ValueUpdater](#P-ChuckDeviceController-Plugin-DashboardTile-ValueUpdater 'ChuckDeviceController.Plugin.DashboardTile.ValueUpdater')
 - [DatabaseConnectionState](#T-ChuckDeviceController-Plugin-DatabaseConnectionState 'ChuckDeviceController.Plugin.DatabaseConnectionState')
     - [Connected](#F-ChuckDeviceController-Plugin-DatabaseConnectionState-Connected 'ChuckDeviceController.Plugin.DatabaseConnectionState.Connected')
     - [Disconnected](#F-ChuckDeviceController-Plugin-DatabaseConnectionState-Disconnected 'ChuckDeviceController.Plugin.DatabaseConnectionState.Disconnected')
@@ -35,12 +37,14 @@
     - [IsHtml](#P-ChuckDeviceController-Plugin-IDashboardStatsItem-IsHtml 'ChuckDeviceController.Plugin.IDashboardStatsItem.IsHtml')
     - [Name](#P-ChuckDeviceController-Plugin-IDashboardStatsItem-Name 'ChuckDeviceController.Plugin.IDashboardStatsItem.Name')
     - [Value](#P-ChuckDeviceController-Plugin-IDashboardStatsItem-Value 'ChuckDeviceController.Plugin.IDashboardStatsItem.Value')
+    - [ValueUpdater](#P-ChuckDeviceController-Plugin-IDashboardStatsItem-ValueUpdater 'ChuckDeviceController.Plugin.IDashboardStatsItem.ValueUpdater')
 - [IDashboardTile](#T-ChuckDeviceController-Plugin-IDashboardTile 'ChuckDeviceController.Plugin.IDashboardTile')
     - [ActionName](#P-ChuckDeviceController-Plugin-IDashboardTile-ActionName 'ChuckDeviceController.Plugin.IDashboardTile.ActionName')
     - [ControllerName](#P-ChuckDeviceController-Plugin-IDashboardTile-ControllerName 'ChuckDeviceController.Plugin.IDashboardTile.ControllerName')
     - [Icon](#P-ChuckDeviceController-Plugin-IDashboardTile-Icon 'ChuckDeviceController.Plugin.IDashboardTile.Icon')
     - [Text](#P-ChuckDeviceController-Plugin-IDashboardTile-Text 'ChuckDeviceController.Plugin.IDashboardTile.Text')
     - [Value](#P-ChuckDeviceController-Plugin-IDashboardTile-Value 'ChuckDeviceController.Plugin.IDashboardTile.Value')
+    - [ValueUpdater](#P-ChuckDeviceController-Plugin-IDashboardTile-ValueUpdater 'ChuckDeviceController.Plugin.IDashboardTile.ValueUpdater')
 - [IDatabaseEvents](#T-ChuckDeviceController-Plugin-IDatabaseEvents 'ChuckDeviceController.Plugin.IDatabaseEvents')
     - [OnEntityAdded\`\`1(entity)](#M-ChuckDeviceController-Plugin-IDatabaseEvents-OnEntityAdded``1-``0- 'ChuckDeviceController.Plugin.IDatabaseEvents.OnEntityAdded``1(``0)')
     - [OnEntityDeleted\`\`1(entity)](#M-ChuckDeviceController-Plugin-IDatabaseEvents-OnEntityDeleted``1-``0- 'ChuckDeviceController.Plugin.IDatabaseEvents.OnEntityDeleted``1(``0)')
@@ -302,8 +306,8 @@ ChuckDeviceController.Plugin
 [IDashboardStatsItem](#T-ChuckDeviceController-Plugin-IDashboardStatsItem 'ChuckDeviceController.Plugin.IDashboardStatsItem') class implementation
 for displaying information on the front page.
 
-<a name='M-ChuckDeviceController-Plugin-DashboardStatsItem-#ctor-System-String,System-String,System-Boolean-'></a>
-### #ctor(name,value,isHtml) `constructor`
+<a name='M-ChuckDeviceController-Plugin-DashboardStatsItem-#ctor-System-String,System-Boolean,System-Func{System-String}-'></a>
+### #ctor(name,isHtml,valueUpdater) `constructor`
 
 ##### Summary
 
@@ -314,8 +318,8 @@ Instantiates a new instance of the [DashboardStatsItem](#T-ChuckDeviceController
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | name | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | Name of the statistic. |
-| value | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | Value of the statistic. |
 | isHtml | [System.Boolean](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Boolean 'System.Boolean') | Whether or not the name or value contains raw HTML. |
+| valueUpdater | [System.Func{System.String}](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Func 'System.Func{System.String}') | Function to update the value for the dashboard statistic item. |
 
 <a name='P-ChuckDeviceController-Plugin-DashboardStatsItem-IsHtml'></a>
 ### IsHtml `property`
@@ -339,6 +343,14 @@ Gets the name or title of the statistic.
 
 Gets the value of the statistic.
 
+<a name='P-ChuckDeviceController-Plugin-DashboardStatsItem-ValueUpdater'></a>
+### ValueUpdater `property`
+
+##### Summary
+
+Gets the function to update the value for the
+dashboard statistic item.
+
 <a name='T-ChuckDeviceController-Plugin-DashboardTile'></a>
 ## DashboardTile `type`
 
@@ -351,8 +363,8 @@ ChuckDeviceController.Plugin
 [IDashboardTile](#T-ChuckDeviceController-Plugin-IDashboardTile 'ChuckDeviceController.Plugin.IDashboardTile') class implementation to
     display custom tile-like elements on the dashboard.
 
-<a name='M-ChuckDeviceController-Plugin-DashboardTile-#ctor-System-String,System-String,System-String,System-String,System-String-'></a>
-### #ctor(text,value,icon,controllerName,actionName) `constructor`
+<a name='M-ChuckDeviceController-Plugin-DashboardTile-#ctor-System-String,System-String,System-String,System-String,System-Func{System-String}-'></a>
+### #ctor(text,icon,controllerName,actionName,valueUpdater) `constructor`
 
 ##### Summary
 
@@ -364,10 +376,10 @@ Instantiates a new instance of the
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | text | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | The text displayed for the dashboard tile. |
-| value | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | The value for the dashboard tile. |
 | icon | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | Fontawesome icon to display. |
 | controllerName | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | Mvc Controller name the action name should relate to when the tile is clicked. |
 | actionName | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | Mvc controller action name to execute when the navbar header is clicked. |
+| valueUpdater | [System.Func{System.String}](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Func 'System.Func{System.String}') | The function to update the value for the dashboard tile. |
 
 <a name='P-ChuckDeviceController-Plugin-DashboardTile-ActionName'></a>
 ### ActionName `property`
@@ -405,6 +417,14 @@ Gets the text displayed for the dashboard tile.
 ##### Summary
 
 Gets the value for the dashboard tile.
+
+<a name='P-ChuckDeviceController-Plugin-DashboardTile-ValueUpdater'></a>
+### ValueUpdater `property`
+
+##### Summary
+
+Gets the function to update the value for the
+    dashboard tile.
 
 <a name='T-ChuckDeviceController-Plugin-DatabaseConnectionState'></a>
 ## DatabaseConnectionState `type`
@@ -648,6 +668,14 @@ Gets or sets the name or title of the statistic.
 
 Gets or sets the value of the statistic.
 
+<a name='P-ChuckDeviceController-Plugin-IDashboardStatsItem-ValueUpdater'></a>
+### ValueUpdater `property`
+
+##### Summary
+
+Gets the function to update the value for the
+dashboard tile.
+
 <a name='T-ChuckDeviceController-Plugin-IDashboardTile'></a>
 ## IDashboardTile `type`
 
@@ -696,6 +724,14 @@ Gets or sets the text displayed for the dashboard tile.
 ##### Summary
 
 Gets or sets the value for the dashboard tile.
+
+<a name='P-ChuckDeviceController-Plugin-IDashboardTile-ValueUpdater'></a>
+### ValueUpdater `property`
+
+##### Summary
+
+Gets the function to update the value for the
+    dashboard tile.
 
 <a name='T-ChuckDeviceController-Plugin-IDatabaseEvents'></a>
 ## IDatabaseEvents `type`

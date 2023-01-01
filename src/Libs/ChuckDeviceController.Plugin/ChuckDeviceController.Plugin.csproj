@@ -27,6 +27,7 @@
     <ProjectReference Include="..\ChuckDeviceController.Data.Common\ChuckDeviceController.Data.Common.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="API.md" />
     <None Remove="UI\" />
     <None Remove="Data\" />
     <None Remove="EventBus\" />
