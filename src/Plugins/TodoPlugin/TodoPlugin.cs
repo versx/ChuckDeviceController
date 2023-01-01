@@ -77,6 +77,9 @@ public class TodoPlugin : IPlugin
         };
         await _uiHost.AddSidebarItemAsync(navbarHeader);
 
+        var tile = new DashboardTile("Todos", "0", "fa-solid fa-fw fa-list", "Todo");
+        await _uiHost.AddDashboardTileAsync(tile);
+
         await _authHost.RegisterRole(TodoRoleName, 2);
     }
 
