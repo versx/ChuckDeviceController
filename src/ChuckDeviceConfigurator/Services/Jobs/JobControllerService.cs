@@ -112,6 +112,7 @@ public class JobControllerService : IJobControllerService
     {
         using var scope = Services.CreateScope();
         using var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+
         var devices = await uow.Devices.FindAllAsync();
         devices.ToList().ForEach(AddDevice);
     }
