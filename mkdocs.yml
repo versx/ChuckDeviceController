@@ -47,6 +47,7 @@ nav:
         - Examples: plugin-system/examples.md
         - Host Interfaces: plugin-system/host-interfaces.md
         - Entity Interfaces: plugin-system/entity-interfaces.md
+        - Job Controllers: plugin-system/job-controllers.md
         - Visual Studio Templates: plugin-system/project-templates.md
     - Plugins Included:
         - Overview: plugins/overview.md

@@ -11,9 +11,10 @@ Plugins allow for expandability of the application as well as to introduce more 
   - Choose 'Create a new project'.  
   - If you registered the plugin templates, you can search for `Chuck` to show the available CDC plugin templates.  
   - Depending on the type of plugin you want to create, select one of the following:  
-    * `ChuckDeviceController .NET Core Plugin Template`  
-    * `ChuckDeviceController ASP.NET Core Mvc Plugin Template`  
-    * `ChuckDeviceController ASP.NET Core Razor Plugin Template`  
+    * `ChuckPlugin .NET Core Plugin Template`  
+    * `ChuckPluginMvc ASP.NET Core Mvc Plugin Template`  
+    * `ChuckPluginMvcApi ASP.NET Core Mvc API Plugin Template`  
+    * `ChuckPluginRazor ASP.NET Core Razor Plugin Template`  
   - Configure your new project, set name and location properties.  
   - Click the `Create` button.  
 
@@ -68,12 +69,12 @@ Each plugin's project file i.e. `TestPlugin.csproj` needs the following properti
   * Copy any Mvc Views to the `src/ChuckDeviceConfigurator/bin/debug/plugins/[PluginName]/Views/[controller]/` folder.  
   * Copy any Razor Pages to the `src/ChuckDeviceConfigurator/bin/debug/plugins/[PluginName]/Pages/[controller]/` folder.  
   * Copy any static files and folders in the `wwwroot` folder to the `src/ChuckDeviceConfigurator/bin/debug/plugins/[PluginName]/wwwroot` folder.
-  * Copy any other files the plugin requires or depends on (i.e. config files, dataset files, etc) other than any `ChuckDeviceController*.dll` libraries to the `src/ChuckDeviceConfigurator/bin/debug/plugins/[PluginName]/` folder.  
-- Alternatively you can set an `OnPostBuild` build event in Visual Studio for the plugin to execute the `script/copy.sh` or `script/copy.bat` script which will copy the necessary files automatically each successful build.  
+  * Copy any other files the plugin requires or depends on (i.e. config files, dataset files, etc) other than any `ChuckDeviceController*.dll` libraries to the `src/ChuckDeviceConfigurator/bin/debug/plugins/[PluginName]` folder.  
+- **Alternatively:** You can set an `OnPostBuild` build event in Visual Studio for the plugin to execute the `scripts/copy.sh` or `scripts/copy.bat` script which will copy the necessary files automatically each successful build.  
 
 - **Notes:** Plugin assemblies (`.dll` files) can contain multiple plugin implementations. Although, limiting plugins to one per assembly is recommended for easier maintenance and decoupling. Otherwise, if the two or more plugins heavily depend/reference each other, combining them into one assembly file would be the better alternative solution.  
 
-- **Important:** When copying the compiled plugin, if you referenced any ChuckDeviceController libraries (other than `ChuckDeviceController.Plugin.dll` or `ChuckDeviceController.Common.dll`), do not include them in the `./bin/debug/plugins/[PluginName]` folder. This will instruct the plugin to load the referenced libraries that the host application is using. Rather than the ones local within the plugin's AppDomain, which will cause plenty of headaches as versx has already gone through. :)  
+- **Important:** When copying the compiled plugin, if you referenced any ChuckDeviceController libraries (including `ChuckDeviceController.Plugin.dll`), do not include them in the `./bin/debug/plugins/[PluginName]` folder. This will instruct the plugin to load the referenced libraries that the host application is using. Rather than the ones local within the plugin's AppDomain, which will cause plenty of headaches as versx has already gone through. :)  
 
 <hr>
 
@@ -98,15 +99,18 @@ To configure the plugin to embed the static files (i.e. `wwwroot` folder) in an 
     <EmbeddedResource Include="wwwroot\**\*" />
   </ItemGroup>
 
-  <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="6.0.8" />
+  <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="7.0.1" />
 ```
 
 <hr>
 
 ## Plugin Configuration  
-You will also need to decorate the plugin's main class (the one that inherits from the `IPlugin` interface contract) with an attribute indicating where the static files are located.  
+You will also need to decorate the plugin's main class (the one that inherits from the `IPlugin` interface contract) with the `StaticFilesLocationAttribute` attribute indicating where the static files are located.  
+
+It will also need to include the `PluginApiKeyAttribute` attribute specified regardless of what permissions your plugin needs.  
 ```cs
 [StaticFilesLocation(views: StaticFilesLocation.Resources, webRoot: StaticFilesLocation.External)]
+[PluginApiKey("CDC-328TVvD7o85TNbNhjLE0JysVMbOxjXKT")]
 public class TestPlugin : IPlugin
 {
     ...
