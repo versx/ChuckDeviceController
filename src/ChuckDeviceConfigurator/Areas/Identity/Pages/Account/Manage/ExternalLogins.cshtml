@@ -10,19 +10,18 @@
 <partial name="_StatusMessage" for="StatusMessage" />
 @if (Model.CurrentLogins?.Any() ?? false)
 {
-    <h3>Registered Logins</h3>
+    <h3>Registered Login Providers</h3>
     <table class="table">
         <tbody>
             @foreach (var login in Model.CurrentLogins)
             {
                 <tr>
                     <td id="@($"login-provider-{login.LoginProvider}")">
-                        @if (authProviderIcons.ContainsKey(login.ProviderDisplayName))
+                        @if (authProviderIcons.ContainsKey(login.LoginProvider))
                         {
-                            var icon = authProviderIcons[login.ProviderDisplayName];
+                            var icon = authProviderIcons[login.LoginProvider];
                             <i class="@icon.Icon"></i>
-                            @Html.Raw("&nbsp;");
-                            @login.ProviderDisplayName
+                            <text>&nbsp;</text>@login.ProviderDisplayName
                         }
                         else
                         {
