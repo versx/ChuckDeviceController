@@ -2,7 +2,7 @@
 @model ExternalLoginsModel
 @using ChuckDeviceConfigurator.Configuration
 @{
-    ViewData["Title"] = "Manage your external logins";
+    ViewData["Title"] = "Manage Your External Logins";
     ViewData["ActivePage"] = ManageNavPages.ExternalLogins;
     var authProviderIcons = AuthProviderConfig.AuthProviderIcons;
 }
@@ -10,7 +10,7 @@
 <partial name="_StatusMessage" for="StatusMessage" />
 @if (Model.CurrentLogins?.Any() ?? false)
 {
-    <h3>Registered Login Providers</h3>
+    <h3>@ViewData["Title"]</h3>
     <table class="table">
         <tbody>
             @foreach (var login in Model.CurrentLogins)
