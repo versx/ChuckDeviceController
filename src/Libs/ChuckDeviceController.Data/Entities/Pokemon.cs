@@ -764,8 +764,7 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
                 IsExpireTimestampVerified = true;
                 return oldSpawnpoint;
             }
-            else
-            {
+
                 var newSpawnpoint = new Spawnpoint
                 {
                     Id = spawnId,
@@ -778,7 +777,6 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
                 await newSpawnpoint.UpdateAsync(connection, memCache, update: true, skipLookup: true);
                 return newSpawnpoint;
             }
-        }
 
         return null;
     }

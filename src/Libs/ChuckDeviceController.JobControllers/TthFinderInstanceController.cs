@@ -19,7 +19,7 @@ using ChuckDeviceController.Geometry.Models.Abstractions;
 using ChuckDeviceController.JobControllers.Tasks;
 using ChuckDeviceController.Routing;
 
-// REVIEW: Consider removing class in favor of FindyJumpyPlugin
+// REVIEW: Consider removing class in favor of FindyJumpyPlugin, since it does almost exactly what was planned.
 
 /*
  * TODO: TthFinder logic

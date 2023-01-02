@@ -244,7 +244,7 @@ public class BootstrapInstanceController : BaseSmartInstanceController, IScanNex
         // Check if device has completed all coordinates in the route, if all have been visisted
         // call InstanceComplete event for device.
 
-        // REVIEW: Maybe keep track of which coordinates in case device is given same route
+        // REVIEW: Possibly keep track of which coordinates in case device is given same route
         var hasCompletedRoute = _currentUuid[uuid].CoordinatesCompletedCount == Coordinates.Count;
         if (hasCompletedRoute)
         {
@@ -262,8 +262,6 @@ public class BootstrapInstanceController : BaseSmartInstanceController, IScanNex
 
             // Trigger OnComplete event
             var lastCompletedTime = Convert.ToUInt64(_lastCompletedTime);
-            // REVIEW: Trigger all devices in _currentUuid not just the one fetching the job currently
-            // Probably best to keep it individually trigger per device
             OnInstanceComplete(OnCompleteInstanceName, uuid, lastCompletedTime);
         }
     }

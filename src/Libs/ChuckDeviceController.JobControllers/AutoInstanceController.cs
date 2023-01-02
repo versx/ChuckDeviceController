@@ -553,7 +553,6 @@ public class AutoInstanceController : IJobController
                 _todayStops.Clear();
                 _todayStopsAttempts.Clear();
                 _completionDate = 0;
-                // TODO: Check sorting
                 /*
                 _allStops.Sort((a, b) =>
                 {

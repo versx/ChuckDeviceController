@@ -177,7 +177,7 @@ public class PluginManager : IPluginManager
             .ToList();
 
         // Filter any disabled plugins and do not load them.
-        // TODO: Show them on plugins page still
+        // TODO: Show disabled plugins on plugin manage page
         pluginFinderResults = pluginFinderResults
             .Where(x => !disabledPlugins.Contains(x.AssemblyFullPath.ToLower()));
 

@@ -90,7 +90,7 @@ public class GenericRepository<TDbContext, TEntity> : IGenericRepository<TEntity
         IQueryable<TEntity> query = _context.Set<TEntity>();
 
         if (orderBy != null) query = orderBy(query);
-        if (filter != null) return query.Where(filter); // NOTES: Crappy workaround
+        if (filter != null) return query.Where(filter); // NOTE: Crappy workaround
 
         return await Task.FromResult(query);
     }

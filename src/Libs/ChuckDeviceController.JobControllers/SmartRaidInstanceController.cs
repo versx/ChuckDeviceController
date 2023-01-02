@@ -245,7 +245,8 @@ public class SmartRaidInstanceController : IJobController
             {
                 _logger.LogError($"LoadGymsAsync: {ex}");
                 // Sleep for 5 seconds
-                Thread.Sleep(5000);
+                //Thread.Sleep(5000);
+                await Task.Delay(TimeSpan.FromSeconds(5));
             }
         }
 

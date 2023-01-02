@@ -1,7 +1,5 @@
 ﻿namespace ChuckDeviceController.Common;
 
-// REVIEW: Setting to auto assign existing users to new plugin roles created after user created
-
 public static partial class RoleConsts
 {
     public const string DefaultRole = nameof(Roles.Registered);

@@ -11,7 +11,7 @@ using ChuckDeviceController.Logging;
 /// <summary>
 ///     This class can help identify db connection leaks (connections that are not closed after use).
 /// Usage:
-///     connection = new SqlConnection(..);
+///     connection = new MySqlConnection(..);
 ///     connection.Open()
 /// #if DEBUG
 ///     new ConnectionLeakWatcher(connection);
@@ -68,6 +68,8 @@ public class ConnectionLeakWatcher : IDisposable
 
     private void ConnectionOnStateChange(object sender, StateChangeEventArgs stateChangeEventArgs)
     {
+        // TODO: Use with configurator to notify plugins of database state change events
+
         // Connection state changed. Was it closed?
         if (stateChangeEventArgs.CurrentState == ConnectionState.Closed)
         {

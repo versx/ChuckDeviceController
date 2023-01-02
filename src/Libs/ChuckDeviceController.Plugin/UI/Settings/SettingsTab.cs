@@ -18,8 +18,8 @@ public class SettingsTab : ISettingsTab
 
     /// <summary>
     /// Gets or sets the html anchor tag name of the tab.
-    /// Note: No hash symbol needed.
     /// </summary>
+    /// <remarks>No hash symbol is needed.</remarks>
     public string? Anchor { get; set; }
 
     /// <summary>

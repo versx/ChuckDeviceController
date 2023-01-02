@@ -116,9 +116,9 @@ public abstract class BaseSmartInstanceController : IJobController, ILureInstanc
             if (totalRoundTime > 0)
             {
                 // Only show average route round time if at least one device has completed it.
-                var time = Math.Round(totalRoundTime);
-                // TODO: Format round trip time status by hours/minutes/seconds instead of just seconds.
-                status = $"Round Time: {time:N0}s";
+                var seconds = (ulong)Math.Round(totalRoundTime);
+                var time = seconds.ToReadableString(includeAgoText: false);
+                status = $"Round Time: {time}";
             }
             else
             {
@@ -418,7 +418,6 @@ public abstract class BaseSmartInstanceController : IJobController, ILureInstanc
                 switch (RouteType)
                 {
                     // TODO: Eventually remove leap frog routing logic (cough, remove all circle routing instances all together)
-                    // REVIEW: Optionally, improve the basic route logic
                     case CircleInstanceRouteType.Default:
                         // Get default leap frog route
                         currentCoord = BasicRoute();
@@ -428,7 +427,7 @@ public abstract class BaseSmartInstanceController : IJobController, ILureInstanc
                         currentCoord = SplitRoute(uuid);
                         break;
                     //case CircleInstanceRouteType.Circular:
-                    // Circular split route by device count
+                        // Circular split route by device count
                     case CircleInstanceRouteType.Smart:
                         // Smart routing by device count
                         currentCoord = SmartRoute(uuid);

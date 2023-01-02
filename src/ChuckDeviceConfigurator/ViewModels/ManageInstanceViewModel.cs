@@ -9,7 +9,8 @@ public class ManageInstanceViewModel
     [DisplayName("Name")]
     public string Name { get; set; } = null!;
 
-    // NOTE: Set to nullable so default value when creating an instance isn't set to `0` aka CirclePokemon
+    // Set to nullable so default value when creating an instance
+    // isn't set to `0` aka CirclePokemon
     [DisplayName("Instance Type")]
     public InstanceType? Type { get; set; }
 
