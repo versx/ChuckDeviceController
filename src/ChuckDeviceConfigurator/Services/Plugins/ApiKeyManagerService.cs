@@ -5,6 +5,8 @@ using System.Security.Cryptography;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Repositories;
 
+// TODO: Cache API keys
+
 public class ApiKeyManagerService : IApiKeyManagerService
 {
     #region Constants
@@ -79,7 +81,7 @@ public class ApiKeyManagerService : IApiKeyManagerService
         var entity = _uow.ApiKeys.FirstOrDefault(key => key.Key!.Equals(apiKey));
         if (entity == null)
         {
-            _logger.LogError($"Unable to validate API key '{apiKey}', it does not exist.");
+            _logger.LogError($"Unable to invalidate API key '{apiKey}', it does not exist.");
             return;
         }
 

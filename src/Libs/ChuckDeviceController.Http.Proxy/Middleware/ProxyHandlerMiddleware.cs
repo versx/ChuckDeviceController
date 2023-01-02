@@ -1,6 +1,7 @@
 namespace ChuckDeviceController.Http.Proxy.Middleware;
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 
 /// <summary>
 /// Credits: https://github.com/ProxyKit/ProxyKit
@@ -8,11 +9,18 @@ using Microsoft.AspNetCore.Http;
 public class ProxyHandlerMiddleware<TProxyHandler>
     where TProxyHandler : IProxyHandler
 {
-    private readonly TProxyHandler _handler;
-    private const int StreamCopyBufferSize = 81920;
+    public const int StreamCopyBufferSize = 1024 * 10; // 81920
+    public const string TransferEncodingHeader = "Transfer-Encoding";
 
-    public ProxyHandlerMiddleware(RequestDelegate _, TProxyHandler handler)
+    private readonly ILogger<ProxyHandlerMiddleware<TProxyHandler>> _logger;
+    private readonly TProxyHandler _handler;
+
+    public ProxyHandlerMiddleware(
+        ILogger<ProxyHandlerMiddleware<TProxyHandler>> logger,
+        RequestDelegate _,
+        TProxyHandler handler)
     {
+        _logger = logger;
         _handler = handler;
     }
 
@@ -22,7 +30,7 @@ public class ProxyHandlerMiddleware<TProxyHandler>
         await CopyProxyHttpResponse(context, response).ConfigureAwait(false);
     }
 
-    private static async Task CopyProxyHttpResponse(HttpContext context, HttpResponseMessage responseMessage)
+    private async Task CopyProxyHttpResponse(HttpContext context, HttpResponseMessage responseMessage)
     {
         var response = context.Response;
 
@@ -41,7 +49,7 @@ public class ProxyHandlerMiddleware<TProxyHandler>
         }
 
         // SendAsync removes chunking from the response. This removes the header so it doesn't expect a chunked response.
-        response.Headers.Remove("transfer-encoding");
+        response.Headers.Remove(TransferEncodingHeader);
 
         if (responseMessage.Content != null)
         {
@@ -64,7 +72,7 @@ public class ProxyHandlerMiddleware<TProxyHandler>
             catch (IOException ex)
             {
                 // Usually a client abort. Ignore.
-                Console.WriteLine($"[CopyProxyHttpResponse] Error: {ex}");
+                _logger.LogError($"[CopyProxyHttpResponse] {ex.Message}");
             }
         }
     }

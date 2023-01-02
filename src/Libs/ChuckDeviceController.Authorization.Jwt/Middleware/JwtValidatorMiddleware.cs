@@ -39,13 +39,19 @@ public class JwtValidatorMiddleware
         if (string.IsNullOrEmpty(token))
         {
             // No 'Authorization' header set but required, ignore request
+            httpContext.Response.StatusCode = 401;
+            await httpContext.Response.WriteAsync("JWT is not set but required");
             return;
         }
 
         // Validate JWT token from 'Authorization' header
         var result = JwtAuthManager.Instance.Validate(token, _jwtConfig);
         if (!result)
+        {
+            httpContext.Response.StatusCode = 401;
+            await httpContext.Response.WriteAsync("Failed to validate JWT");
             return;
+        }
 
         // Allow request to continue
         await _next(httpContext);

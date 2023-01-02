@@ -4,10 +4,12 @@ using ChuckDeviceController.Extensions;
 
 public sealed class MadDataMiddleware
 {
+    private readonly ILogger<MadDataMiddleware> _logger;
     private readonly RequestDelegate _next;
 
-    public MadDataMiddleware(RequestDelegate next)
+    public MadDataMiddleware(ILogger<MadDataMiddleware> logger, RequestDelegate next)
     {
+        _logger = logger;
         _next = next ?? throw new ArgumentNullException(nameof(next));
     }
 
@@ -19,7 +21,7 @@ public sealed class MadDataMiddleware
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error - MadDataMiddleware: {ex.Message}");
+            _logger.LogError($"MadDataMiddleware: {ex.Message}");
         }
 
         await _next(context);

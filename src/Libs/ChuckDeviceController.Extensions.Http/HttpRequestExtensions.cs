@@ -6,6 +6,16 @@ using Microsoft.AspNetCore.Http;
 
 public static partial class HttpRequestExtensions
 {
+    #region Constants
+
+    public const string UserAgentHeader = "User-Agent";
+    public const string AuthorizationHeader = "Authorization";
+    public const string CfConnectingIpHeader = "CF-Connecting-IP";
+    public const string XForwardedHostHeader = "X-Forwarded-Host";
+    public const string XForwardedForHeader = "X-Forwarded-For";
+
+    #endregion
+
     // Credits: https://stackoverflow.com/a/14536035
     private static readonly IReadOnlyList<string> CrawlerKeywords = new List<string>
     {
@@ -33,23 +43,27 @@ public static partial class HttpRequestExtensions
     public static bool IsDeclaredBotCrawler(this HttpRequest request)
     {
         var userAgent = request.GetUserAgent(toLower: true);
-        var isBot = CrawlerKeywords.Any(keywords => userAgent.Contains(keywords));
+        var isBot = CrawlerKeywords.Any(userAgent.Contains);
         return isBot;
     }
 
     public static string GetUserAgent(this HttpRequest request, bool toLower = false)
     {
-        var userAgent = request.Headers["User-Agent"].ToString();
+        if (!request.Headers.TryGetValue(UserAgentHeader, out var userAgent))
+        {
+            return null!;
+        }
+        var result = userAgent.ToString();
         return toLower
-            ? userAgent.ToLower()
-            : userAgent;
+            ? result.ToLower()
+            : result;
     }
 
     public static string? GetIPAddress(this HttpRequest request, string? defaultValue = "0.0.0.0")
     {
-        var cfHeader = request.Headers["CF-Connecting-IP"].ToString();
-        var forwardedHost = request.Headers["X-Forwarded-Host"].ToString();
-        var forwardedFor = request.Headers["X-Forwarded-For"].ToString()?.Split(',').FirstOrDefault();
+        var cfHeader = request.Headers[CfConnectingIpHeader].ToString();
+        var forwardedHost = request.Headers[XForwardedHostHeader].ToString();
+        var forwardedFor = request.Headers[XForwardedForHeader].ToString()?.Split(',').FirstOrDefault();
         var remoteIp = request.HttpContext.Connection.RemoteIpAddress?.ToString();
         var localIp = request.HttpContext.Connection.LocalIpAddress?.ToString();
         var ipAddr = !string.IsNullOrEmpty(cfHeader)
@@ -77,27 +91,30 @@ public static partial class HttpRequestExtensions
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error - ReadBodyAsStringAsync: {ex.Message}");
+            Console.WriteLine($"[Error] ReadBodyAsStringAsync: {ex.Message}");
             return string.Empty;
         }
     }
 
     public static string? GetHeader(this HttpRequest request, string key)
     {
-        if (!request.Headers.ContainsKey(key))
+        if (!request.Headers.TryGetValue(key, out var header))
+        {
             return null;
-
-        var header = request.Headers[key].ToString();
-        return header;
+        }
+        return header.ToString();
     }
 
     public static string? GetAuthorizationHeader(this HttpRequest request, bool removePrefix = true)
     {
-        var header = request.GetHeader("Authorization");
+        var header = GetHeader(request, AuthorizationHeader);
+        if (string.IsNullOrEmpty(header))
+            return null;
+
         if (removePrefix)
         {
-            header = header?.Replace("Bearer ", null);
+            header = header.Replace("Bearer ", null);
         }
-        return header?.Replace("\"", null);
+        return header.Replace("\"", null);
     }
 }
