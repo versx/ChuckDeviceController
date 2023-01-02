@@ -113,8 +113,7 @@ public class ObjectDataConverter<T> : JsonConverter<T>
             // Not the best solution, although it works. Issues can and will occur
             // if there is a key and property declared as the same name.
 
-            // TODO: Potentially just use `JsonExtensionData` attribute, although
-            // some refactoring will need to be done.
+            // TODO: Potentially just use `JsonExtensionData` attribute, although some refactoring will need to be done.
             var obj = FlattenDictionary(value);
             JsonSerializer.Serialize(writer, obj);
         }

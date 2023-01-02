@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 using ChuckDeviceConfigurator.Services.Jobs;
+using ChuckDeviceConfigurator.Utilities;
 using ChuckDeviceConfigurator.ViewModels;
 using ChuckDeviceController.Caching.Memory;
 using ChuckDeviceController.Common;
@@ -50,6 +51,8 @@ public class DeviceController : BaseMvcController
         {
             Items = devices.ToList(),
         };
+        ViewBag.DevicesOnline = devices.Count(x => Utils.IsDeviceOnline(x.LastSeen ?? 0));
+        ViewBag.DevicesOffline = devices.Count(x => !Utils.IsDeviceOnline(x.LastSeen ?? 0));
         return View(model);
     }
 

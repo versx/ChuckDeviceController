@@ -10,8 +10,52 @@
 
 <div id="device-status"></div>
 
-<p>
-    <a class="btn btn-success btn-sm" asp-action="Create">Create New</a>
+<div class="card text-center">
+    <div class="card-header text-center"><b>Overview</b></div>
+    <div class="card-body">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-4 col-sm-12 p-3">
+                    <div class="list-group">
+                        <div class="list-group-item">
+                            <h3 class="pull-right">
+                                <i class="fas fa-mobile-alt"></i>
+                            </h3>
+                            <h4 class="list-group-item-heading">Total</h4>
+                            <p class="list-group-item-text">@(Model.Items.Count.ToString("N0"))</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-12 p-3">
+                    <div class="list-group">
+                        <div class="list-group-item">
+                            <h3 class="pull-right">
+                                @Strings.DeviceOnlineIcon
+                            </h3>
+                            <h4 class="list-group-item-heading">Online</h4>
+                            <p class="list-group-item-text">@(ViewBag.DevicesOnline.ToString("N0"))</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-12 p-3">
+                    <div class="list-group">
+                        <div class="list-group-item">
+                            <h3 class="pull-right">
+                                @Strings.DeviceOfflineIcon
+                            </h3>
+                            <h4 class="list-group-item-heading">Offline</h4>
+                            <p class="list-group-item-text">@(ViewBag.DevicesOffline.ToString("N0"))</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<br />
+
+<p class="mb-5">
+    <a class="btn btn-success btn-sm float-end" asp-action="Create">Create New</a>
 </p>
 
 <table id="table-devices" class="table table-striped table-bordered dt-responsive nowrap">
