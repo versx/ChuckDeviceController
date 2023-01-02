@@ -4,6 +4,7 @@
         {
             text: uri,
             width: 250,
-            height: 250
+            height: 250,
+            correctLevel : QRCode.CorrectLevel.L,
         });
 });
