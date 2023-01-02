@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 #nullable disable
 
+using System.Text.Json;
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
@@ -38,6 +40,18 @@ namespace ChuckDeviceConfigurator.Areas.Identity.Pages.Account.Manage
                 return RedirectToPage("./TwoFactorAuthentication");
             }
 
+            return Page();
+        }
+
+        public IActionResult OnPost()
+        {
+            if (Request.Form.ContainsKey("RecoveryCodes"))
+            {
+                var recoveryCodes = Request.Form["RecoveryCodes"].ToString().Split(';');
+                var json = JsonSerializer.SerializeToUtf8Bytes(recoveryCodes);
+                Response.Headers.Add("Content-Disposition", "attachment; filename=2FA-Recovery-Codes.json");
+                return new FileContentResult(json, "application/json");
+            }
             return Page();
         }
     }

@@ -17,9 +17,20 @@
 </div>
 <div class="row">
     <div class="col-md-12">
-        @for (var row = 0; row < Model.RecoveryCodes.Length; row += 2)
-        {
-            <code class="recovery-code">@Model.RecoveryCodes[row]</code><text>&nbsp;</text><code class="recovery-code">@Model.RecoveryCodes[row + 1]</code><br />
-        }
+        <form id="download-recovery-codes" asp-page="ShowRecoveryCodes" method="post">
+            <div class="row mb-3">
+                @for (var row = 0; row < Model.RecoveryCodes.Length; row += 2)
+                {
+                    <div class="col-md-6">
+                        <code class="recovery-code">@Model.RecoveryCodes[row]</code>
+                    </div>
+                    <div class="col-md-6">
+                        <code class="recovery-code">@Model.RecoveryCodes[row + 1]</code>
+                    </div>
+                }
+            </div>
+            <input asp-for="RecoveryCodes" value="@(string.Join(';', Model.RecoveryCodes))" hidden />
+            <button class="btn btn-primary" type="submit">Download</button>
+        </form>
     </div>
 </div>
