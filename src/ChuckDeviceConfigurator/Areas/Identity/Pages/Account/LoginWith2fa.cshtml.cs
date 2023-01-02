@@ -99,7 +99,7 @@ namespace ChuckDeviceConfigurator.Areas.Identity.Pages.Account
 
             if (result.Succeeded)
             {
-                _logger.LogInformation("User with ID '{UserId}' logged in with 2fa.", userId);
+                _logger.LogInformation("User with ID '{UserId}' logged in with 2FA.", userId);
                 return LocalRedirect(returnUrl);
             }
             else if (result.IsLockedOut)

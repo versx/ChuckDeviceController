@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 #nullable disable
 
-using System;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Text;
@@ -161,7 +160,7 @@ namespace ChuckDeviceConfigurator.Areas.Identity.Pages.Account.Manage
         private static string FormatKey(string unformattedKey)
         {
             var result = new StringBuilder();
-            int currentPosition = 0;
+            var currentPosition = 0;
             while (currentPosition + 4 < unformattedKey.Length)
             {
                 result.Append(unformattedKey.AsSpan(currentPosition, 4)).Append(' ');
@@ -172,17 +171,19 @@ namespace ChuckDeviceConfigurator.Areas.Identity.Pages.Account.Manage
                 result.Append(unformattedKey.AsSpan(currentPosition));
             }
 
-            return result.ToString().ToLowerInvariant();
+            var formattedKey = result.ToString().ToLowerInvariant();
+            return formattedKey;
         }
 
         private string GenerateQrCodeUri(string email, string unformattedKey)
         {
-            return string.Format(
+            var url = string.Format(
                 CultureInfo.InvariantCulture,
                 AuthenticatorUriFormat,
                 _urlEncoder.Encode(Strings.AssemblyName),
                 _urlEncoder.Encode(email),
                 unformattedKey);
+            return url;
         }
     }
 }
