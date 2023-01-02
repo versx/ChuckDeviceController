@@ -19,17 +19,11 @@ using ChuckDeviceController.Geometry.Extensions;
 [Table("pokemon")]
 public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, IEquatable<Pokemon>
 {
-    #region Constants
-
-    public const uint DittoPokemonId = (ushort)HoloPokemonId.Ditto; // 132
-    public const ushort DittoTransformFastMove = (ushort)HoloPokemonMove.TransformFast; // 242
-    public const ushort DittoStruggleChargeMove = (ushort)HoloPokemonMove.Struggle; // 133
-    public const uint WeatherBoostMinLevel = 6;
-    public const uint WeatherBoostMinIvStat = 4;
-
-    #endregion
+    #region Variables
 
     private readonly DittoDetector _dittoDetector;
+
+    #endregion
 
     #region Properties
 
@@ -558,7 +552,7 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
 
             if (oldPokemon.PokemonId != PokemonId)
             {
-                if (oldPokemon.PokemonId != DittoPokemonId)
+                if (oldPokemon.PokemonId != DittoDetector.DittoPokemonId)
                 {
                     Console.WriteLine($"Pokemon {Id} changed from {oldPokemon.PokemonId} to {PokemonId}");
                 }
@@ -668,7 +662,8 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
                 HasIvChanges = true;
             }
 
-            if ((oldPokemon?.PokemonId ?? 0) == DittoPokemonId && PokemonId != DittoPokemonId)
+            if ((oldPokemon?.PokemonId ?? 0) == DittoDetector.DittoPokemonId &&
+                PokemonId != DittoDetector.DittoPokemonId)
             {
                 Console.WriteLine($"Pokemon {Id} Ditto changed from {oldPokemon?.PokemonId} to {PokemonId}");
             }
