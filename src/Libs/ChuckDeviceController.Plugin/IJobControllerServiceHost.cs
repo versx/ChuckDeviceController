@@ -21,7 +21,7 @@ public interface IJobControllerServiceHost : IInstanceServiceHost
     IReadOnlyDictionary<string, IJobController> Instances { get; }
 
     /// <summary>
-    /// Gets a list of all registered custom job controller instance types.
+    /// Gets a dictionary of all registered custom job controller instance types.
     /// </summary>
     //IReadOnlyList<string> CustomInstanceTypes { get; }
     IReadOnlyDictionary<string, GeofenceType> CustomInstanceTypes { get; }

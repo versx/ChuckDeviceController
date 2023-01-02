@@ -1,7 +1,7 @@
 ﻿namespace FindyJumpyPlugin.JobControllers;
 
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Logging;
 
 using ChuckDeviceController.Common;
 using ChuckDeviceController.Common.Jobs;
@@ -23,7 +23,8 @@ public class FindyJobController : IJobController, IJobControllerCoordinates, ISc
 
     private readonly IDatabaseHost _dbHost;
     private readonly IGeofenceServiceHost _geofenceHost;
-    private readonly ILoggingHost _loggingHost;
+    //private readonly ILoggingHost _loggingHost;
+    private readonly ILogger<FindyJobController> _logger;
 
     private readonly object _tthLock = new();
     private readonly IMemoryCache _tthCache;
@@ -61,7 +62,13 @@ public class FindyJobController : IJobController, IJobControllerCoordinates, ISc
         List<IMultiPolygon> multiPolygons,
         IDatabaseHost dbHost,
         IGeofenceServiceHost geofenceHost,
-        ILoggingHost loggingHost)
+        //ILoggingHost loggingHost,
+        //ILoggerProvider loggerProvider,
+        //ILoggerFactory logger,
+        //ILogger logger2,
+        //ILogger<IJobController> logger2,
+        ILogger<FindyJobController> logger,
+        IMemoryCache memCache)
     {
         Name = instance.Name;
         MinimumLevel = instance.MinimumLevel;
@@ -74,9 +81,11 @@ public class FindyJobController : IJobController, IJobControllerCoordinates, ISc
 
         _dbHost = dbHost;
         _geofenceHost = geofenceHost;
-        _loggingHost = loggingHost;
-
-        _tthCache = new MemoryCache(Options.Create(new MemoryCacheOptions()));
+        //_loggingHost = loggingHost;
+        //_logger = loggerProvider.CreateLogger(nameof(FindyJobController));
+        //_logger = logger.CreateLogger<FindyJobController>();
+        _logger = logger;
+        _tthCache = memCache;
 
         InitFindyCoordinates();
     }
@@ -92,7 +101,7 @@ public class FindyJobController : IJobController, IJobControllerCoordinates, ISc
         {
             var coord = ScanNextCoordinates.Dequeue();
             var scanNextTask = CreateTask(coord);
-            Console.WriteLine($"[{Name}] [{options.Uuid}] Executing ScanNext API job at '{coord}'");
+            _logger.LogDebug($"[{Name}] [{options.Uuid}] Executing ScanNext API job at '{coord}'");
             return await Task.FromResult(scanNextTask);
         }
 
@@ -116,7 +125,7 @@ public class FindyJobController : IJobController, IJobControllerCoordinates, ISc
             newLoc = 0;
         }
 
-        Console.WriteLine($"[{Name}] [{options.Uuid}] TTH - oldLoc={loc:N0} & newLoc={newLoc:N0}/{_tthCoords.Count:N0}");
+        _logger.LogDebug($"[{Name}] [{options.Uuid}] TTH - oldLoc={loc:N0} & newLoc={newLoc:N0}/{_tthCoords.Count:N0}");
 
         _currentDevicesMaxLocation = newLoc;
 
@@ -170,7 +179,7 @@ public class FindyJobController : IJobController, IJobControllerCoordinates, ISc
 
     private void InitFindyCoordinates()
     {
-        Console.WriteLine($"[InitFindyCoordinates] Starting...");
+        _logger.LogTrace($"Starting...");
 
         _lastCountUnknown = _tthCoords.Count;
         lock (_tthLock)
@@ -201,17 +210,17 @@ public class FindyJobController : IJobController, IJobControllerCoordinates, ISc
                 count++;
             }
 
-            Console.WriteLine($"[InitFindyCoordinates] Got {count:N0} points in min/max rectangle with null tth");
-            Console.WriteLine($"[InitFindyCoordinates] Got {tmpCoords.Count:N0} points in geofence(s) with null tth");
+            _logger.LogDebug("Got {count:N0} points in min/max rectangle with null tth", count);
+            _logger.LogDebug("Got {Count:N0} points in geofence(s) with null tth", tmpCoords.Count);
 
             if (count == 0)
             {
-                Console.WriteLine($"[InitFindyCoordinates] Got {count:N0} points in min/max rectangle with null tth");
+                _logger.LogDebug($"Got {count:N0} points in min/max rectangle with null tth");
             }
 
             if (!tmpCoords.Any())
             {
-                Console.WriteLine($"[InitFindyCoordinates] Got {tmpCoords.Count:N0} points in geofence(s) with null tth");
+                _logger.LogDebug($"Got {tmpCoords.Count:N0} points in geofence(s) with null tth");
             }
 
             // Sort the array, so 0-3600 sec in order

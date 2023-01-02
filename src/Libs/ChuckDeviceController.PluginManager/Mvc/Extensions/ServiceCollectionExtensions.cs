@@ -119,6 +119,7 @@ public static class ServiceCollectionExtensions
 
     public static object? CreatePluginInstance(this Type pluginType, IReadOnlyDictionary<Type, object>? sharedServices = null)
     {
+        // TODO: Revise/consolidate extensions
         object? instance;
         if (!(sharedServices?.Any() ?? false))
         {
@@ -392,8 +393,8 @@ public static class ServiceCollectionExtensions
             var parameters = constructor.GetParameters();
             foreach (var param in parameters)
             {
-                //if (param.ParameterType == typeof(IServiceProvider))
-                //    continue;
+                if (param.ParameterType == typeof(IServiceProvider))
+                    continue;
 
                 var paramClass = GetClassImplementation<object>(services, param.ParameterType);
                 if (paramClass == null)

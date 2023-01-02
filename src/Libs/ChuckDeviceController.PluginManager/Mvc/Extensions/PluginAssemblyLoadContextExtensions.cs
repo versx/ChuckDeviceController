@@ -155,9 +155,9 @@ public static class PluginAssemblyLoadContextExtensions
 
     private static bool IsChuckService(Type type) =>
     (
-        (type?.Namespace?.StartsWith("ChuckDeviceController.") ?? false) ||
-        (type?.Namespace?.StartsWith("ChuckDeviceConfigurator.") ?? false) ||
-        (type?.Namespace?.StartsWith("ChuckDeviceCommunicator.") ?? false)
+        (type.Namespace?.StartsWith("ChuckDeviceController.") ?? false) ||
+        (type.Namespace?.StartsWith("ChuckDeviceConfigurator.") ?? false) ||
+        (type.Namespace?.StartsWith("ChuckDeviceCommunicator.") ?? false)
     );
 
     private static bool Includes(Type type, IEnumerable<Type> includeTypes)

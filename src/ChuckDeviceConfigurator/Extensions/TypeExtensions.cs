@@ -10,6 +10,7 @@ using ChuckDeviceController.Geometry.Models.Abstractions;
 using ChuckDeviceController.Plugin;
 using ChuckDeviceController.PluginManager;
 using ChuckDeviceController.PluginManager.Mvc.Extensions;
+using ChuckDeviceController.PluginManager.Services;
 
 public static class TypeExtensions
 {
@@ -17,13 +18,23 @@ public static class TypeExtensions
         this Type jobControllerType,
         IInstance instance,
         IReadOnlyList<Geofence> geofences,
-        IReadOnlyDictionary<Type, object> sharedServices)
+        IReadOnlyDictionary<Type, object> sharedServices,
+        ServiceProvider serviceProvider)
     {
-        var dict = new Dictionary<Type, object>(sharedServices)
+        // Construct dictionary of plugin specific service parameters
+        var dict = jobControllerType.GetPluginServiceParameters(instance, geofences, sharedServices);
+
+        // Get services not plugin specific of job controller while ignoring any plugin specific parameter types
+        var serviceCollector = new ServiceParametersCollector(serviceProvider, dict.Keys);
+        var services = serviceCollector.GetParameterInstances(jobControllerType);
+        if (services.Any())
         {
-            { typeof(IInstance), instance },
-            { typeof(IReadOnlyList<IGeofence>), geofences }
-        };
+            // Add all services to available services that can be injected to job controller
+            foreach (var (serviceType, service) in services)
+            {
+                dict.Add(serviceType, service);
+            }
+        }
 
         var ctors = jobControllerType.GetPluginConstructors();
         if (!(ctors?.Any() ?? false))
@@ -35,29 +46,6 @@ public static class TypeExtensions
         var constructorInfo = ctors.First();
         var parameters = constructorInfo.GetParameters();
         var list = new List<object>(parameters.Length);
-
-        var attr = jobControllerType.GetCustomAttribute<GeofenceTypeAttribute>(false);
-        if (attr == null)
-        {
-            // Failed to find 'GeofenceTypeAttribute' for job controller
-            return null;
-        }
-
-        switch (attr?.Type)
-        {
-            case GeofenceType.Circle:
-                var circles = geofences.ConvertToCoordinates();
-                dict.Add(typeof(List<ICoordinate>), circles);
-                break;
-            case GeofenceType.Geofence:
-                var (multiPolygons, polyCoords) = geofences.ConvertToMultiPolygons();
-                var coords = polyCoords
-                    .Select(c => c.Select(coord => (ICoordinate)coord).ToList())
-                    .ToList();
-                dict.Add(typeof(List<List<ICoordinate>>), coords);
-                dict.Add(typeof(List<IMultiPolygon>), multiPolygons);
-                break;
-        }
 
         // Loop the sonstructor's parameters to see which host type handlers
         // to provide it when we instantiate a new instance.
@@ -72,6 +60,47 @@ public static class TypeExtensions
 
         var args = list.ToArray();
         return args;
+    }
+
+    public static Dictionary<Type, object> GetPluginServiceParameters(
+        this Type jobControllerType,
+        IInstance instance,
+        IReadOnlyList<Geofence> geofences,
+        IReadOnlyDictionary<Type, object> sharedServices)
+    {
+        var dict = new Dictionary<Type, object>(sharedServices)
+        {
+            { typeof(IInstance), instance },
+            { typeof(IReadOnlyList<IGeofence>), geofences }
+        };
+
+        var attr = jobControllerType.GetCustomAttribute<GeofenceTypeAttribute>(false);
+        if (attr == null)
+        {
+            // Failed to find 'GeofenceTypeAttribute' for job controller
+            // Return dictionary of plugin services
+            return dict;
+        }
+
+        switch (attr?.Type)
+        {
+            case GeofenceType.Circle:
+                // Add list of coordinates to available parameters list
+                var circles = geofences.ConvertToCoordinates();
+                dict.Add(typeof(List<ICoordinate>), circles);
+                break;
+            case GeofenceType.Geofence:
+                // Add list of geofence coordinates to available parameters list
+                var (multiPolygons, polyCoords) = geofences.ConvertToMultiPolygons();
+                var coords = polyCoords
+                    .Select(c => c.Select(coord => (ICoordinate)coord).ToList())
+                    .ToList();
+                dict.Add(typeof(List<List<ICoordinate>>), coords);
+                dict.Add(typeof(List<IMultiPolygon>), multiPolygons);
+                break;
+        }
+
+        return dict;
     }
 
     /// <summary>

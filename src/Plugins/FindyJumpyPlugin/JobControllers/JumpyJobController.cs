@@ -1,7 +1,7 @@
 ﻿namespace FindyJumpyPlugin.JobControllers;
 
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Logging;
 
 using ChuckDeviceController.Common;
 using ChuckDeviceController.Common.Jobs;
@@ -33,9 +33,10 @@ public class JumpyJobController : IJobController, IJobControllerCoordinates, ISc
 
     #region Variables
 
+    private readonly ILogger<JumpyJobController> _logger;
     private readonly IDatabaseHost _dbHost;
     private readonly IGeofenceServiceHost _geofenceHost;
-    private readonly ILoggingHost _loggingHost;
+    //private readonly ILoggingHost _loggingHost;
 
     private readonly object _pokemonLock = new();
     private readonly IMemoryCache _pokemonCache;
@@ -75,7 +76,9 @@ public class JumpyJobController : IJobController, IJobControllerCoordinates, ISc
         List<IMultiPolygon> multiPolygons,
         IDatabaseHost dbHost,
         IGeofenceServiceHost geofenceHost,
-        ILoggingHost loggingHost)
+        //ILoggingHost loggingHost,
+        ILogger<JumpyJobController> logger,
+        IMemoryCache memCache)
     {
         Name = instance.Name;
         MinimumLevel = instance.MinimumLevel;
@@ -88,9 +91,10 @@ public class JumpyJobController : IJobController, IJobControllerCoordinates, ISc
 
         _dbHost = dbHost;
         _geofenceHost = geofenceHost;
-        _loggingHost = loggingHost;
-
-        _pokemonCache = new MemoryCache(Options.Create(new MemoryCacheOptions()));
+        //_loggingHost = loggingHost;
+        //_pokemonCache = new MemoryCache(Options.Create(new MemoryCacheOptions()));
+        _logger = logger;
+        _pokemonCache = memCache;
 
         InitJumpyCoordinates();
     }
@@ -106,7 +110,7 @@ public class JumpyJobController : IJobController, IJobControllerCoordinates, ISc
         {
             var coord = ScanNextCoordinates.Dequeue();
             var scanNextTask = CreateTask(coord);
-            Console.WriteLine($"[{Name}] [{options.Uuid}] Executing ScanNext API job at '{coord}'");
+            _logger.LogDebug($"[{Name}] [{options.Uuid}] Executing ScanNext API job at '{coord}'");
             return await Task.FromResult(scanNextTask);
         }
 
@@ -127,7 +131,7 @@ public class JumpyJobController : IJobController, IJobControllerCoordinates, ISc
             var newLoc = GetNextScanLocation(curSecInHour, loc);
             _firstRun = false;
 
-            Console.WriteLine($"[{Name}] [{options.Uuid}] Pokemon - Instance: {Name} - oldLoc={loc:N0} & newLoc={newLoc:N0}/{_pokemonCoords.Count / 2:N0}");
+            _logger.LogDebug($"[{Name}] [{options.Uuid}] Pokemon - Instance: {Name} - oldLoc={loc:N0} & newLoc={newLoc:N0}/{_pokemonCoords.Count / 2:N0}");
 
             var currentCoord = new JumpyCoord
             {
@@ -181,7 +185,7 @@ public class JumpyJobController : IJobController, IJobControllerCoordinates, ISc
 
     private void InitJumpyCoordinates()
     {
-        Console.WriteLine($"[InitJumpyCoordinates] Starting...");
+        _logger.LogTrace($"Starting...");
 
         lock (_pokemonLock)
         {
@@ -226,8 +230,8 @@ public class JumpyJobController : IJobController, IJobControllerCoordinates, ISc
                 count++;
             }
 
-            Console.WriteLine($"[InitJumpyCoordinates] Got {count:N0} spawnpoints in min/max rectangle");
-            Console.WriteLine($"[InitJumpyCoordinates] Got {tmpCoords.Count:N0} spawnpoints in geofence(s)");
+            _logger.LogDebug($"Got {count:N0} spawnpoints in min/max rectangle");
+            _logger.LogDebug($"Got {tmpCoords.Count:N0} spawnpoints in geofence(s)");
 
             // Sort the array, so 0-3600 sec in order
             _pokemonCoords = tmpCoords;
@@ -268,7 +272,7 @@ public class JumpyJobController : IJobController, IJobControllerCoordinates, ISc
         var loc = ++currentLocation;
         if (loc > countCoords)
         {
-            Console.WriteLine($"[GetNextScanLocation] Reached end of data, resetting back to zero");
+            _logger.LogDebug($"Reached end of data, resetting back to zero");
             _lastLastCompletedTime = _lastCompletedTime;
             _lastCompletedTime = DateTime.UtcNow.ToTotalSeconds();
             return 0;
@@ -289,7 +293,7 @@ public class JumpyJobController : IJobController, IJobControllerCoordinates, ISc
                 }
                 else
                 {
-                    Console.WriteLine($"[GetNextScanLocation] No zero location, unknown error occurred...");
+                    _logger.LogDebug($"No starting location, unknown error occurred...");
                 }
             }
             nextCoord = _pokemonCoords[loc];
@@ -297,7 +301,7 @@ public class JumpyJobController : IJobController, IJobControllerCoordinates, ISc
 
         var spawnSeconds = nextCoord.SpawnSeconds;
         var (minTime, maxTime) = spawnSeconds.GetOffsetsForSpawnTimer();
-        Console.WriteLine($"[GetNextScanLocation] minTime={minTime} & curTime={curTime} & maxTime={maxTime}");
+        _logger.LogDebug($"minTime={minTime} & curTime={curTime} & maxTime={maxTime}");
 
         var topOfHour = minTime < 0;
         if (topOfHour)
@@ -311,19 +315,19 @@ public class JumpyJobController : IJobController, IJobControllerCoordinates, ISc
         if (curTime >= minTime && curTime <= maxTime)
         {
             // Good to jump as between to key points for current time
-            Console.WriteLine($"[GetNextScanLocation] a1: curTime between min and max, moving standard 1 forward");
+            _logger.LogDebug($"a1: curTime between min and max, moving standard 1 forward");
 
             // Test if we are getting too close to the minTime
             if (curTime - minTime < BufferTimeDistance)
             {
-                Console.WriteLine($"[GetNextScanLocation] a2: Sleeping 10 seconds as too close to minTime, in normal time");
+                _logger.LogDebug($"a2: Sleeping 10 seconds as too close to minTime, in normal time");
                 Thread.Sleep(SleepTimeAutoPokemon * 1000);
             }
         }
         else if (curTime < minTime)
         {
             // Spawn is past time to visit, need to find a good one to jump to
-            Console.WriteLine($"[GetNextScanLocation] b1: curTime={curTime} > maxTime, iterate");
+            _logger.LogDebug($"b1: curTime={curTime} > maxTime, iterate");
 
             var found = false;
             var start = loc;
@@ -342,7 +346,7 @@ public class JumpyJobController : IJobController, IJobControllerCoordinates, ISc
                     var (mnTime, mxTime) = spawnSeconds.GetOffsetsForSpawnTimer();
                     if (curTime >= mnTime && curTime <= mnTime + 120ul)
                     {
-                        Console.WriteLine($"[GetNextScanLocation] b2: mnTime={mnTime} & curTime={curTime} & & mxTime={mxTime}");
+                        _logger.LogDebug($"b2: mnTime={mnTime} & curTime={curTime} & & mxTime={mxTime}");
                         found = true;
                         loc = i;
                         break;
@@ -351,7 +355,7 @@ public class JumpyJobController : IJobController, IJobControllerCoordinates, ISc
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[GetNextScanLocation] Error: {ex}");
+                _logger.LogError($"Error: {ex}");
             }
 
             if (!found)
@@ -369,8 +373,8 @@ public class JumpyJobController : IJobController, IJobControllerCoordinates, ISc
                     var (mnTime, mxTime) = spawnSeconds.GetOffsetsForSpawnTimer();
                     if (curTime >= mnTime + 30ul && curTime < mnTime + 120ul)
                     {
-                        Console.WriteLine($"[GetNextScanLocation] b3: iterate backwards solution={found}");
-                        Console.WriteLine($"[GetNextScanLocation] b4: mnTime={mnTime} & curTime={curTime} & mxTime={mxTime}");
+                        _logger.LogDebug($"b3: iterate backwards solution={found}");
+                        _logger.LogDebug($"b4: mnTime={mnTime} & curTime={curTime} & mxTime={mxTime}");
                         found = true;
                         loc = i;
                         break;
@@ -380,7 +384,7 @@ public class JumpyJobController : IJobController, IJobControllerCoordinates, ISc
         }
         else if (curTime < minTime && !_firstRun)
         {
-            Console.WriteLine($"[GetNextScanLocation] c1: Sleeping 20 seconds");
+            _logger.LogDebug($"c1: Sleeping 20 seconds");
             Thread.Sleep(20 * 1000);
 
             loc--;
@@ -388,7 +392,7 @@ public class JumpyJobController : IJobController, IJobControllerCoordinates, ISc
         else if (curTime > maxTime)
         {
             // Spawn is past time to visit, need to find a good one to jump to
-            Console.WriteLine($"[GetNextScanLocation] d1: curTime={curTime} > maxTime={maxTime}, iterate");
+            Console.WriteLine($"d1: curTime={curTime} > maxTime={maxTime}, iterate");
 
             var found = false;
             var start = loc;
@@ -405,8 +409,8 @@ public class JumpyJobController : IJobController, IJobControllerCoordinates, ISc
                 var (mnTime, mxTime) = spawnSeconds.GetOffsetsForSpawnTimer();
                 if (curTime >= mnTime + 30ul && curTime <= mnTime + 120ul)
                 {
-                    Console.WriteLine($"[GetNextScanLocation] d2: iterate forward solution={found}");
-                    Console.WriteLine($"[GetNextScanLocation] d3: mnTime={mnTime} & curTime={curTime} & mxTime={mxTime}");
+                    _logger.LogDebug($"d2: iterate forward solution={found}");
+                    _logger.LogDebug($"d3: mnTime={mnTime} & curTime={curTime} & mxTime={mxTime}");
                     found = true;
                     loc = i;
                     break;
@@ -428,8 +432,8 @@ public class JumpyJobController : IJobController, IJobControllerCoordinates, ISc
 
                     if (curTime >= mnTime + 30ul && curTime <= mnTime + 120ul)
                     {
-                        Console.WriteLine($"[GetNextScanLocation] d4: iterate backwards solution={found}");
-                        Console.WriteLine($"[GetNextScanLocation] d5: mnTime={mnTime} & curTime={curTime} & mxTime={mxTime}");
+                        _logger.LogDebug($"d4: iterate backwards solution={found}");
+                        _logger.LogDebug($"d5: mnTime={mnTime} & curTime={curTime} & mxTime={mxTime}");
                         found = true;
                         loc = i;
                         break;
@@ -439,7 +443,7 @@ public class JumpyJobController : IJobController, IJobControllerCoordinates, ISc
         }
         else
         {
-            Console.WriteLine($"[GetNextScanLocation] e1: Criteria fail with curTime={curTime} & curLocation={currentLocation} & despawn={spawnSeconds}");
+            _logger.LogDebug($"e1: Criteria fail with curTime={curTime} & curLocation={currentLocation} & despawn={spawnSeconds}");
             // Go back to zero and iterate somewhere useful
             loc = 0;
         }

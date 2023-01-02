@@ -47,6 +47,7 @@ public class JobControllerService : IJobControllerService
     private readonly IAssignmentControllerService _assignmentService = null!;
     private readonly IRoutingHost _routeGenerator;
     private readonly IRouteCalculator _routeCalculator;
+    private ServiceProvider _serviceProvider = null!;
 
     private static readonly ConcurrentDictionary<string, IDevice> _devices = new();
     private static readonly ConcurrentDictionary<string, IJobController> _instances = new();
@@ -67,24 +68,13 @@ public class JobControllerService : IJobControllerService
     public IReadOnlyDictionary<string, IJobController> Instances => _instances;
 
     /// <summary>
-    /// Gets a list of all registered custom job controller instance types.
+    /// Gets a dictionary of all registered custom job controller instance types.
     /// </summary>
-    //public IReadOnlyList<string> CustomInstanceTypes => _pluginInstances.Keys.ToList();
-    public IReadOnlyDictionary<string, GeofenceType> CustomInstanceTypes
-    {
-        get
-        {
-            var custom = _pluginInstances.ToDictionary(x => x.Key, pair =>
-            {
-                var attr = pair.Value.GetCustomAttribute<GeofenceTypeAttribute>();
-                var geofenceType = attr?.Type ?? GeofenceType.Geofence;
-                return geofenceType;
-            });
-            return custom;
-        }
-    }
+    public IReadOnlyDictionary<string, GeofenceType> CustomInstanceTypes =>
+        _pluginInstances.ToDictionary(x => x.Key, pair =>
+            pair.Value.GetCustomAttribute<GeofenceTypeAttribute>()?.Type ?? GeofenceType.Geofence);
 
-    public IServiceProvider Services { get; internal set; }
+    public IServiceProvider Services { get; }
 
     #endregion
 
@@ -122,8 +112,10 @@ public class JobControllerService : IJobControllerService
 
     #region Public Methods
 
-    public async void LoadDevices()
+    public async void LoadDevices(ServiceProvider serviceProvider)
     {
+        _serviceProvider = serviceProvider;
+
         using var scope = Services.CreateScope();
         using var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
@@ -146,12 +138,14 @@ public class JobControllerService : IJobControllerService
                 _logger.LogInformation($"Starting instance {instance.Name} ({instance.Type})");
                 await AddInstanceAsync(instance);
 
-                var assignedDevices = devices.Where(device => string.Compare(device.InstanceName, instance.Name, true) == 0);
-                var deviceCount = assignedDevices.Count();
+                var deviceCount = devices.Count(device => device.InstanceName == instance.Name);
                 var suffix = deviceCount > 0
                     ? $", now loading {deviceCount:N0} assigned devices."
                     : "";
-                _logger.LogInformation($"Started instance {instance.Name} ({instance.Type}){suffix}");
+                var instanceType = instance.Type == InstanceType.Custom
+                    ? $"{instance.Type} - {instance.Data?.CustomInstanceType}"
+                    : instance.Type.ToString();
+                _logger.LogInformation($"Started instance {instance.Name} ({instanceType}){suffix}");
             });
 
             if (!ThreadPool.QueueUserWorkItem(callback))
@@ -340,7 +334,7 @@ public class JobControllerService : IJobControllerService
                     _logger.LogError($"[{instance.Name}] Plugin job controller instance type is not set, unable to initialize job controller instance");
                     return;
                 }
-                jobController = CreatePluginJobController(customInstanceType, instance, geofences);
+                jobController = CreatePluginJobController(customInstanceType, instance, geofences, _serviceProvider);
                 break;
         }
 
@@ -835,7 +829,7 @@ public class JobControllerService : IJobControllerService
         return jobController;
     }
 
-    private static IJobController CreatePluginJobController(string customInstanceType, IInstance instance, IReadOnlyList<Geofence> geofences)
+    private static IJobController CreatePluginJobController(string customInstanceType, IInstance instance, IReadOnlyList<Geofence> geofences, ServiceProvider services)
     {
         if (!_pluginInstances.ContainsKey(customInstanceType))
         {
@@ -851,7 +845,9 @@ public class JobControllerService : IJobControllerService
             var args = jobControllerType.GetJobControllerConstructorArgs(
                 instance,
                 geofences,
-                PluginManager.Instance.Options.SharedServiceHosts);
+                PluginManager.Instance.Options.SharedServiceHosts,
+                services
+            );
             if (args?.Any() ?? false)
             {
                 jobControllerInstance = Activator.CreateInstance(jobControllerType, args);

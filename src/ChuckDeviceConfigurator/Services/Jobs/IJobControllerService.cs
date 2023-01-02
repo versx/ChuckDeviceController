@@ -14,7 +14,11 @@ public interface IJobControllerService : IJobControllerServiceHost, IQueueManage
 {
     #region Public
 
-    void LoadDevices();
+    /// <summary>
+    /// Load devices from database and cache internally.
+    /// </summary>
+    /// <param name="serviceProvider">Service provider instance.</param>
+    void LoadDevices(ServiceProvider serviceProvider);
 
     /// <summary>
     /// Starts the <see cref="IJobControllerService"/>.

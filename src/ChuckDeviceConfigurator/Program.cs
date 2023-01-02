@@ -311,7 +311,7 @@ var jobControllerService = serviceProvider.GetRequiredService<IJobControllerServ
 builder.Services.AddSingleton<IJobControllerServiceHost>(jobControllerService);
 builder.Services.AddSingleton<IInstanceServiceHost>(jobControllerService);
 // Load all devices
-jobControllerService.LoadDevices();
+jobControllerService.LoadDevices(serviceProvider);
 
 // TODO: Use builder.Services registered instead of 'sharedServiceHosts' - Fix issue with IDbContextFactory and eventually ILogger<T> parameters (just make static and use logger factory instead)
 var sharedServiceHosts = new Dictionary<Type, object>
