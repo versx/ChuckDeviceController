@@ -48,13 +48,13 @@
                     @Html.DisplayFor(modelItem => item.Name)
                 </th>
                 <td>
-                    @Utils.FormatInstanceType(item.Type)
+                    @Utils.FormatInstanceType(item.Type, item!.Data)
                 </td>
                 <td>
-                    @Html.Raw(item.Status)
+                    @Html.Raw(item!.Status)
                 </td>
                 <td>
-                    @item.MinimumLevel-@item.MaximumLevel
+                    @item!.MinimumLevel-@item.MaximumLevel
                 </td>
                 <td>
                     @string.Join(", ", item.Geofences)

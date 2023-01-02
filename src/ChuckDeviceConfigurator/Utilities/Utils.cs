@@ -74,7 +74,7 @@ public static partial class Utils
         return value;
     }
 
-    public static string FormatInstanceType(InstanceType instanceType)
+    public static string FormatInstanceType(InstanceType instanceType, InstanceData? data)
     {
         return instanceType switch
         {
@@ -82,7 +82,7 @@ public static partial class Utils
             InstanceType.Bootstrap => "Bootstrap",
             InstanceType.CirclePokemon => "Circle Pokemon",
             InstanceType.CircleRaid => "Circle Raid",
-            InstanceType.Custom => "Custom",
+            InstanceType.Custom => "Custom" + (data == null ? "" : $" ({data.CustomInstanceType})"),
             InstanceType.DynamicRoute => "Dynamic Route",
             InstanceType.FindTth => "Find TTH",
             InstanceType.Leveling => "Leveling",
