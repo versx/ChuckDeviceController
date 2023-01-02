@@ -21,7 +21,7 @@
     public class DeviceControlController : ControllerBase
     {
         private const string ContentTypeJson = "application/json";
-        private const ushort LastUsedM = 1800; // 30 minutes
+        private const ushort AccountLastUsedM = 1800; // 30 minutes
 
         #region Variables
 
@@ -147,8 +147,6 @@
 
                 await _uow.Devices.AddAsync(device);
                 await _uow.CommitAsync();
-                //await _context.Devices.AddAsync(device);
-                //await _context.SaveChangesAsync();
                 _memCache.Set(uuid, device);
             }
 
@@ -174,15 +172,17 @@
 
         private async Task<DeviceResponse> HandleHeartbeatRequestAsync(Device? device)
         {
-            if (device is not null)
+            if (device is null)
             {
-                var ipAddr = Request.GetIPAddress();
-                if (device.LastHost != ipAddr)
-                {
-                    device.LastHost = ipAddr;
-                    //await SetEntityAsync(device.Uuid, device);
-                    await _uow.CommitAsync();
-                }
+                return CreateErrorResponse("Failed to handle heartbeat, provided device was null");
+            }
+
+            var ipAddr = Request.GetIPAddress();
+            if (device.LastHost != ipAddr)
+            {
+                device.LastHost = ipAddr;
+                await _uow.Devices.UpdateAsync(device);
+                await _uow.CommitAsync();
             }
             return new DeviceResponse
             {
@@ -542,7 +542,7 @@
                 string.IsNullOrEmpty(x.Failed) &&
                 x.Spins < maxSpins &&
                 x.LastEncounterTime == null &&
-                (x.LastUsedTimestamp == null || (x.LastUsedTimestamp > 0 && now - x.LastUsedTimestamp >= LastUsedM)) &&
+                (x.LastUsedTimestamp == null || (x.LastUsedTimestamp > 0 && now - x.LastUsedTimestamp >= AccountLastUsedM)) &&
                 x.FirstWarningTimestamp == null &&
                 (x.HasWarn == null || !(x.HasWarn ?? false)) &&
                 (x.WarnExpireTimestamp == null || x.WarnExpireTimestamp == 0) &&
