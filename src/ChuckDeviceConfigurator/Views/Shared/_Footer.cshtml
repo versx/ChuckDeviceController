@@ -1,5 +1,5 @@
 ﻿@{
-    var sw = Context.Items["PageLoadTime_Stopwatch"] as System.Diagnostics.Stopwatch;
+    var sw = Context.Items["PageLoadTime"] as System.Diagnostics.Stopwatch;
     sw?.Stop();
     var precision = 4;
     var totalSeconds = Math.Round(sw?.Elapsed.TotalSeconds ?? 0, precision).ToString($"F{precision}");

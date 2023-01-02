@@ -15,7 +15,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ChuckDeviceConfigurator - @ViewData["Title"]</title>
+    <title>@Strings.AssemblyName - @ViewData["Title"]</title>
 
     <link rel="icon" href="~/favicons/chuck.ico" type="image/x-icon" asp-append-version="true" />
     <link rel="apple-touch-icon" href="~/favicons/chuck.gif" sizes="180x180">
@@ -169,11 +169,7 @@
     }
 
     function toggleDarkMode() {
-        if (document.body.classList.contains('theme-dark')) {
-            document.body.classList.remove('theme-dark');
-        } else {
-            document.body.classList.add('theme-dark');
-        }
+        document.body.classList.toggle('theme-dark');
         localStorage.setItem('darkMode', document.body.classList.contains('theme-dark'));
     }
 
