@@ -50,7 +50,6 @@ public class SendGridEmailSender : IEmailSender
         // See https://sendgrid.com/docs/User_Guide/Settings/tracking.html
         msg.SetClickTracking(enable: false, enableText: false);
 
-        //var json = msg.Serialize();
         //msg.SetFooterSetting(true, "html", "text");
         //msg.SetGoogleAnalytics(true, "");
         // TODO: Add GoogleAnalytics config option

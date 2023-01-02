@@ -596,7 +596,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
 
                 Pokemon? oldPokemon = null;
                 //var oldPokemon = await EntityRepository.GetEntityAsync<string, Pokemon>(connection, pokemon.Id, _memCache, skipCache: true, setCache: false);
-                await pokemon.UpdateAsync(oldPokemon, _memCache, updateIv: false);
+                await pokemon.UpdateAsync(oldPokemon, _memCache, updateIv: false, setPvpRankings: new Action<Pokemon>(SetPvpRankings));
                 AddEntity(SqlQueryType.PokemonIgnoreOnMerge, pokemon);
                 ProtoDataStatistics.Instance.TotalWildPokemonProcessed++;
 
@@ -604,20 +604,6 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
                 {
                     webhooks.Add(pokemon);
                 }
-
-                // NOTE: Used for testing Pokemon database event triggers
-                //foreach (var pokemon in pokemonToUpsert)
-                //{
-                //    if (context.Pokemon.Any(pkmn => pkmn.Id == pokemon.Id))
-                //    {
-                //        context.Update(pokemon);
-                //    }
-                //    else
-                //    {
-                //        await context.AddAsync(pokemon);
-                //    }
-                //}
-                //await context.SaveChangesAsync();
             }
             catch (Exception ex)
             {
@@ -679,7 +665,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
 
                 Pokemon? oldPokemon = null;
                 //var oldPokemon = await EntityRepository.GetEntityAsync<string, Pokemon>(connection, pokemon.Id, _memCache, skipCache: true, setCache: false);
-                await pokemon.UpdateAsync(oldPokemon, _memCache, updateIv: false);
+                await pokemon.UpdateAsync(oldPokemon, _memCache, updateIv: false, setPvpRankings: new Action<Pokemon>(SetPvpRankings));
                 AddEntity(SqlQueryType.PokemonIgnoreOnMerge, pokemon);
                 ProtoDataStatistics.Instance.TotalNearbyPokemonProcessed++;
 
@@ -759,7 +745,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
                 pokemon.AddDiskEncounter(cachedDiskEncounter, username);
 
                 var oldPokemon = await EntityRepository.GetEntityAsync<string, Pokemon>(connection, pokemon.Id, _memCache, skipCache: true, setCache: false);
-                await pokemon.UpdateAsync(oldPokemon, _memCache, updateIv: true);
+                await pokemon.UpdateAsync(oldPokemon, _memCache, updateIv: true, setPvpRankings: new Action<Pokemon>(SetPvpRankings));
                 AddEntity(SqlQueryType.PokemonOnMergeUpdate, pokemon);
                 ProtoDataStatistics.Instance.TotalMapPokemonProcessed++;
 
@@ -1241,9 +1227,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
                     pokemon = Pokemon.ParsePokemonFromWild(data.Pokemon, cellId.Id, username, isEvent);
                     //isNew = true;
                 }
-                pokemon.AddEncounter(data, username);
-
-                SetPvpRankings(pokemon);
+                pokemon.AddEncounter(data, username, isEvent: false, setPvpRankings: new Action<Pokemon>(SetPvpRankings));
 
                 var spawnpoint = await pokemon.ParseSpawnpointAsync(connection, _memCache, data.Pokemon.TimeTillHiddenMs, timestampMs);
                 if (spawnpoint != null)
@@ -1320,11 +1304,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
                     continue;
                 }
 
-                pokemon.AddDiskEncounter(data, username);
-                if (pokemon.HasIvChanges)
-                {
-                    SetPvpRankings(pokemon);
-                }
+                pokemon.AddDiskEncounter(data, username, setPvpRankings: new Action<Pokemon>(SetPvpRankings));
 
                 //var oldPokemon = await EntityRepository.GetEntityAsync<string, Pokemon>(connection, pokemon.Id, _memCache);
                 //await pokemon.UpdateAsync(oldPokemon, _memCache, updateIv: true);

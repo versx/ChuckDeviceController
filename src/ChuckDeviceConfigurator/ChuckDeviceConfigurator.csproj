@@ -123,6 +123,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Watch Remove="Views\Shared\DisplayTemplates\Sidebar.cshtml" />
     <Watch Remove="Views\Shared\ExternalLoginProviders.cshtml" />
     <Watch Remove="Views\Shared\_AccountGroupSelector.cshtml" />
     <Watch Remove="Views\Shared\_NotificationsPartial.cshtml" />
@@ -142,6 +143,7 @@
     <None Include="Views\Device\_NotificationsPartial.cshtml" />
     <None Include="Views\Account\_AccountGroupSelector.cshtml" />
     <None Include="Areas\Identity\Pages\Shared\ExternalLoginProviders.cshtml" />
+    <None Include="Views\Shared\DisplayTemplates\Sidebar.cshtml" />
   </ItemGroup>
 
   <ItemGroup>

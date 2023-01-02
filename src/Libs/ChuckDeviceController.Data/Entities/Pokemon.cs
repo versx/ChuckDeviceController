@@ -11,6 +11,7 @@ using POGOProtos.Rpc;
 using ChuckDeviceController.Caching.Memory;
 using ChuckDeviceController.Data.Abstractions;
 using ChuckDeviceController.Data.Common;
+using ChuckDeviceController.Data.Extensions;
 using ChuckDeviceController.Data.Repositories;
 using ChuckDeviceController.Extensions;
 using ChuckDeviceController.Geometry.Extensions;
@@ -322,7 +323,7 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
 
     #region Public Methods
 
-    public void AddEncounter(EncounterOutProto encounterData, string username)
+    public void AddEncounter(EncounterOutProto encounterData, string username, bool isEvent, Action<Pokemon>? setPvpRankings = null)
     {
         var pokemonId = Convert.ToUInt32(encounterData.Pokemon.Pokemon.PokemonId);
         var cp = Convert.ToUInt16(encounterData.Pokemon.Pokemon.Cp);
@@ -358,6 +359,11 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
             HasIvChanges = true;
         }
 
+        var oldCp = CP;
+        var oldPokemonId = PokemonId;
+        var oldWeather = Weather;
+
+        IsEvent = isEvent;
         PokemonId = pokemonId;
         CP = cp;
         Move1 = move1;
@@ -377,10 +383,17 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
         IsShiny = encounterData.Pokemon.Pokemon.PokemonDisplay.Shiny;
         Username = username;
 
-        if (HasIvChanges)
+        if (CellId == 0)
+        {
+            var coord = this.ToCoordinate();
+            var centerCoord = coord.S2CellIdFromCoordinate();
+            CellId = centerCoord.Id;
+        }
+
+        // TODO: if (HasIvChanges)
         {
             // Although capture change values are player specific, set them to the Pokemon
-            // REVIEW: Should remove them eventually though.
+            // REVIEW: Eventually remove capture probability.
             if (encounterData.CaptureProbability != null)
             {
                 Capture1 = encounterData.CaptureProbability.CaptureProbability[0];
@@ -392,14 +405,33 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
             var cpMultiplier = encounterData.Pokemon.Pokemon.CpMultiplier;
             Level = CalculateLevel(cpMultiplier);
 
-            //IsDitto = IsDittoDisguised(this);
-            IsDitto = _dittoDetector.IsDisguised();
-            if (IsDitto)
+            if (oldCp != CP || oldPokemonId != PokemonId || oldWeather != Weather)
             {
-                // Set default Ditto attributes
-                //SetDittoAttributes(PokemonId, Weather ?? 0, Level ?? 0);
-                _dittoDetector.SetAttributes(PokemonId, Weather ?? 0, Level ?? 0, ClearEncounterDetails);
+                if (IsDitto)
+                {
+                    _dittoDetector.SetAttributes(PokemonId, Weather ?? 0, Level ?? 0, ClearEncounterDetails);
+                }
+                else
+                {
+                    if (_dittoDetector.IsDisguised())
+                    {
+                        Console.WriteLine($"Pokemon {Id} id {PokemonId} disguised as Ditto");
+                        IsDitto = true;
+                        _dittoDetector.SetAttributes(PokemonId, Weather ?? 0, Level ?? 0, ClearEncounterDetails);
+                    }
+                }
+
+                setPvpRankings?.Invoke(this);
             }
+
+            ////IsDitto = IsDittoDisguised(this);
+            //IsDitto = _dittoDetector.IsDisguised();
+            //if (IsDitto)
+            //{
+            //    // Set default Ditto attributes
+            //    //SetDittoAttributes(PokemonId, Weather ?? 0, Level ?? 0);
+            //    _dittoDetector.SetAttributes(PokemonId, Weather ?? 0, Level ?? 0, ClearEncounterDetails);
+            //}
         }
 
         var now = DateTime.UtcNow.ToTotalSeconds();
@@ -409,9 +441,11 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
         SeenType = SeenType.Encounter;
         Updated = now;
         Changed = now;
+
+        // TODO: ParseSpawnpointAsync(null, memCache, 0, now * 1000);
     }
 
-    public void AddDiskEncounter(DiskEncounterOutProto diskEncounterData, string username)
+    public void AddDiskEncounter(DiskEncounterOutProto diskEncounterData, string username, Action<Pokemon>? setPvpRankings = null)
     {
         var pokemonId = Convert.ToUInt32(diskEncounterData.Pokemon.PokemonId);
         var cp = Convert.ToUInt16(diskEncounterData.Pokemon.Cp);
@@ -425,6 +459,7 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
         var costume = Convert.ToUInt16(diskEncounterData.Pokemon.PokemonDisplay.Costume);
         var form = Convert.ToUInt16(diskEncounterData.Pokemon.PokemonDisplay.Form);
         var gender = Convert.ToUInt16(diskEncounterData.Pokemon.PokemonDisplay.Gender);
+        var weather = Convert.ToUInt16(diskEncounterData.Pokemon.PokemonDisplay.WeatherBoostedCondition);
 
         if (pokemonId != PokemonId ||
             cp != CP ||
@@ -437,11 +472,16 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
             StaminaIV != staIv ||
             Costume != Costume ||
             Form != form ||
-            Gender != gender)
+            Gender != gender ||
+            Weather != weather)
         {
             HasChanges = true;
             HasIvChanges = true;
         }
+
+        var oldCp = CP;
+        var oldPokemonId = PokemonId;
+        var oldWeather = Weather;
 
         PokemonId = pokemonId;
         CP = cp;
@@ -473,13 +513,32 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
             var cpMultiplier = diskEncounterData.Pokemon?.CpMultiplier ?? 0;
             Level = CalculateLevel(cpMultiplier);
 
-            //IsDitto = IsDittoDisguised(this);
-            IsDitto = _dittoDetector.IsDisguised();
-            if (IsDitto)
+            if (oldCp != CP || oldPokemonId != PokemonId || oldWeather != Weather)
             {
-                //SetDittoAttributes(PokemonId, Weather ?? 0, Level ?? 0);
-                _dittoDetector.SetAttributes(PokemonId, Weather ?? 0, Level ?? 0, ClearEncounterDetails);
+                if (IsDitto)
+                {
+                    _dittoDetector.SetAttributes(PokemonId, Weather ?? 0, Level ?? 0, ClearEncounterDetails);
+                }
+                else
+                {
+                    if (_dittoDetector.IsDisguised())
+                    {
+                        Console.WriteLine($"Pokemon {Id} id {PokemonId} disguised as Ditto");
+                        IsDitto = true;
+                        _dittoDetector.SetAttributes(PokemonId, Weather ?? 0, Level ?? 0, ClearEncounterDetails);
+                    }
+                }
+
+                setPvpRankings?.Invoke(this);
             }
+
+            ////IsDitto = IsDittoDisguised(this);
+            //IsDitto = _dittoDetector.IsDisguised();
+            //if (IsDitto)
+            //{
+            //    //SetDittoAttributes(PokemonId, Weather ?? 0, Level ?? 0);
+            //    _dittoDetector.SetAttributes(PokemonId, Weather ?? 0, Level ?? 0, ClearEncounterDetails);
+            //}
         }
 
         SeenType = SeenType.LureEncounter;
@@ -487,7 +546,7 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
         Changed = Updated;
     }
 
-    public async Task UpdateAsync(Pokemon? oldPokemon, IMemoryCacheService memCache, bool updateIv = false)
+    public async Task UpdateAsync(Pokemon? oldPokemon, IMemoryCacheService memCache, bool updateIv = false, Action<Pokemon>? setPvpRankings = null)
     {
         bool setIvForWeather;
         var updateIV = updateIv;
@@ -515,7 +574,8 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
                 Capture2 = null;
                 Capture3 = null;
                 updateIV = true;
-                // TODO: SetPvpRankings();
+
+                setPvpRankings?.Invoke(this);
             }
         }
         if (IsEvent && !IsExpireTimestampVerified)
@@ -642,8 +702,10 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
                     _dittoDetector.SetAttributes(PokemonId, oldPokemon.Weather ?? 0, oldPokemon.Level ?? 0, ClearEncounterDetails);
                 }
             }
-            else if ((AttackIV != null && oldPokemon?.AttackIV == null) ||
-                (CP != null && oldPokemon?.CP == null) || HasIvChanges)
+            else if (
+                (AttackIV != null && oldPokemon?.AttackIV == null) ||
+                (CP != null && oldPokemon?.CP == null) ||
+                HasIvChanges)
             {
                 setIvForWeather = false;
                 updateIV = true;
@@ -765,18 +827,18 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
                 return oldSpawnpoint;
             }
 
-                var newSpawnpoint = new Spawnpoint
-                {
-                    Id = spawnId,
-                    Latitude = Latitude,
-                    Longitude = Longitude,
-                    DespawnSecond = null,
-                    LastSeen = EntityConfiguration.Instance.SaveSpawnpointLastSeen ? now : null,
-                    Updated = now,
-                };
-                await newSpawnpoint.UpdateAsync(connection, memCache, update: true, skipLookup: true);
-                return newSpawnpoint;
-            }
+            var newSpawnpoint = new Spawnpoint
+            {
+                Id = spawnId,
+                Latitude = Latitude,
+                Longitude = Longitude,
+                DespawnSecond = null,
+                LastSeen = EntityConfiguration.Instance.SaveSpawnpointLastSeen ? now : null,
+                Updated = now,
+            };
+            await newSpawnpoint.UpdateAsync(connection, memCache, update: true, skipLookup: true);
+            return newSpawnpoint;
+        }
 
         return null;
     }
