@@ -14,7 +14,7 @@
 
 <div>
     <h4>@Utils.GetDeviceStatus(Model?.LastSeen ?? 0) Device '@Model?.Uuid'</h4>
-    <div>
+    <div class="mb-3">
         <a asp-action="ForceAccountSwitch" asp-route-id="@Model?.Uuid" class="btn btn-warning" onclick="return confirm('Are you sure you want to force device \'@Model?.Uuid\' to logout and switch accounts?');">
             <i class="fa-solid fa-repeat"></i>&nbsp;Switch Account
         </a>
@@ -24,6 +24,8 @@
         <a asp-action="Delete" asp-route-id="@Model?.Uuid" class="btn btn-danger">
             <i class="fa-solid fa-trash"></i>&nbsp;Delete
         </a>
+    </div>
+    <div class="mb-3">
         <a href="#" class="btn btn-warning" onclick="restartGame('@Model?.LastHost');">
             <i class="fa-solid fa-power-off"></i>&nbsp;Restart Game
         </a>
