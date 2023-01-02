@@ -15,7 +15,7 @@ using Extensions;
 [StaticFilesLocation(StaticFilesLocation.External, StaticFilesLocation.External)]
 public class RobotsPlugin : IPlugin
 {
-    public const string RobotsRoleName = "RobotCrawlers";
+    public const string RobotsRoleName = "WebCrawlers";
     public const string RobotsRole = $"{nameof(Roles.SuperAdmin)},{nameof(Roles.Admin)},{RobotsRoleName}";
 
     #region Variables

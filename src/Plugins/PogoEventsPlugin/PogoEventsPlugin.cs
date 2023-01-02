@@ -84,7 +84,7 @@ public class PogoEventsPlugin : IPlugin
             Text = "In-Game Events",
             ControllerName = "Event",
             ActionName = "Index",
-            DisplayIndex = 2,
+            DisplayIndex = 3,
             Icon = "fa-solid fa-fw fa-calendar-day",
         };
         await _uiHost.AddSidebarItemAsync(navbarHeader);

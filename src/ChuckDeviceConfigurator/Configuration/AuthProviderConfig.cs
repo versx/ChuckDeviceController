@@ -10,9 +10,9 @@ public class AuthProviderConfig
     private static readonly IReadOnlyDictionary<string, AuthProviderConfig> DefaultAuthProviderIcons =
         new Dictionary<string, AuthProviderConfig>
         {
-            ["Discord"] = new("fa-brands fa-discord fa-align-left social-icon", style: "background: #5865F2; color: #fff;"),
-            ["GitHub"] = new("fa-brands fa-github fa-align-left social-icon", style: "background: #000000; color: #fff;"),
-            ["Google"] = new("fa-brands fa-google fa-align-left social-icon", style: "background: #d24228; color: #fff;"),
+            ["Discord"] = new("Discord", "fa-brands fa-discord fa-align-left social-icon", style: "background: #5865F2; color: #fff;"),
+            ["GitHub"] = new("GitHub", "fa-brands fa-github fa-align-left social-icon", style: "background: #000000; color: #fff;"),
+            ["Google"] = new("Google", "fa-brands fa-google fa-align-left social-icon", style: "background: #d24228; color: #fff;"),
         };
 
     public static readonly IReadOnlyDictionary<string, AuthProviderConfig> AuthProviderIcons = LoadAuthProviderIcons();
@@ -20,6 +20,8 @@ public class AuthProviderConfig
     #endregion
 
     #region Properties
+
+    public string? Name { get; set; }
 
     public string? Icon { get; set; }
 
@@ -35,8 +37,9 @@ public class AuthProviderConfig
     {
     }
 
-    public AuthProviderConfig(string icon, string? className = null, string? style = null)
+    public AuthProviderConfig(string name, string icon, string? className = null, string? style = null)
     {
+        Name = name;
         Icon = icon;
         Class = className ?? string.Empty;
         Style = style ?? string.Empty;
