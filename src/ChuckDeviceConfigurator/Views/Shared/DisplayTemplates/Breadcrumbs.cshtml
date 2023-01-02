@@ -9,42 +9,47 @@
         <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
         @if (ViewData.ContainsKey("Fragment"))
         {
-            if (ViewData.ContainsKey("Id"))
+            if (ViewData.ContainsKey("Controller"))
             {
                 <li class="breadcrumb-item">
-                    <a asp-controller="@ViewData["Controller"]" asp-action="@action" asp-fragment="@ViewData["Fragment"]" asp-route-id="@ViewData["Id"]">
-                        @ViewData["ControllerText"]
-                    </a>
-                </li>
-            }
-            else
-            {
-                <li class="breadcrumb-item">
-                    <a asp-controller="@ViewData["Controller"]" asp-action="@action" asp-fragment="@ViewData["Fragment"]">
-                        @ViewData["ControllerText"]
-                    </a>
+                    @if (ViewData.ContainsKey("Id"))
+                    {
+                        <a asp-controller="@ViewData["Controller"]" asp-action="@action" asp-fragment="@ViewData["Fragment"]" asp-route-id="@ViewData["Id"]">
+                            @ViewData["ControllerText"]
+                        </a>
+                    }
+                    else
+                    {
+                        <a asp-controller="@ViewData["Controller"]" asp-action="@action" asp-fragment="@ViewData["Fragment"]">
+                            @ViewData["ControllerText"]
+                        </a>
+                    }
                 </li>
             }
         }
         else
         {
-            if (ViewData.ContainsKey("Id"))
+            if (ViewData.ContainsKey("Controller"))
             {
                 <li class="breadcrumb-item">
-                    <a asp-controller="@ViewData["Controller"]" asp-action="@action" asp-route-id="@ViewData["Id"]">
-                        @ViewData["ControllerText"]
-                    </a>
-                </li>
-            }
-            else
-            {
-                <li class="breadcrumb-item">
-                    <a asp-controller="@ViewData["Controller"]" asp-action="@action">
-                        @ViewData["ControllerText"]
-                    </a>
+                    @if (ViewData.ContainsKey("Id"))
+                    {
+                        <a asp-controller="@ViewData["Controller"]" asp-action="@action" asp-route-id="@ViewData["Id"]">
+                            @ViewData["ControllerText"]
+                        </a>
+                    }
+                    else
+                    {
+                        <a asp-controller="@ViewData["Controller"]" asp-action="@action">
+                            @ViewData["ControllerText"]
+                        </a>
+                    }
                 </li>
             }
         }
-        <li class="breadcrumb-item active" aria-current="page">@ViewData["CurrentPage"]</li>
+        @if (ViewData.ContainsKey("CurrentPage"))
+        {
+            <li class="breadcrumb-item active" aria-current="page">@ViewData["CurrentPage"]</li>
+        }
     </ol>
 </nav>
