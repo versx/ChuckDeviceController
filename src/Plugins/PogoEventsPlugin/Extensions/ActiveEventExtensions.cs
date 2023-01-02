@@ -8,7 +8,7 @@ public static class ActiveEventExtensions
 {
     public static IEnumerable<IActiveEvent> Filter(this IEnumerable<IActiveEvent> events, bool active = false, bool sorted = false)
     {
-        var results = new List<IActiveEvent>(events);
+        var results = new List<IActiveEvent>(events ?? new List<IActiveEvent>());
         if (active)
         {
             // Now timestamp in seconds

@@ -7,7 +7,12 @@ public static class NetUtils
 {
     public const string DefaultUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36";
     public const string DefaultMimeType = "application/json";
-    private const uint DefaultRequestTimeoutS = 15;
+    public const uint DefaultRequestTimeoutS = 15;
+
+    public const string AcceptHeader = "Accept";
+    public const string ContentTypeHeader = "Content-Type";
+    public const string HostHeader = "Host";
+    public const string UserAgentHeader = "User-Agent";
 
     public static string? Get(string url, uint timeoutS = DefaultRequestTimeoutS)
     {
@@ -27,9 +32,8 @@ public static class NetUtils
             SetDefaultSecurityProtocol();
 
             using var client = new HttpClient();
-            client.DefaultRequestHeaders.Add(HttpRequestHeader.Accept.ToString(), DefaultMimeType);
-            client.DefaultRequestHeaders.Add(HttpRequestHeader.ContentType.ToString(), DefaultMimeType);
-            client.DefaultRequestHeaders.Add(HttpRequestHeader.UserAgent.ToString(), DefaultUserAgent);
+            client.DefaultRequestHeaders.Add(AcceptHeader, DefaultMimeType);
+            client.DefaultRequestHeaders.Add(UserAgentHeader, DefaultUserAgent);
             client.Timeout = TimeSpan.FromSeconds(timeoutS);
             return await client.GetStringAsync(url);
         }
@@ -67,15 +71,11 @@ public static class NetUtils
                 RequestUri = new Uri(url),
                 Headers =
                 {
-                    { HttpRequestHeader.Accept.ToString(), DefaultMimeType },
-                    { HttpRequestHeader.ContentType.ToString(), DefaultMimeType },
-                    { HttpRequestHeader.UserAgent.ToString(), userAgent ?? DefaultUserAgent },
+                    { AcceptHeader, DefaultMimeType },
+                    { UserAgentHeader, userAgent ?? DefaultUserAgent },
                 },
+                Content = new StringContent(payload ?? string.Empty, Encoding.UTF8, DefaultMimeType),
             };
-            if (!string.IsNullOrEmpty(payload))
-            {
-                requestMessage.Content = new StringContent(payload, Encoding.UTF8, DefaultMimeType);
-            }
 
             var response = await client.SendAsync(requestMessage);
             var responseData = await response.Content.ReadAsStringAsync();
@@ -107,11 +107,9 @@ public static class NetUtils
                 RequestUri = new Uri(url),
                 Headers =
                 {
-                    //{ HttpRequestHeader.Accept.ToString(), DefaultMimeType },
-                    //{ HttpRequestHeader.ContentType.ToString(), DefaultMimeType },
-                    { HttpRequestHeader.UserAgent.ToString(), DefaultUserAgent },
+                    //{ AcceptHeader, DefaultMimeType },
+                    { UserAgentHeader, DefaultUserAgent },
                 },
-                //Content = new StringContent(payload, Encoding.UTF8, DefaultMimeType),
             };
             var response = await client.SendAsync(requestMessage);
             //var responseData = await response.Content.ReadAsStringAsync();

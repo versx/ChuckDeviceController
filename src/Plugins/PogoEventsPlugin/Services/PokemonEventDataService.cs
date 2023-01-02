@@ -268,6 +268,9 @@ public class PokemonEventDataService : IPokemonEventDataService
 
     private async Task CreateChannelsAsync()
     {
+        if (ActiveEvents == null)
+            return;
+
         var activeEvents = ActiveEvents.Filter(active: true, sorted: true);
         foreach (var (guildId, guildConfig) in _config.Guilds)
         {
