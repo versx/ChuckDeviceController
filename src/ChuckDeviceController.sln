@@ -111,7 +111,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckDeviceController.Data.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckDeviceController.Http.Proxy", "Libs\ChuckDeviceController.Http.Proxy\ChuckDeviceController.Http.Proxy.csproj", "{6275F519-C9DE-4966-A434-726FD13A3287}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChuckDeviceController.Caching.Memory", "Libs\ChuckDeviceController.Caching.Memory\ChuckDeviceController.Caching.Memory.csproj", "{EA17A760-782F-4DA7-804B-0D5C1B1391AC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChuckDeviceController.Caching.Memory", "Libs\ChuckDeviceController.Caching.Memory\ChuckDeviceController.Caching.Memory.csproj", "{EA17A760-782F-4DA7-804B-0D5C1B1391AC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

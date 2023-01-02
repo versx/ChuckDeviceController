@@ -225,7 +225,12 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork<ControllerDbContext>>();
 #region Services
 
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddRazorPages(); // <- Required for plugins to render Razor pages
+//builder.Services
+//    .AddControllersWithViews()
+//    .AddRazorRuntimeCompilation();
+builder.Services
+    .AddRazorPages() // <- Required for plugins to render Razor pages
+    .AddRazorRuntimeCompilation();
 builder.Services.AddSingleton<IAssignmentControllerService, AssignmentControllerService>();
 builder.Services.AddSingleton<IGeofenceControllerService, GeofenceControllerService>();
 builder.Services.AddSingleton<IIvListControllerService, IvListControllerService>();

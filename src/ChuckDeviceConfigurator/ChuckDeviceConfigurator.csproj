@@ -105,6 +105,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Remove="Views\Shared\ExternalLoginProviders.cshtml" />
     <Content Remove="Views\Shared\_AccountGroupSelector.cshtml" />
     <Content Remove="Views\Shared\_NotificationsPartial.cshtml" />
   </ItemGroup>
@@ -122,6 +123,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Watch Remove="Views\Shared\ExternalLoginProviders.cshtml" />
     <Watch Remove="Views\Shared\_AccountGroupSelector.cshtml" />
     <Watch Remove="Views\Shared\_NotificationsPartial.cshtml" />
   </ItemGroup>
@@ -139,6 +141,7 @@
   <ItemGroup>
     <None Include="Views\Device\_NotificationsPartial.cshtml" />
     <None Include="Views\Account\_AccountGroupSelector.cshtml" />
+    <None Include="Areas\Identity\Pages\Shared\ExternalLoginProviders.cshtml" />
   </ItemGroup>
 
   <ItemGroup>
