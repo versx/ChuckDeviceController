@@ -359,9 +359,7 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
             HasIvChanges = true;
         }
 
-        var oldCp = CP;
-        var oldPokemonId = PokemonId;
-        var oldWeather = Weather;
+        var (oldCp, oldPokemonId, oldWeather) = (CP, PokemonId, Weather);
 
         IsEvent = isEvent;
         PokemonId = pokemonId;
@@ -392,46 +390,12 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
 
         // TODO: if (HasIvChanges)
         {
-            // Although capture change values are player specific, set them to the Pokemon
-            // REVIEW: Eventually remove capture probability.
-            if (encounterData.CaptureProbability != null)
-            {
-                Capture1 = encounterData.CaptureProbability.CaptureProbability[0];
-                Capture2 = encounterData.CaptureProbability.CaptureProbability[1];
-                Capture3 = encounterData.CaptureProbability.CaptureProbability[2];
-            }
+            SetCaptureProbability(encounterData.CaptureProbability);
 
             // Calculate Pokemon level from provided CP multiplier value
-            var cpMultiplier = encounterData.Pokemon.Pokemon.CpMultiplier;
-            Level = CalculateLevel(cpMultiplier);
+            Level = CalculateLevel(encounterData.Pokemon.Pokemon.CpMultiplier);
 
-            if (oldCp != CP || oldPokemonId != PokemonId || oldWeather != Weather)
-            {
-                if (IsDitto)
-                {
-                    _dittoDetector.SetAttributes(PokemonId, Weather ?? 0, Level ?? 0, ClearEncounterDetails);
-                }
-                else
-                {
-                    if (_dittoDetector.IsDisguised())
-                    {
-                        Console.WriteLine($"Pokemon {Id} id {PokemonId} disguised as Ditto");
-                        IsDitto = true;
-                        _dittoDetector.SetAttributes(PokemonId, Weather ?? 0, Level ?? 0, ClearEncounterDetails);
-                    }
-                }
-
-                setPvpRankings?.Invoke(this);
-            }
-
-            ////IsDitto = IsDittoDisguised(this);
-            //IsDitto = _dittoDetector.IsDisguised();
-            //if (IsDitto)
-            //{
-            //    // Set default Ditto attributes
-            //    //SetDittoAttributes(PokemonId, Weather ?? 0, Level ?? 0);
-            //    _dittoDetector.SetAttributes(PokemonId, Weather ?? 0, Level ?? 0, ClearEncounterDetails);
-            //}
+            CheckDittoStatus(oldPokemonId, oldCp, oldWeather, setPvpRankings);
         }
 
         var now = DateTime.UtcNow.ToTotalSeconds();
@@ -441,8 +405,6 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
         SeenType = SeenType.Encounter;
         Updated = now;
         Changed = now;
-
-        // TODO: ParseSpawnpointAsync(null, memCache, 0, now * 1000);
     }
 
     public void AddDiskEncounter(DiskEncounterOutProto diskEncounterData, string username, Action<Pokemon>? setPvpRankings = null)
@@ -479,9 +441,7 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
             HasIvChanges = true;
         }
 
-        var oldCp = CP;
-        var oldPokemonId = PokemonId;
-        var oldWeather = Weather;
+        var (oldPokemonId, oldCp, oldWeather) = (PokemonId, CP, Weather);
 
         PokemonId = pokemonId;
         CP = cp;
@@ -495,50 +455,19 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
         Costume = costume;
         Form = form;
         Gender = gender;
-        //Weather = weather;
+        Weather = weather;
 
-        IsShiny = diskEncounterData.Pokemon?.PokemonDisplay?.Shiny ?? false;
+        IsShiny = diskEncounterData.Pokemon.PokemonDisplay.Shiny;
         Username = username;
 
-        if (HasIvChanges)
+        // TODO: if (HasIvChanges)
         {
-            // Although capture change values are player specific, set them to the Pokemon
-            // Should remove them eventually though.
-            if (diskEncounterData.CaptureProbability != null)
-            {
-                Capture1 = diskEncounterData.CaptureProbability.CaptureProbability[0];
-                Capture2 = diskEncounterData.CaptureProbability.CaptureProbability[1];
-                Capture3 = diskEncounterData.CaptureProbability.CaptureProbability[2];
-            }
-            var cpMultiplier = diskEncounterData.Pokemon?.CpMultiplier ?? 0;
-            Level = CalculateLevel(cpMultiplier);
+            SetCaptureProbability(diskEncounterData.CaptureProbability);
 
-            if (oldCp != CP || oldPokemonId != PokemonId || oldWeather != Weather)
-            {
-                if (IsDitto)
-                {
-                    _dittoDetector.SetAttributes(PokemonId, Weather ?? 0, Level ?? 0, ClearEncounterDetails);
-                }
-                else
-                {
-                    if (_dittoDetector.IsDisguised())
-                    {
-                        Console.WriteLine($"Pokemon {Id} id {PokemonId} disguised as Ditto");
-                        IsDitto = true;
-                        _dittoDetector.SetAttributes(PokemonId, Weather ?? 0, Level ?? 0, ClearEncounterDetails);
-                    }
-                }
+            // Calculate Pokemon level from provided CP multiplier value
+            Level = CalculateLevel(diskEncounterData.Pokemon.CpMultiplier);
 
-                setPvpRankings?.Invoke(this);
-            }
-
-            ////IsDitto = IsDittoDisguised(this);
-            //IsDitto = _dittoDetector.IsDisguised();
-            //if (IsDitto)
-            //{
-            //    //SetDittoAttributes(PokemonId, Weather ?? 0, Level ?? 0);
-            //    _dittoDetector.SetAttributes(PokemonId, Weather ?? 0, Level ?? 0, ClearEncounterDetails);
-            //}
+            CheckDittoStatus(oldPokemonId, oldCp, oldWeather, setPvpRankings);
         }
 
         SeenType = SeenType.LureEncounter;
@@ -692,7 +621,6 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
                 Capture3 = oldPokemon.Capture3;
                 IsShiny = oldPokemon.IsShiny;
                 SeenType = oldPokemon.SeenType;
-                //IsDitto = IsDittoDisguised(oldPokemon);
                 IsDitto = _dittoDetector.IsDisguised(oldPokemon);
 
                 if (IsDitto)
@@ -1006,6 +934,42 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
             (oldWeather == 0 && newWeather > 0) ||
             (newWeather == 0 && oldWeather > 0);
         return hasChanged;
+    }
+
+    private void CheckDittoStatus(uint oldPokemonId, ushort? oldCp, ushort? oldWeather, Action<Pokemon>? setPvpRankings = null)
+    {
+        if (oldCp == CP &&
+            oldPokemonId == PokemonId &&
+            oldWeather == Weather)
+            return;
+
+        if (IsDitto)
+        {
+            _dittoDetector.SetAttributes(PokemonId, Weather ?? 0, Level ?? 0, ClearEncounterDetails);
+        }
+        else
+        {
+            if (_dittoDetector.IsDisguised())
+            {
+                Console.WriteLine($"Pokemon {Id} id {PokemonId} disguised as Ditto");
+                IsDitto = true;
+                _dittoDetector.SetAttributes(PokemonId, Weather ?? 0, Level ?? 0, ClearEncounterDetails);
+            }
+        }
+
+        setPvpRankings?.Invoke(this);
+    }
+
+    private void SetCaptureProbability(CaptureProbabilityProto captureProbability)
+    {
+        // Although capture change values are player specific, set them to the Pokemon
+        // Should remove them eventually though.
+        if (captureProbability == null)
+            return;
+
+        Capture1 = captureProbability.CaptureProbability[0];
+        Capture2 = captureProbability.CaptureProbability[1];
+        Capture3 = captureProbability.CaptureProbability[2];
     }
 
     #endregion
