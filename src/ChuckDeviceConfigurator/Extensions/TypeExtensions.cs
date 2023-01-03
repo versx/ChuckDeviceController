@@ -10,11 +10,10 @@ using ChuckDeviceController.Geometry.Models.Abstractions;
 using ChuckDeviceController.Plugin;
 using ChuckDeviceController.PluginManager;
 using ChuckDeviceController.PluginManager.Mvc.Extensions;
-using ChuckDeviceController.PluginManager.Services;
 
 public static class TypeExtensions
 {
-    public static object[]? GetJobControllerConstructorArgs(
+    public static object[]? BuildJobControllerConstructorArgs(
         this Type jobControllerType,
         IInstance instance,
         IReadOnlyList<Geofence> geofences,
@@ -24,17 +23,8 @@ public static class TypeExtensions
         // Construct dictionary of plugin specific service parameters
         var dict = jobControllerType.GetPluginServiceParameters(instance, geofences, sharedServices);
 
-        // Get services not plugin specific of job controller while ignoring any plugin specific parameter types
-        var serviceCollector = new ServiceParametersCollector(serviceProvider, dict.Keys);
-        var services = serviceCollector.GetParameterInstances(jobControllerType);
-        if (services.Any())
-        {
-            // Add all services to available services that can be injected to job controller
-            foreach (var (serviceType, service) in services)
-            {
-                dict.Add(serviceType, service);
-            }
-        }
+        // Get services not specific to plugins or job controllers while ignoring any plugin specific parameter types
+        var services = jobControllerType.BuildConstructorArgs(serviceProvider, dict);
 
         var ctors = jobControllerType.GetPluginConstructors();
         if (!(ctors?.Any() ?? false))
@@ -51,11 +41,11 @@ public static class TypeExtensions
         // to provide it when we instantiate a new instance.
         foreach (var param in parameters)
         {
-            if (!dict.ContainsKey(param.ParameterType))
+            if (!services.ContainsKey(param.ParameterType))
                 continue;
 
-            var hostHandler = dict[param.ParameterType];
-            list.Add(hostHandler);
+            var service = services[param.ParameterType];
+            list.Add(service);
         }
 
         var args = list.ToArray();

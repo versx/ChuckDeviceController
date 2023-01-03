@@ -28,6 +28,11 @@ public class FindyJobController : IJobController, IJobControllerCoordinates, ISc
 
     private readonly object _tthLock = new();
     private readonly IMemoryCache _tthCache;
+    private readonly MemoryCacheEntryOptions _defaultCacheOptions = new()
+    {
+        Size = 1,
+        AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(60),
+    };
     private List<ICoordinate> _tthCoords = new();
     private int _lastCountUnknown = 0;
     private int _currentDevicesMaxLocation = 0;
@@ -63,10 +68,6 @@ public class FindyJobController : IJobController, IJobControllerCoordinates, ISc
         IDatabaseHost dbHost,
         IGeofenceServiceHost geofenceHost,
         //ILoggingHost loggingHost,
-        //ILoggerProvider loggerProvider,
-        //ILoggerFactory logger,
-        //ILogger logger2,
-        //ILogger<IJobController> logger2,
         ILogger<FindyJobController> logger,
         IMemoryCache memCache)
     {
@@ -81,9 +82,6 @@ public class FindyJobController : IJobController, IJobControllerCoordinates, ISc
 
         _dbHost = dbHost;
         _geofenceHost = geofenceHost;
-        //_loggingHost = loggingHost;
-        //_logger = loggerProvider.CreateLogger(nameof(FindyJobController));
-        //_logger = logger.CreateLogger<FindyJobController>();
         _logger = logger;
         _tthCache = memCache;
 
@@ -114,7 +112,7 @@ public class FindyJobController : IJobController, IJobControllerCoordinates, ISc
         if (hit == 0)
         {
             InitFindyCoordinates();
-            _tthCache.Set(Name, 1);
+            _tthCache.Set(Name, 1, _defaultCacheOptions);
         }
 
         // Increment location

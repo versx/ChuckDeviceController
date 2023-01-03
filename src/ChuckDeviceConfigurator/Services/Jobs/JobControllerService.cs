@@ -841,8 +841,7 @@ public class JobControllerService : IJobControllerService
         object? jobControllerInstance = null;
         try
         {
-            // TODO: Add support for adding more arguments to pass to job controller constructor
-            var args = jobControllerType.GetJobControllerConstructorArgs(
+            var args = jobControllerType.BuildJobControllerConstructorArgs(
                 instance,
                 geofences,
                 PluginManager.Instance.Options.SharedServiceHosts,

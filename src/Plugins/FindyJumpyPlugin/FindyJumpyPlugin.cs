@@ -7,6 +7,7 @@ namespace FindyJumpyPlugin;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 using ChuckDeviceController.Data.Common;
 using ChuckDeviceController.Plugin;
@@ -20,7 +21,11 @@ using JobControllers;
 [
     // Specifies where the 'wwwroot' folder will be if any are used or needed.
     // Possible options: embedded resources, local/external, or none.
-    StaticFilesLocation(views: StaticFilesLocation.None, webRoot: StaticFilesLocation.None),
+    StaticFilesLocation(
+        views: StaticFilesLocation.None,
+        webRoot: StaticFilesLocation.None,
+        pages: StaticFilesLocation.None
+    ),
     // Specify the plugin API key to authorize with the host application.
     PluginApiKey("CDC-328TVvD7o85TNbNhjLE0JysVMbOxjXKT"),
 ]
@@ -29,20 +34,9 @@ public class FindyJumpyPlugin : IPlugin, IJobControllerServiceEvents
     private const string FindyName = "Findy";
     private const string JumpyName = "Jumpy";
 
-    #region Plugin Host Variables
+    #region Variables
 
-    // Plugin host variables are interface contracts that are used
-    // to interact with services the host application has registered
-    // and is running. They can be initialized by the constructor
-    // using dependency injection or by decorating the field with
-    // the 'PluginBootstrapperService' attribute. The host application
-    // will look for any fields or properties decorated with the
-    // 'PluginBootstrapperService' and initialize them with the
-    // related service class.
-
-    // Used for logging messages to the host application from the plugin
-    private readonly ILoggingHost _loggingHost;
-
+    private readonly ILogger<FindyJumpyPlugin> _logger;
     private readonly IJobControllerServiceHost _jobControllerHost;
 
     #endregion
@@ -84,14 +78,13 @@ public class FindyJumpyPlugin : IPlugin, IJobControllerServiceEvents
     ///     when it instantiates an instance with the host handlers for each 
     ///     parameter, essentially dependency injection.
     /// </summary>
-    /// <param name="loggingHost">Logging host handler.</param>
+    /// <param name="logger">Logger instance.</param>
     /// <param name="jobControllerHost">Job controller service host handler.</param>
-    /// <param name="databaseHost">Database service host handler.</param>
     public FindyJumpyPlugin(
-        ILoggingHost loggingHost,
+        ILogger<FindyJumpyPlugin> logger,
         IJobControllerServiceHost jobControllerHost)
     {
-        _loggingHost = loggingHost;
+        _logger = logger;
         _jobControllerHost = jobControllerHost;
     }
 
@@ -151,7 +144,7 @@ public class FindyJumpyPlugin : IPlugin, IJobControllerServiceEvents
     /// </summary>
     public async void OnLoad()
     {
-        _loggingHost.LogInformation($"{Name} v{Version} by {Author} initialized!");
+        _logger.LogInformation("{Name} v{Version} by {Author} initialized!", Name, Version, Author);
 
         // Register custom job controller type FindyJobController
         await _jobControllerHost.RegisterJobControllerAsync<FindyJobController>(FindyName);
@@ -163,17 +156,17 @@ public class FindyJumpyPlugin : IPlugin, IJobControllerServiceEvents
     /// <summary>
     ///     Called when the plugin has been reloaded by the host application.
     /// </summary>
-    public void OnReload() => _loggingHost.LogInformation($"[{Name}] OnReload called");
+    public void OnReload() => _logger.LogInformation("[{Name}] OnReload called", Name);
 
     /// <summary>
     ///     Called when the plugin has been stopped by the host application.
     /// </summary>
-    public void OnStop() => _loggingHost.LogInformation($"[{Name}] OnStop called");
+    public void OnStop() => _logger.LogInformation("[{Name}] OnStop called", Name);
 
     /// <summary>
     ///     Called when the plugin has been removed by the host application.
     /// </summary>
-    public void OnRemove() => _loggingHost.LogInformation($"[{Name}] Onremove called");
+    public void OnRemove() => _logger.LogInformation("[{Name}] Onremove called", Name);
 
     /// <summary>
     ///     Called when the plugin's state has been
@@ -181,7 +174,7 @@ public class FindyJumpyPlugin : IPlugin, IJobControllerServiceEvents
     /// </summary>
     /// <param name="state">Plugin's current state</param>
     public void OnStateChanged(PluginState state) =>
-        _loggingHost.LogInformation($"[{Name}] Plugin state has changed to '{state}'");
+        _logger.LogInformation("[{Name}] Plugin state has changed to '{state}'", Name, state);
 
     #endregion
 }

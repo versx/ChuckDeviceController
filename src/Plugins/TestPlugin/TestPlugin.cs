@@ -92,6 +92,8 @@ public class TestPlugin : IPlugin, IDatabaseEvents, IJobControllerServiceEvents,
 
     private readonly IAuthorizeHost _authHost;
 
+    private readonly ILogger<TestPlugin> _logger;
+
     #endregion
 
     #region Plugin Metadata Properties
@@ -160,7 +162,8 @@ public class TestPlugin : IPlugin, IDatabaseEvents, IJobControllerServiceEvents,
         IInstanceServiceHost instanceServiceHost,
         IGeofenceServiceHost geofenceServiceHost,
         IEventAggregatorHost eventAggregatorHost,
-        IAuthorizeHost authHost)
+        IAuthorizeHost authHost,
+        ILogger<TestPlugin> logger)
     {
         _loggingHost = loggingHost;
         _localeHost = localeHost;
@@ -169,6 +172,7 @@ public class TestPlugin : IPlugin, IDatabaseEvents, IJobControllerServiceEvents,
         _geofenceServiceHost = geofenceServiceHost;
         _eventAggregatorHost = eventAggregatorHost;
         _authHost = authHost;
+        _logger = logger;
 
         //_appHost.Restart();
     }

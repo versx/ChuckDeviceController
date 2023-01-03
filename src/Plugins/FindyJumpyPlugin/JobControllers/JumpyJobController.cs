@@ -45,12 +45,17 @@ public class JumpyJobController : IJobController, IJobControllerCoordinates, ISc
     private ulong _lastLastCompletedTime;
     private int _currentDevicesMaxLocation = 0;
     private bool _firstRun = true;
+    private readonly MemoryCacheEntryOptions _defaultCacheOptions = new()
+    {
+        Size = 1,
+        AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(60),
+    };
 
-    #endregion
+#endregion
 
-    #region Properties
+#region Properties
 
-    public string Name { get; }
+public string Name { get; }
 
     public ushort MinimumLevel { get; }
 
@@ -76,7 +81,6 @@ public class JumpyJobController : IJobController, IJobControllerCoordinates, ISc
         List<IMultiPolygon> multiPolygons,
         IDatabaseHost dbHost,
         IGeofenceServiceHost geofenceHost,
-        //ILoggingHost loggingHost,
         ILogger<JumpyJobController> logger,
         IMemoryCache memCache)
     {
@@ -91,8 +95,6 @@ public class JumpyJobController : IJobController, IJobControllerCoordinates, ISc
 
         _dbHost = dbHost;
         _geofenceHost = geofenceHost;
-        //_loggingHost = loggingHost;
-        //_pokemonCache = new MemoryCache(Options.Create(new MemoryCacheOptions()));
         _logger = logger;
         _pokemonCache = memCache;
 
@@ -118,7 +120,7 @@ public class JumpyJobController : IJobController, IJobControllerCoordinates, ISc
         if (hit == 0)
         {
             InitJumpyCoordinates();
-            _pokemonCache.Set(Name, 1);
+            _pokemonCache.Set(Name, 1, _defaultCacheOptions);
         }
 
         var (_, min, sec) = TimeExtensions.ConvertSecondsToHoursMinutesSeconds();
@@ -264,7 +266,7 @@ public class JumpyJobController : IJobController, IJobControllerCoordinates, ISc
         if (countArray <= 0)
         {
             InitJumpyCoordinates();
-            _pokemonCache.Set(Name, 1);
+            _pokemonCache.Set(Name, 1, _defaultCacheOptions);
             return 0;
         }
 
@@ -392,7 +394,7 @@ public class JumpyJobController : IJobController, IJobControllerCoordinates, ISc
         else if (curTime > maxTime)
         {
             // Spawn is past time to visit, need to find a good one to jump to
-            Console.WriteLine($"d1: curTime={curTime} > maxTime={maxTime}, iterate");
+            _logger.LogDebug($"d1: curTime={curTime} > maxTime={maxTime}, iterate");
 
             var found = false;
             var start = loc;

@@ -9,32 +9,13 @@ using Microsoft.Extensions.FileProviders;
 using ChuckDeviceController.Plugin;
 using ChuckDeviceController.Plugin.Services;
 using ChuckDeviceController.PluginManager.FileProviders;
+using ChuckDeviceController.PluginManager.Services;
 
 public static class ServiceCollectionExtensions
 {
     private const string DefaultPages = "Pages";
     private const string DefaultViews = "Views";
     private const string DefaultWebRoot = "wwwroot";
-
-    public static T GetService<T>(this ServiceProvider serviceProvider) where T : notnull
-    {
-        var scopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
-        using var scope = scopeFactory.CreateScope();
-        var provider = scope.ServiceProvider;
-        var service = provider.GetRequiredService<T>();
-        return service;
-    }
-
-    public static T GetService<T>(this IServiceCollection services) where T : notnull
-    {
-        var scopeFactory = services.BuildServiceProvider()
-                                   .GetRequiredService<IServiceScopeFactory>();
-
-        using var scope = scopeFactory.CreateScope();
-        var provider = scope.ServiceProvider;
-        var service = provider.GetRequiredService<T>();
-        return service;
-    }
 
     public static IServiceCollection RegisterPluginServices(this IServiceCollection services, IEnumerable<ServiceDescriptor> pluginServices)
     {
@@ -50,7 +31,7 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    public static (IFileProvider? Views, IFileProvider? WebRoot) GetStaticFilesProvider(this Type pluginType, Assembly assembly)
+    public static (IFileProvider? Views, IFileProvider? WebRoot, IFileProvider? Pages) GetStaticFilesProvider(this Type pluginType, Assembly assembly)
     {
         // Check if plugin assembly has static files attribute assigned, if so add any embedded resource
         // or external files to web root provider i.e. 'wwwwroot' folder and contents
@@ -60,7 +41,8 @@ public static class ServiceCollectionExtensions
 
         var viewsFileProvider = staticFilesAttr.Views.GetFileProviderTypeFromStaticFileProvider(assembly, DefaultViews);
         var webRootFileProvider = staticFilesAttr.WebRoot.GetFileProviderTypeFromStaticFileProvider(assembly, DefaultWebRoot);
-        var result = (viewsFileProvider, webRootFileProvider);
+        var pagesFileProvider = staticFilesAttr.WebRoot.GetFileProviderTypeFromStaticFileProvider(assembly, DefaultPages);
+        var result = (viewsFileProvider, webRootFileProvider, pagesFileProvider);
         return result;
     }
 
@@ -81,6 +63,11 @@ public static class ServiceCollectionExtensions
         if (staticFilesProvider.WebRoot != null)
         {
             env.WebRootFileProvider = new CompositeFileProvider(env.WebRootFileProvider, staticFilesProvider.WebRoot);
+        }
+
+        if (staticFilesProvider.Pages != null)
+        {
+            env.WebRootFileProvider = new CompositeFileProvider(env.WebRootFileProvider, staticFilesProvider.Pages);
         }
     }
 
@@ -117,19 +104,33 @@ public static class ServiceCollectionExtensions
         return fileProvider;
     }
 
-    public static object? CreatePluginInstance(this Type pluginType, IReadOnlyDictionary<Type, object>? sharedServices = null)
+    public static object? CreatePluginInstance(this Type pluginType, IServiceProvider serviceProvider, IReadOnlyDictionary<Type, object> pluginServices)
     {
-        // TODO: Revise/consolidate extensions
-        object? instance;
-        if (!(sharedServices?.Any() ?? false))
+        var ctors = pluginType.GetPluginConstructors();
+        if (!(ctors?.Any() ?? false))
         {
-            instance = Activator.CreateInstance(pluginType);
+            // No matching constructors found
+            return null;
         }
-        else
+
+        var constructorInfo = ctors.First();
+        var parameters = constructorInfo.GetParameters();
+        var list = new List<object>(parameters.Length);
+        var services = pluginType.BuildConstructorArgs(serviceProvider, pluginServices);
+
+        // Loop the sonstructor's parameters to see which host type handlers
+        // to provide it when we instantiate a new instance.
+        foreach (var param in parameters)
         {
-            var args = pluginType.GetConstructorArgs(sharedServices);
-            instance = Activator.CreateInstance(pluginType, args);
+            if (!services.ContainsKey(param.ParameterType))
+                continue;
+
+            var service = services[param.ParameterType];
+            list.Add(service);
         }
+
+        var args = list.ToArray();
+        var instance = pluginType.CreateInstance(args);
         return instance;
     }
 
@@ -170,37 +171,6 @@ public static class ServiceCollectionExtensions
     {
         var attr = pluginType.GetCustomAttribute<PluginApiKeyAttribute>();
         return attr?.ApiKey;
-    }
-
-    public static object[]? GetConstructorArgs(this Type pluginType, IReadOnlyDictionary<Type, object>? sharedServices = null)
-    {
-        var constructors = pluginType.GetPluginConstructors();
-        if (!(constructors?.Any() ?? false))
-        {
-            Console.WriteLine($"Plugins must contain one constructor for each class that inherits from '{nameof(IPlugin)}', skipping registration for plugin type '{pluginType.Name}'");
-            return null;
-        }
-
-        var constructorInfo = constructors.First();
-        var parameters = constructorInfo.GetParameters();
-        var list = new List<object>(parameters.Length);
-
-        // Check that we were provided shared host types
-        if (!(sharedServices?.Any() ?? false))
-            return list.ToArray();
-
-        // Loop the plugin's constructor parameters to see which host type handlers
-        // to provide it when we instantiate a new instance.
-        foreach (var param in parameters)
-        {
-            if (!sharedServices!.ContainsKey(param.ParameterType))
-                continue;
-
-            var pluginHostHandler = sharedServices[param.ParameterType];
-            list.Add(pluginHostHandler);
-        }
-
-        return list.ToArray();
     }
 
     #region Replace Services
@@ -260,50 +230,6 @@ public static class ServiceCollectionExtensions
 
     #endregion
 
-    #region Service Type Discovery/Instantiation
-    // Credits: https://github.com/k3ldar/.NetCorePluginManager/blob/master/PluginManager/src/Helpers/ServiceCollectionHelper.cs
-
-    public static object[] GetParameterInstances(this IServiceCollection services, Type type)
-    {
-        if (type == null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
-
-        if (services != null)
-        {
-            return GetInstancesConstructorParameters(services, type);
-        }
-
-        var result = new List<object>();
-        var constructors = type.GetPluginConstructors();
-        foreach (var constructor in constructors)
-        {
-            foreach (var param in constructor.GetParameters())
-            {
-                var paramClass = services?.FirstOrDefault(service => service.ServiceType == param.ParameterType);
-                if (paramClass == null)
-                    continue;
-
-                // If we did not find a specific param type for this constructor, try the next constructor
-                if (paramClass == null)
-                {
-                    result.Clear();
-                    break;
-                }
-
-                result.Add(paramClass);
-            }
-
-            if (result.Count > 0)
-            {
-                return result.ToArray();
-            }
-        }
-
-        return result.ToArray();
-    }
-
     /// <summary>
     /// Grab a list of all public constructors in the class, starting with the constructor
     /// with most parameters.
@@ -320,101 +246,44 @@ public static class ServiceCollectionExtensions
         return constructors;
     }
 
-    /// <summary>
-    /// Retrieves an instance of a class from within an IServiceCollection
-    /// </summary>
-    /// <typeparam name="T">Type of class instance being sought</typeparam>
-    /// <param name="services"></param>
-    /// <returns>Instance of type T if found within the service collection, otherwise null</returns>
-    public static T? GetServiceInstance<T>(this IServiceCollection services)
-        where T : class
+    public static Dictionary<Type, object> BuildConstructorArgs(
+        this Type type,
+        IServiceProvider serviceProvider,
+        IReadOnlyDictionary<Type, object> pluginServices)
     {
-        if (services == null)
+        var dict = new Dictionary<Type, object>(pluginServices);
+        var serviceCollector = new ServiceParametersCollector(serviceProvider, pluginServices.Keys);
+        var services = serviceCollector.GetParameterInstances(type);
+        if (services.Any())
         {
+            // Add all services to available services that can be injected to job controller
+            foreach (var (serviceType, service) in services)
+            {
+                dict.Add(serviceType, service);
+            }
+        }
+        return dict;
+    }
+
+    public static object? CreateInstance(this Type type, object[]? args = null)
+    {
+        try
+        {
+            object? instance;
+            if (args?.Any() ?? false)
+            {
+                instance = Activator.CreateInstance(type, args);
+            }
+            else
+            {
+                instance = Activator.CreateInstance(type);
+            }
+            return instance;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex}");
             return null;
         }
-
-        return GetClassImplementation<T>(services, typeof(T));
     }
-
-    private static T? GetClassImplementation<T>(IServiceCollection services, Type classType)
-        where T : class
-    {
-        var sd = services
-            .Where(sd => GetNameWithoutGenericArity(sd.ServiceType).Equals(GetNameWithoutGenericArity(classType)))
-            .FirstOrDefault();
-        if (sd == null)
-        {
-            return default;
-        }
-
-        T? result = default;
-
-        if (sd.ImplementationInstance != null)
-        {
-            result = (T)sd.ImplementationInstance;
-        }
-        else if (sd.ImplementationType != null)
-        {
-            var args = GetInstancesConstructorParameters(services, sd.ImplementationType);
-            result = Activator.CreateInstance(sd.ImplementationType, args) as T;
-
-            if (sd.Lifetime == ServiceLifetime.Singleton)
-            {
-                var replacementServiceDescriptor = new ServiceDescriptor(sd.ServiceType, result!);
-
-                services.Remove(sd);
-                services.Add(replacementServiceDescriptor);
-            }
-        }
-        else if (sd.ImplementationFactory != null)
-        {
-            result = sd.ImplementationFactory.Invoke(null!) as T;
-        }
-
-        return result;
-    }
-
-    private static string GetNameWithoutGenericArity(Type type)
-    {
-        var name = type.FullName;
-        var index = name?.IndexOf('`') ?? -1;
-        return index == -1
-            ? name!
-            : name![..index];
-    }
-
-    private static object[] GetInstancesConstructorParameters(IServiceCollection services, Type type)
-    {
-        var result = new List<object>();
-        var constructors = type.GetPluginConstructors();
-        foreach (var constructor in constructors)
-        {
-            var parameters = constructor.GetParameters();
-            foreach (var param in parameters)
-            {
-                if (param.ParameterType == typeof(IServiceProvider))
-                    continue;
-
-                var paramClass = GetClassImplementation<object>(services, param.ParameterType);
-                if (paramClass == null)
-                {
-                    // If we did not find a specific param type for this constructor, try the next constructor
-                    result.Clear();
-                    break;
-                }
-
-                result.Add(paramClass);
-            }
-
-            if (result.Count > 0)
-            {
-                return result.ToArray();
-            }
-        }
-
-        return result.ToArray();
-    }
-
-    #endregion
 }

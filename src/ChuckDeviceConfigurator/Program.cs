@@ -355,6 +355,7 @@ var pluginManager = PluginManager.InstanceWithOptions(new PluginManagerOptions
     RootPluginsDirectory = Strings.PluginsFolder,
     Configuration = config,
     Services = builder.Services,
+    ServiceProvider = serviceProvider,
     SharedServiceHosts = sharedServiceHosts,
 });
 pluginManager.PluginHostAdded += OnPluginHostAdded;
@@ -363,7 +364,7 @@ pluginManager.PluginHostStateChanged += OnPluginHostStateChanged;
 
 // Find plugins, register plugin services, load plugin assemblies,
 // call OnLoad callback and register with 'IPluginManager' cache
-await pluginManager.LoadPluginsAsync(builder.Services, builder.Environment, getApiKeysFunc, getPluginsFunc);
+await pluginManager.LoadPluginsAsync(builder.Services, builder.Environment, getApiKeysFunc, getPluginsFunc, serviceProvider);
 
 // Start the job controller service after all plugins have loaded. (TODO: Add PluginsLoadedComplete event?)
 // This is so all custom IJobController's provided via plugins have been registered.

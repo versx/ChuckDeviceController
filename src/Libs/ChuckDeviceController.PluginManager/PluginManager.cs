@@ -54,15 +54,17 @@ public class PluginManager : IPluginManager
 
     public static IPluginManager InstanceWithOptions(
         IPluginManagerOptions options,
-        IConfiguration? configuration = null,
-        IServiceCollection? services = null,
-        IReadOnlyDictionary<Type, object>? sharedServiceHosts = null)
+        IConfiguration configuration = null!,
+        IServiceCollection services = null!,
+        ServiceProvider serviceProvider = null!,
+        IReadOnlyDictionary<Type, object> sharedServiceHosts = null!)
     {
         _instance ??= new PluginManager(options ?? new PluginManagerOptions
         {
             RootPluginsDirectory = DefaultPluginsFolder,
             Configuration = configuration,
             Services = services,
+            ServiceProvider = serviceProvider,
             SharedServiceHosts = sharedServiceHosts ?? new Dictionary<Type, object>(),
         });
         return _instance;
@@ -146,7 +148,8 @@ public class PluginManager : IPluginManager
         IServiceCollection services,
         IWebHostEnvironment env,
         Func<IReadOnlyList<IApiKey>> apiKeysFunc,
-        Func<IReadOnlyList<IPluginState>> pluginsFunc)
+        Func<IReadOnlyList<IPluginState>> pluginsFunc,
+        ServiceProvider serviceProvider)
     {
         _services = services;
         _webHostEnv = env;
@@ -194,7 +197,7 @@ public class PluginManager : IPluginManager
             }
 
             // Instantiate new instance of loaded plugin assembly
-            var pluginLoader = new PluginLoader<IPlugin>(result, Options.SharedServiceHosts, apiKeys, services);
+            var pluginLoader = new PluginLoader<IPlugin>(result, Options, apiKeys);
             var loadedPlugins = pluginLoader.LoadedPlugins;
             if (!(loadedPlugins?.Any() ?? false))
             {
@@ -211,7 +214,7 @@ public class PluginManager : IPluginManager
         return services;
     }
 
-    public async Task LoadPluginAsync(string filePath, Func<IReadOnlyList<IApiKey>> apiKeysFunc)
+    public async Task LoadPluginAsync(string filePath, Func<IReadOnlyList<IApiKey>> apiKeysFunc, ServiceProvider serviceProvider)
     {
         var pluginFinderResults = _pluginFinder.FindPluginInAssembly(filePath);
         if (!(pluginFinderResults?.Any() ?? false))
@@ -237,7 +240,7 @@ public class PluginManager : IPluginManager
             }
 
             // Load and activate plugins found by plugin finder
-            var pluginLoader = new PluginLoader<IPlugin>(result, Options.SharedServiceHosts, apiKeys, _services);
+            var pluginLoader = new PluginLoader<IPlugin>(result, Options, apiKeys);
             var loadedPlugins = pluginLoader.LoadedPlugins;
             if (!loadedPlugins.Any())
             {

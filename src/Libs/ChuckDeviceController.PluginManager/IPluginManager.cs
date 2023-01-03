@@ -41,9 +41,10 @@ public interface IPluginManager
         IServiceCollection services,
         IWebHostEnvironment env,
         Func<IReadOnlyList<IApiKey>> apiKeysFunc,
-        Func<IReadOnlyList<IPluginState>> pluginsFunc);
+        Func<IReadOnlyList<IPluginState>> pluginsFunc,
+        ServiceProvider serviceProvider);
 
-    Task LoadPluginAsync(string filePath, Func<IReadOnlyList<IApiKey>> apiKeysFunc);
+    Task LoadPluginAsync(string filePath, Func<IReadOnlyList<IApiKey>> apiKeysFunc, ServiceProvider serviceProvider);
 
     Task RegisterPluginAsync(PluginHost pluginHost);
 

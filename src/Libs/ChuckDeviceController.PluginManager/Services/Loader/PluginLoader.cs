@@ -30,16 +30,13 @@ public class PluginLoader<TPlugin> : IPluginLoader
     // Constructors
     public PluginLoader(
         PluginFinderResult<IPlugin> pluginResult,
-        IReadOnlyDictionary<Type, object> sharedServiceHosts,
-        IReadOnlyList<IApiKey> apiKeys,
-        IServiceCollection services)
+        IPluginManagerOptions options,
+        IReadOnlyList<IApiKey> apiKeys)
     {
         if (pluginResult.Assembly == null)
         {
             throw new NullReferenceException($"Failed to load plugin assembly '{pluginResult.AssemblyPath}'");
         }
-
-        //_apiKeys = apiKeys;
 
         var assemblyTypes = pluginResult.Assembly.GetTypes();
         //var pluginBootstrapTypes = assemblyTypes.GetAssignableTypes<IPluginBootstrapper>();
@@ -52,7 +49,7 @@ public class PluginLoader<TPlugin> : IPluginLoader
         foreach (var type in assemblyTypes)
         {
             // Find service classes with 'PluginServiceAttribute'
-            var pluginServices = type.GetPluginServicesWithAttribute(sharedServiceHosts);
+            var pluginServices = type.GetPluginServicesWithAttribute(options.SharedServiceHosts);
             if (pluginServices == null)
                 continue;
 
@@ -62,10 +59,8 @@ public class PluginLoader<TPlugin> : IPluginLoader
         // Loop all found plugin types and create/instantiate instances of them
         foreach (var pluginType in pluginTypes)
         {
-            // REVIEW: var test = services.GetParameterInstances(pluginType);
-
             // Instantiate an instance of the plugin type
-            var pluginInstance = pluginType.CreatePluginInstance(sharedServiceHosts);
+            var pluginInstance = pluginType.CreatePluginInstance(options.ServiceProvider, options.SharedServiceHosts);
             if (pluginInstance == null)
             {
                 _logger.LogError($"Failed to instantiate plugin type instance '{pluginType.Name}'");
@@ -80,8 +75,8 @@ public class PluginLoader<TPlugin> : IPluginLoader
 
             // Initialize any fields or properties marked as plugin service types
             // TODO: Set/init fields/properties for all types with attribute in plugin assembly, not just plugin class
-            pluginInstance.SetPluginServiceFields(sharedServiceHosts);
-            pluginInstance.SetPluginServiceProperties(sharedServiceHosts);
+            pluginInstance.SetPluginServiceFields(options.SharedServiceHosts);
+            pluginInstance.SetPluginServiceProperties(options.SharedServiceHosts);
 
             var pluginApiKey = pluginType.GetPluginApiKey();
             // Check that key exists and is enabled
