@@ -68,6 +68,12 @@
                             <i class="fa-solid fa-bars"></i>
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownGroup">
+                            <li>
+                                <a class="dropdown-item modal-link" data-bs-toggle="modal" data-targeturl="@Url.Action("QuickView", "Instance", new { id = item.Name })">
+                                    <i class="fa-solid fa-eye"></i>&nbsp;Quick View
+                                </a>
+                            </li>
+                            <li class="dropdown-divider"></li>
                             <li><a class="dropdown-item" asp-action="Edit" asp-route-id="@item.Name"><i class="fa-solid fa-pen-to-square"></i>&nbsp;Edit</a></li>
                             <li><a class="dropdown-item" asp-action="Details" asp-route-id="@item.Name"><i class="fa-solid fa-circle-info"></i>&nbsp;Details</a></li>
                             <li><a class="dropdown-item" asp-action="Delete" asp-route-id="@item.Name"><i class="fa-solid fa-trash-can"></i>&nbsp;Delete</a></li>
@@ -79,7 +85,13 @@
     </tbody>
 </table>
 
+<div class="modal fade" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+    </div>
+</div>
+
 @section Scripts {
+    <script src="/js/dynamic-modal.js"></script>
     <script>
         $(document).ready(function() {
             $('#table-instances').DataTable({

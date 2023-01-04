@@ -68,6 +68,37 @@ public class InstanceController : Controller
         return View(model);
     }
 
+    public async Task<ActionResult> QuickView(string id)
+    {
+        var instance = await _uow.Instances.FindByIdAsync(id);
+        if (instance == null)
+        {
+            // Failed to retrieve instance from database, does it exist?
+            ModelState.AddModelError("Instance", $"Instance does not exist with id '{id}'.");
+            return View();
+        }
+
+        // Get devices assigned to instance
+        var devicesAssigned = await _uow.Devices.FindAsync(device => device.InstanceName == instance.Name);
+        var devicesAssignedTotal = devicesAssigned.Count();
+        var devicesOnline = devicesAssigned.Count(device => Utils.IsDeviceOnline(device.LastSeen ?? 0));
+        var devicesOffline = devicesAssignedTotal - devicesOnline;
+        var status = await _jobControllerService.GetStatusAsync(instance);
+        var model = new InstanceDetailsViewModel
+        {
+            Name = instance.Name,
+            Type = instance.Type,
+            MinimumLevel = instance.MinimumLevel,
+            MaximumLevel = instance.MaximumLevel,
+            Geofences = instance.Geofences,
+            Data = instance.Data,
+            DeviceCount = $"{devicesOnline}/{devicesAssignedTotal}|{devicesOffline}",
+            Devices = devicesAssigned.ToList(),
+            Status = status,
+        };
+        return PartialView(model);
+    }
+
     // GET: InstanceController/Details/5
     public async Task<ActionResult> Details(string id)
     {

@@ -1,0 +1,67 @@
+﻿@model InstanceDetailsViewModel
+<div id="modal-content" class="modal-content">
+    <div class="modal-header">
+        <h5 class="modal-title">Instance Details - @Model.Name</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    <div class="modal-body">
+
+        <dl class="row">
+            <dt class="col-sm-4">
+                @Html.DisplayNameFor(model => model.Type)
+            </dt>
+            <dd class="col-sm-8">
+                @Html.DisplayFor(model => model.Type)
+                @if (Model.Type == InstanceType.Custom)
+                {
+                    <span> (@Model.Data!.CustomInstanceType)</span>
+                }
+            </dd>
+            <dt class="col-sm-4">
+                @Html.DisplayNameFor(model => model.Status)
+            </dt>
+            <dd class="col-sm-8">
+                @Html.Raw(Model?.Status)
+            </dd>
+            <dt class="col-sm-4">
+                Level
+            </dt>
+            <dd class="col-sm-8">
+                @($"{Model?.MinimumLevel}-{Model?.MaximumLevel}")
+            </dd>
+            <dt class="col-sm-4">
+                @Html.DisplayNameFor(model => model.Geofences)
+            </dt>
+            <dd class="col-sm-8">
+                @Html.Raw(string.Join("<br>", Model?.Geofences ?? new()))
+            </dd>
+            <dt class="col-sm-2">
+                @Html.DisplayNameFor(model => model.Devices)
+            </dt>
+            <dd class="col-sm-10">
+                @if (Model?.Devices?.Any() ?? false)
+                {
+                    <ul class="list-group">
+                        @foreach (var device in Model!.Devices)
+                        {
+                            var status = Utils.GetDeviceStatus(device.LastSeen ?? 0);
+                            <li class="list-group-item">
+                                <a asp-controller="Device" asp-action="Details" asp-route-id="@device.Uuid" style="text-decoration: none; color: inherit;">
+                                    @Html.Raw($"{status} {device.Uuid}")
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p>None</p>
+                }
+            </dd>
+        </dl>
+
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+    </div>
+</div>
