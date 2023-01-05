@@ -40,7 +40,9 @@ public interface IPokemon : IBaseEntity
 
     double? Weight { get; }
 
-    double? Size { get; }
+    double? Height { get; }
+
+    ushort? Size { get; }
 
     ushort? Weather { get; }
 
