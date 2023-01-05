@@ -1,19 +1,19 @@
 ﻿@model ViewModelsModel<Assignment>
 @{
-    ViewData["Title"] = "Assignments";
+    ViewData["Title"] = localizer["Assignments"];
 }
 
-<h1>Assignments</h1>
+<h1>@ViewData["Title"]</h1>
 <br />
-@Html.DisplayFor(model => model, "Breadcrumbs", new { CurrentPage = "Assignments" })
+@Html.DisplayFor(model => model, "Breadcrumbs", new { CurrentPage = ViewData["Title"] })
 
 <p>@Html.ValidationMessage("Assignment", new { @class = "text-danger" })</p>
 
 <div class="float-start">
-    <a class="btn btn-success btn-sm" asp-action="Create">Create New</a>
+    <a class="btn btn-success btn-sm" asp-action="Create">@localizer["Create New"]</a>
 </div>
 <div class="float-end">
-    <a class="btn btn-danger btn-sm" asp-action="DeleteAll">Delete All</a>
+    <a class="btn btn-danger btn-sm" asp-action="DeleteAll">@localizer["Delete All"]</a>
 </div>
 <br />
 <br />
@@ -45,7 +45,7 @@
             <th>
                 @Html.DisplayNameFor(model => model.Items[0].Enabled)
             </th>
-            <th width="5%">Action</th>
+            <th width="5%">@localizer["Action"]</th>
         </tr>
     </thead>
     <tbody>
@@ -82,15 +82,15 @@
                             <i class="fa-solid fa-bars"></i>
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownGroup">
-                            <li><a class="dropdown-item @(item.Enabled ? "" : "disabled")" asp-action="Start" asp-route-id="@item.Id"><i class="fa-solid fa-play"></i>&nbsp;Start</a></li>
+                            <li><a class="dropdown-item @(item.Enabled ? "" : "disabled")" asp-action="Start" asp-route-id="@item.Id"><i class="fa-solid fa-play"></i>&nbsp;@localizer["Start"]</a></li>
                             @if (ViewBag?.QuestInstances?.Contains(item.InstanceName) ?? false)
                             {
-                                <li><a class="dropdown-item @(item.Enabled ? "" : "disabled")" asp-action="ClearQuests" asp-route-id="@item.Id"><i class="fa-solid fa-broom"></i>&nbsp;Clear Quests</a></li>
-                                <li><a class="dropdown-item @(item.Enabled ? "" : "disabled")" asp-action="ReQuest" asp-route-id="@item.Id"><i class="fa-solid fa-arrows-rotate"></i>&nbsp;Re-Quest</a></li>
+                                <li><a class="dropdown-item @(item.Enabled ? "" : "disabled")" asp-action="ClearQuests" asp-route-id="@item.Id"><i class="fa-solid fa-broom"></i>&nbsp;@localizer["Clear Quests"]</a></li>
+                                <li><a class="dropdown-item @(item.Enabled ? "" : "disabled")" asp-action="ReQuest" asp-route-id="@item.Id"><i class="fa-solid fa-arrows-rotate"></i>&nbsp;@localizer["Re-Quest"]</a></li>
                             }
-                            <li><a class="dropdown-item" asp-action="Edit" asp-route-id="@item.Id"><i class="fa-solid fa-pen-to-square"></i>&nbsp;Edit</a></li>
-                            <li><a class="dropdown-item" asp-action="Details" asp-route-id="@item.Id"><i class="fa-solid fa-circle-info"></i>&nbsp;Details</a></li>
-                            <li><a class="dropdown-item" asp-action="Delete" asp-route-id="@item.Id"><i class="fa-solid fa-trash-can"></i>&nbsp;Delete</a></li>
+                            <li><a class="dropdown-item" asp-action="Edit" asp-route-id="@item.Id"><i class="fa-solid fa-pen-to-square"></i>&nbsp;@localizer["Edit"]</a></li>
+                            <li><a class="dropdown-item" asp-action="Details" asp-route-id="@item.Id"><i class="fa-solid fa-circle-info"></i>&nbsp;@localizer["Details"]</a></li>
+                            <li><a class="dropdown-item" asp-action="Delete" asp-route-id="@item.Id"><i class="fa-solid fa-trash-can"></i>&nbsp;@localizer["Delete"]</a></li>
                         </ul>
                     </div>
                 </td>

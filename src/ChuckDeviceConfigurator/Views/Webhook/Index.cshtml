@@ -1,11 +1,11 @@
 ﻿@model ViewModelsModel<Webhook>
 @{
-    ViewData["Title"] = "Webhooks";
+    ViewData["Title"] = @localizer["Webhook Endpoints"];
 }
 
-<h1>Webhook Endpoints</h1>
+<h1>@ViewData["Title"]</h1>
 <br />
-@Html.DisplayFor(model => model, "Breadcrumbs", new { CurrentPage = "Webhook Endpoints" })
+@Html.DisplayFor(model => model, "Breadcrumbs", new { CurrentPage = ViewData["Title"] })
 
 <p>
     <a class="btn btn-success btn-sm" asp-action="Create">Create New</a>
@@ -32,7 +32,7 @@
             <th>
                 @Html.DisplayNameFor(model => model.Items[0].Enabled)
             </th>
-            <th width="5%">Action</th>
+            <th width="5%">@localizer["Action"]</th>
         </tr>
     </thead>
     <tbody>
@@ -63,9 +63,9 @@
                             <i class="fa-solid fa-bars"></i>
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownGroup">
-                            <li><a class="dropdown-item" asp-action="Edit" asp-route-id="@item.Name"><i class="fa-solid fa-pen-to-square"></i>&nbsp;Edit</a></li>
-                            <li><a class="dropdown-item" asp-action="Details" asp-route-id="@item.Name"><i class="fa-solid fa-circle-info"></i>&nbsp;Details</a></li>
-                            <li><a class="dropdown-item" asp-action="Delete" asp-route-id="@item.Name"><i class="fa-solid fa-trash-can"></i>&nbsp;Delete</a></li>
+                            <li><a class="dropdown-item" asp-action="Edit" asp-route-id="@item.Name"><i class="fa-solid fa-pen-to-square"></i>&nbsp;@localizer["Edit"]</a></li>
+                            <li><a class="dropdown-item" asp-action="Details" asp-route-id="@item.Name"><i class="fa-solid fa-circle-info"></i>&nbsp;@localizer["Details"]</a></li>
+                            <li><a class="dropdown-item" asp-action="Delete" asp-route-id="@item.Name"><i class="fa-solid fa-trash-can"></i>&nbsp;@localizer["Delete"]</a></li>
                         </ul>
                     </div>
                 </td>

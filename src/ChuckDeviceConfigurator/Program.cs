@@ -1,8 +1,11 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using System.Globalization;
+
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Localization;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
@@ -181,6 +184,15 @@ if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 }
+
+var locale = config.GetValue<string>("Locale");
+CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo(locale);
+CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo(locale);
+CultureInfo.DefaultThreadCurrentCulture = CultureInfo.GetCultureInfo(locale);
+
+builder.Services.AddSingleton<IStringLocalizerFactory, JsonStringLocalizerFactory>();
+builder.Services.AddSingleton<IStringLocalizer, JsonStringLocalizer>();
+builder.Services.AddLocalization();
 
 // API endpoint explorer/reference
 builder.Services.AddEndpointsApiExplorer();

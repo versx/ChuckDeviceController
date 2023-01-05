@@ -1,12 +1,12 @@
 ﻿@model QuestQueueViewModel
 @{
-    ViewData["Title"] = "Quest Queue " + Model?.Name;
+    ViewData["Title"] = "Quest Queue - " + Model?.Name;
     var confirmText = "Are you sure you want to clear all pending Pokestops from the Quest queue?";
     var clearAllText = "Clears all pending Pokestops in the Quest queue.";
     var removePokestopText = "Removes the pending Pokestops from the Quest queue.";
 }
 
-<h1>Quest Queue - @Model?.Name</h1>
+<h1>@ViewData["Title"]</h1>
 <br />
 
 <p>@Html.ValidationMessage("IvQueue", new { @class = "text-danger" })</p>
@@ -18,7 +18,7 @@
         </a>
     </div>
     <div class="checkbox float-end">
-        <label><input type="checkbox" asp-for="AutoRefresh" onchange="handleAutoRefresh(this);"> Auto Refresh</label>
+        <label><input type="checkbox" asp-for="AutoRefresh" onchange="handleAutoRefresh(this);"> @localizer["Auto Refresh"]</label>
     </div>
 </div>
 
@@ -38,9 +38,9 @@
                 @Html.DisplayNameFor(model => model.Queue[0].IsAlternative)
             </th>
             <th>
-                Location
+                @localizer["Location"]
             </th>
-            <th width="5%">Action</th>
+            <th width="5%">@localizer["Action"]</th>
         </tr>
     </thead>
     <tbody>

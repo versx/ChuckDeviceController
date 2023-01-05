@@ -1,23 +1,23 @@
 ﻿@model ManageInstanceViewModel
 @{
-    ViewData["Title"] = "Create Instance";
+    ViewData["Title"] = localizer["Create Instance"];
 }
 
-<h1>Create Instance</h1>
+<h1>@ViewData["Title"]</h1>
 
 <p>@Html.ValidationMessage("Instance", new { @class = "text-danger" })</p>
 
 <br />
-@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Instance", ControllerText = "Instances", CurrentPage = "Create Instance" })
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = localizer["Instance"], ControllerText = localizer["Instance"], CurrentPage = ViewData["Title"] })
 
 <form asp-action="Create">
     <div class="pb-4">
         <div class="float-start">
-            <h4>Instance</h4>
+            <h4>@localizer["Instance"]</h4>
         </div>
         <div class="float-end">
             <button type="submit" class="btn btn-primary btn-sm">
-                <i class="fa-solid fa-floppy-disk"></i>&nbsp;Create
+                <i class="fa-solid fa-floppy-disk"></i>&nbsp;@localizer["Create"]
             </button>
         </div>
     </div>
@@ -32,7 +32,7 @@
             </div>
             <div class="form-floating mb-3">
                 <select asp-for="Type" class="form-control" asp-items="Html.GetEnumSelectList<InstanceType>()" placeholder="Instance type">
-                    <option value="" disabled selected>Please select one</option>
+                    <option value="" disabled selected>@localizer["Please select one"]</option>
                 </select>
                 <label asp-for="Type"></label>
                 <span asp-validation-for="Type" class="text-danger"></span>
@@ -40,14 +40,14 @@
             </div>
             <div class="form-floating mb-3 custom">
                 <select asp-for="Data.CustomInstanceType" id="Data.CustomInstanceType" class="form-control" asp-items="@(new SelectList(ViewBag.CustomInstanceTypes.Keys))" placeholder="Custom instance type">
-                    <option value="" disabled selected>Please select one</option>
+                    <option value="" disabled selected>@localizer["Please select one"]</option>
                 </select>
                 <label asp-for="Data.CustomInstanceType"></label>
                 <span asp-validation-for="Data.CustomInstanceType" class="text-danger"></span>
             </div>
             <div class="form-floating mb-3 circle_route">
                 <select asp-for="Data.CircleRouteType" class="form-control" asp-items="Html.GetEnumSelectList<CircleInstanceRouteType>()" placeholder="Instance circle route type">
-                    <option value="" disabled selected>Please select one</option>
+                    <option value="" disabled selected>@localizer["Please select one"]</option>
                 </select>
                 <label asp-for="Data.CircleRouteType"></label>
                 <span asp-validation-for="Data.CircleRouteType" class="text-danger"></span>
@@ -73,13 +73,13 @@
             <div class="form-group mb-3">
                 <label asp-for="Geofences"></label>
                 <select asp-for="Geofences" class="form-control" asp-items="@(new SelectList(ViewBag.Geofences, "Name", "Name"))" placeholder="Instance geofences">
-                    <option value="" disabled selected>Please select one or more</option>
+                    <option value="" disabled selected>@localizer["Please select one or more"]</option>
                 </select>
                 <span asp-validation-for="Geofences" class="text-danger"></span>
             </div>
             <div class="form-floating mb-3 pokemon_iv">
                 <select asp-for="Data.IvList" class="form-control" asp-items="@(new SelectList(ViewBag.IvLists, "Name", "Name"))" placeholder="Instance IV list">
-                    <option value="" disabled selected>Please select one</option>
+                    <option value="" disabled selected>@localizer["Please select one"]</option>
                 </select>
                 <label asp-for="Data.IvList"></label>
                 <span asp-validation-for="Data.IvList" class="text-danger"></span>
@@ -90,23 +90,23 @@
                 <span asp-validation-for="Data.IvQueueLimit" class="text-danger"></span>
             </div>
             <div class="checkbox lure_encounters mb-3">
-                <label><input type="checkbox" asp-for="Data.EnableLureEncounters"> Enable Lure Encounters</label>
+                <label><input type="checkbox" asp-for="Data.EnableLureEncounters"> @localizer["Enable Lure Encounters"]</label>
             </div>
             <div class="form-floating mb-3 bootstrap">
                 <select asp-for="Data.BootstrapCompleteInstanceName" class="form-control" asp-items="@(new SelectList(ViewBag.Instances, "Name", "Name"))" placeholder="Bootstrap instance name">
-                    <option value="" disabled selected>Please select one</option>
+                    <option value="" disabled selected>@localizer["Please select one"]</option>
                 </select>
                 <label asp-for="Data.BootstrapCompleteInstanceName"></label>
                 <span asp-validation-for="Data.BootstrapCompleteInstanceName" class="text-danger"></span>
             </div>
             <div class="form-floating mb-3 bootstrap">
                 <input asp-for="Data.CircleSize" class="form-control" min="5" max="1000" step="1" placeholder="Instance circle size" />
-                <label asp-for="Data.CircleSize"></label> <small class="text-muted"><i>(meters i.e: `70, 500, 750, etc`)</i></small>
+                <label asp-for="Data.CircleSize"></label> <small class="text-muted"><i>(@localizer["meters i.e: `70, 500, 750, etc`"])</i></small>
                 <span asp-validation-for="Data.CircleSize" class="text-danger"></span>
             </div>
             <div class="form-floating mb-3 quests">
                 <select asp-for="Data.QuestMode" class="form-control" asp-items="Html.GetEnumSelectList<QuestMode>()" placeholder="Instance quest mode">
-                    <option value="" disabled selected>Please select one</option>
+                    <option value="" disabled selected>@localizer["Please select one"]</option>
                 </select>
                 <label asp-for="Data.QuestMode"></label>
                 <span asp-validation-for="Data.QuestMode" class="text-danger"></span>
@@ -128,34 +128,34 @@
             </div>
             <div class="form-floating mb-3 quests">
                 <select asp-for="Data.TimeZone" class="form-control" asp-items="@(new SelectList(ViewBag.TimeZones, "Name", "Name"))" placeholder="Instance time zone">
-                    <option value="" disabled selected>Please select one</option>
+                    <option value="" disabled selected>@localizer["Please select one"]</option>
                 </select>
                 <label asp-for="Data.TimeZone"></label>
                 <span asp-validation-for="Data.TimeZone" class="text-danger"></span>
             </div>
             <div class="checkbox quests mb-3">
-                <label><input type="checkbox" asp-for="Data.EnableDst"> Enable Daylight Savings Time</label>
+                <label><input type="checkbox" asp-for="Data.EnableDst"> @localizer["Enable Daylight Savings Time"]</label>
             </div>
             <div class="checkbox quests mb-3">
-                <label><input type="checkbox" asp-for="Data.UseWarningAccounts"> Use Warning Accounts</label>
+                <label><input type="checkbox" asp-for="Data.UseWarningAccounts"> @localizer["Use Warning Accounts"]</label>
             </div>
             <div class="checkbox quests mb-3">
-                <label><input type="checkbox" asp-for="Data.IgnoreS2CellBootstrap"> Ignore S2 Cell Bootstrapping</label>
+                <label><input type="checkbox" asp-for="Data.IgnoreS2CellBootstrap"> @localizer["Ignore S2 Cell Bootstrapping"]</label>
             </div>
             <div class="checkbox bootstrap mb-3">
-                <label><input type="checkbox" asp-for="Data.FastBootstrapMode"> Enable Fast Bootstrapping (5s vs 10s load time)</label>
+                <label><input type="checkbox" asp-for="Data.FastBootstrapMode"> @localizer["Enable Fast Bootstrapping"] (@localizer["5s vs 10s load time"])</label>
             </div>
             <div class="checkbox bootstrap mb-3">
-                <label><input type="checkbox" asp-for="Data.OptimizeBootstrapRoute"> Optimize Bootstrap Route</label>
+                <label><input type="checkbox" asp-for="Data.OptimizeBootstrapRoute"> @localizer["Optimize Bootstrap Route"]</label>
             </div>
             <div class="checkbox spawnpoints mb-3">
-                <label><input type="checkbox" asp-for="Data.OptimizeSpawnpointsRoute"> Optimize Spawnpoints Route</label>
+                <label><input type="checkbox" asp-for="Data.OptimizeSpawnpointsRoute"> @localizer["Optimize Spawnpoints Route"]</label>
             </div>
             <div class="checkbox spawnpoints mb-3">
-                <label><input type="checkbox" asp-for="Data.OnlyUnknownSpawnpoints"> Only Unknown Spawnpoints</label>
+                <label><input type="checkbox" asp-for="Data.OnlyUnknownSpawnpoints"> @localizer["Only Unknown Spawnpoints"]</label>
             </div>
             <div class="checkbox dynamic mb-3">
-                <label><input type="checkbox" asp-for="Data.OptimizeDynamicRoute"> Optimize Dynamic Route</label>
+                <label><input type="checkbox" asp-for="Data.OptimizeDynamicRoute"> @localizer["Optimize Dynamic Route"]</label>
             </div>
             <div class="form-floating mb-3 leveling">
                 <input asp-for="Data.LevelingRadius" class="form-control" min="1" max="100000" placeholder="Instance leveling radius">
@@ -163,29 +163,29 @@
                 <span asp-validation-for="Data.LevelingRadius" class="text-danger"></span>
             </div>
             <div class="checkbox leveling mb-3">
-                <label><input type="checkbox" asp-for="Data.StoreLevelingData"> Save Leveling Data</label>
+                <label><input type="checkbox" asp-for="Data.StoreLevelingData"> @localizer["Save Leveling Data"]</label>
             </div>
             <div class="form-floating mb-3 leveling">
                 <input asp-for="Data.StartingCoordinate" class="form-control" placeholder="Instance starting coordinate">
-                <label asp-for="Data.StartingCoordinate"></label> <small class="text-muted"><i>(Leave blank to use first in route)</i></small>
+                <label asp-for="Data.StartingCoordinate"></label> <small class="text-muted"><i>(@localizer["Leave blank to use first in route"])</i></small>
                 <span asp-validation-for="Data.StartingCoordinate" class="text-danger"></span>
             </div>
             <div class="form-floating mb-3">
                 <select asp-for="Data.AccountGroup" class="form-control" asp-items="@(new SelectList(ViewBag.AccountGroups))" placeholder="Available account group name">
-                    <option value="" disabled selected>Please select one</option>
+                    <option value="" disabled selected>@localizer["Please select one"]</option>
                 </select>
                 <label asp-for="Data.AccountGroup"></label>
                 <span asp-validation-for="Data.AccountGroup" class="text-danger"></span>
             </div>
             <div class="checkbox mb-3">
-                <label><input type="checkbox" asp-for="Data.IsEvent"> Is Unique Event</label>
+                <label><input type="checkbox" asp-for="Data.IsEvent"> @localizer["Is Unique Event"]</label>
             </div>
         </div>
         <div class="col-lg-6 col-md-12">
             <div class="form-group mb-3">
-                <label asp-for="AssignedDevices"></label> <small class="text-muted"><i>(optional)</i></small>
+                <label asp-for="AssignedDevices"></label> <small class="text-muted"><i>(@localizer["optional"])</i></small>
                 <select asp-for="AssignedDevices" class="form-control" size="15" asp-items="@(new SelectList(ViewBag.Devices, "Uuid", "Uuid"))" placeholder="Instance assigned devices">
-                    <option value="" disabled selected>Please select one</option>
+                    <option value="" disabled selected>@localizer["Please select one"]</option>
                 </select>
                 <span asp-validation-for="AssignedDevices" class="text-danger"></span>
             </div>

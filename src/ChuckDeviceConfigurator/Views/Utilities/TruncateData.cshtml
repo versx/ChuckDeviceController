@@ -1,15 +1,15 @@
 ﻿@{
-    ViewData["Title"] = "Utilities - Truncate Data";
+    ViewData["Title"] = localizer["Utilities - Truncate Data"];
 }
 
-<h1>Utilities</h1>
+<h1>@localizer["Utilities"]</h1>
 
 <p>@Html.ValidationMessage("Utilities", new { @class = "text-danger" })</p>
 
 <h4>Truncate Data</h4>
 
 <br />
-@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Utilities", ControllerText = "Utilities", CurrentPage = "Truncate Data" })
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = localizer["Utilities"], ControllerText = localizer["Utilities"], CurrentPage = localizer["Truncate Data"] })
 
 <hr />
 <div class="row">

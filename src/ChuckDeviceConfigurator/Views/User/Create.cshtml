@@ -1,10 +1,10 @@
 ﻿@model CreateUserViewModel
 @{
-    ViewData["Title"] = "Create User";
+    ViewData["Title"] = "Create User Account";
     Model?.Roles.Sort((a, b) => a.RoleName?.CompareTo(b.RoleName) ?? 0);
 }
 
-<h1>Create User Account</h1>
+<h1>@ViewData["Title"]</h1>
 
 <p>@Html.ValidationSummary("", new { @class = "text-danger" })</p>
 
