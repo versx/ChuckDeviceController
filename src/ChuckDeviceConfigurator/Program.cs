@@ -237,9 +237,9 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork<ControllerDbContext>>();
 #region Services
 
 builder.Services.AddHttpContextAccessor();
-//builder.Services
-//    .AddControllersWithViews()
-//    .AddRazorRuntimeCompilation();
+builder.Services
+    .AddControllersWithViews()
+    .AddRazorRuntimeCompilation();
 builder.Services
     .AddRazorPages() // <- Required for plugins to render Razor pages
     .AddRazorRuntimeCompilation();
