@@ -93,7 +93,7 @@ public class DeviceGroupController : Controller
             var deviceGroup = new DeviceGroup
             {
                 Name = name,
-                DeviceUuids = devices,
+                DeviceUuids = devices!,
             };
 
             // Add device group to database
@@ -158,7 +158,7 @@ public class DeviceGroupController : Controller
             }
 
             deviceGroup.Name = name;
-            deviceGroup.DeviceUuids = devices;
+            deviceGroup.DeviceUuids = devices!;
 
             // Update device group to database
             await _uow.DeviceGroups.UpdateAsync(deviceGroup);
