@@ -288,7 +288,8 @@
     - [None](#F-ChuckDeviceController-Plugin-StaticFilesLocation-None 'ChuckDeviceController.Plugin.StaticFilesLocation.None')
     - [Resources](#F-ChuckDeviceController-Plugin-StaticFilesLocation-Resources 'ChuckDeviceController.Plugin.StaticFilesLocation.Resources')
 - [StaticFilesLocationAttribute](#T-ChuckDeviceController-Plugin-StaticFilesLocationAttribute 'ChuckDeviceController.Plugin.StaticFilesLocationAttribute')
-    - [#ctor(views,webRoot)](#M-ChuckDeviceController-Plugin-StaticFilesLocationAttribute-#ctor-ChuckDeviceController-Plugin-StaticFilesLocation,ChuckDeviceController-Plugin-StaticFilesLocation- 'ChuckDeviceController.Plugin.StaticFilesLocationAttribute.#ctor(ChuckDeviceController.Plugin.StaticFilesLocation,ChuckDeviceController.Plugin.StaticFilesLocation)')
+    - [#ctor(views,webRoot,pages)](#M-ChuckDeviceController-Plugin-StaticFilesLocationAttribute-#ctor-ChuckDeviceController-Plugin-StaticFilesLocation,ChuckDeviceController-Plugin-StaticFilesLocation,ChuckDeviceController-Plugin-StaticFilesLocation- 'ChuckDeviceController.Plugin.StaticFilesLocationAttribute.#ctor(ChuckDeviceController.Plugin.StaticFilesLocation,ChuckDeviceController.Plugin.StaticFilesLocation,ChuckDeviceController.Plugin.StaticFilesLocation)')
+    - [Pages](#P-ChuckDeviceController-Plugin-StaticFilesLocationAttribute-Pages 'ChuckDeviceController.Plugin.StaticFilesLocationAttribute.Pages')
     - [Views](#P-ChuckDeviceController-Plugin-StaticFilesLocationAttribute-Views 'ChuckDeviceController.Plugin.StaticFilesLocationAttribute.Views')
     - [WebRoot](#P-ChuckDeviceController-Plugin-StaticFilesLocationAttribute-WebRoot 'ChuckDeviceController.Plugin.StaticFilesLocationAttribute.WebRoot')
 
@@ -692,7 +693,7 @@ custom tile-like elements on the dashboard.
 ##### Summary
 
 Gets or sets the Mvc controller action name to execute
-when the navbar header is clicked.
+    when the navbar header is clicked.
 
 <a name='P-ChuckDeviceController-Plugin-IDashboardTile-ControllerName'></a>
 ### ControllerName `property`
@@ -700,7 +701,7 @@ when the navbar header is clicked.
 ##### Summary
 
 Gets or sets the Mvc controller name the action name
-should relate to when the tile is clicked.
+    should relate to when the tile is clicked.
 
 <a name='P-ChuckDeviceController-Plugin-IDashboardTile-Icon'></a>
 ### Icon `property`
@@ -1179,7 +1180,7 @@ job controller service.
 
 ##### Summary
 
-Gets a list of all registered custom job controller instance types.
+Gets a dictionary of all registered custom job controller instance types.
 
 <a name='P-ChuckDeviceController-Plugin-IJobControllerServiceHost-Devices'></a>
 ### Devices `property`
@@ -2276,7 +2277,10 @@ from plugins to separate tabs.
 ##### Summary
 
 Gets or sets the html anchor tag name of the tab.
-Note: No hash symbol needed.
+
+##### Remarks
+
+No hash symbol is needed.
 
 <a name='P-ChuckDeviceController-Plugin-ISettingsTab-Class'></a>
 ### Class `property`
@@ -3339,7 +3343,10 @@ Instantiates a new instance of the [SettingsTab](#T-ChuckDeviceController-Plugin
 ##### Summary
 
 Gets or sets the html anchor tag name of the tab.
-Note: No hash symbol needed.
+
+##### Remarks
+
+No hash symbol is needed.
 
 <a name='P-ChuckDeviceController-Plugin-SettingsTab-Class'></a>
 ### Class `property`
@@ -3536,11 +3543,12 @@ ChuckDeviceController.Plugin
 
 ##### Summary
 
-Defines where the static files or folders (i.e. \`wwwroot\` and \`Views\`) will
+Defines where the static files or folders will
     be located, relevant to the plugin's path.
+    (i.e. \`wwwroot\`, \`Views\`, and \`Pages\`)
 
-<a name='M-ChuckDeviceController-Plugin-StaticFilesLocationAttribute-#ctor-ChuckDeviceController-Plugin-StaticFilesLocation,ChuckDeviceController-Plugin-StaticFilesLocation-'></a>
-### #ctor(views,webRoot) `constructor`
+<a name='M-ChuckDeviceController-Plugin-StaticFilesLocationAttribute-#ctor-ChuckDeviceController-Plugin-StaticFilesLocation,ChuckDeviceController-Plugin-StaticFilesLocation,ChuckDeviceController-Plugin-StaticFilesLocation-'></a>
+### #ctor(views,webRoot,pages) `constructor`
 
 ##### Summary
 
@@ -3553,6 +3561,15 @@ Instantiates a new instance of the [StaticFilesLocationAttribute](#T-ChuckDevice
 | ---- | ---- | ----------- |
 | views | [ChuckDeviceController.Plugin.StaticFilesLocation](#T-ChuckDeviceController-Plugin-StaticFilesLocation 'ChuckDeviceController.Plugin.StaticFilesLocation') | Determines where the Mvc \`Views\` folder is located. |
 | webRoot | [ChuckDeviceController.Plugin.StaticFilesLocation](#T-ChuckDeviceController-Plugin-StaticFilesLocation 'ChuckDeviceController.Plugin.StaticFilesLocation') | Determines where the \`wwwroot\` folder is located. |
+| pages | [ChuckDeviceController.Plugin.StaticFilesLocation](#T-ChuckDeviceController-Plugin-StaticFilesLocation 'ChuckDeviceController.Plugin.StaticFilesLocation') | Determines where the \`Pages\` folder is located. |
+
+<a name='P-ChuckDeviceController-Plugin-StaticFilesLocationAttribute-Pages'></a>
+### Pages `property`
+
+##### Summary
+
+Gets an enum value defining where the plugin's Razor Pages folder is located.
+    i.e. \`Pages\` folder.
 
 <a name='P-ChuckDeviceController-Plugin-StaticFilesLocationAttribute-Views'></a>
 ### Views `property`
