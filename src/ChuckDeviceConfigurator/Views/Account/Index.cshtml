@@ -1,33 +1,33 @@
 ﻿@model AccountStatisticsViewModel
 @{
-    ViewData["Title"] = "Accounts";
+    ViewData["Title"] = localizer["Accounts"];
 }
 
-<h1>Accounts</h1>
+<h1>@ViewData["Title"]</h1>
 <br />
-@Html.DisplayFor(model => model, "Breadcrumbs", new { CurrentPage = "Accounts" })
+@Html.DisplayFor(model => model, "Breadcrumbs", new { CurrentPage = ViewData["Title"] })
 
 <div class="row">
     <div class="col">
         @await Html.PartialAsync("_AccountGroupSelector")
     </div>
     <div class="col">
-        <a class="btn btn-success btn-sm float-end" asp-action="Add">Import Accounts</a>
+        <a class="btn btn-success btn-sm float-end" asp-action="Add">@localizer["Import Accounts"]</a>
     </div>
 </div>
 
 <ul class="nav nav-pills nav-justified mb-3" id="pills-tab" role="tablist">
     <li class="nav-item" role="presentation">
-        <a class="nav-link active" id="pills-overview-tab" data-bs-toggle="tab" data-bs-target="#overview" href="#overview" role="tab" aria-controls="pills-overview" aria-selected="true">Overview</a>
+        <a class="nav-link active" id="pills-overview-tab" data-bs-toggle="tab" data-bs-target="#overview" href="#overview" role="tab" aria-controls="pills-overview" aria-selected="true">@localizer["Overview"]</a>
     </li>
     <li class="nav-item" role="presentation">
-        <a class="nav-link" id="pills-accounts-tab" data-bs-toggle="tab" data-bs-target="#accounts" href="#accounts" role="tab" aria-controls="pills-accounts" aria-selected="false">Accounts</a>
+        <a class="nav-link" id="pills-accounts-tab" data-bs-toggle="tab" data-bs-target="#accounts" href="#accounts" role="tab" aria-controls="pills-accounts" aria-selected="false">@localizer["Accounts"]</a>
     </li>
 </ul>
 <div class="tab-content">
     <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="pills-overview-tab">
         <div class="card text-center">
-            <div class="card-header fw-bold">Accounts Overview</div>
+            <div class="card-header fw-bold">@localizer["Accounts Overview"]</div>
             <div class="card-body">
                 <div class="container">
                     <div class="row">
@@ -412,7 +412,7 @@
                     <th class="col">
                         @Html.DisplayNameFor(model => model.Accounts[0].GroupName)
                     </th>
-                    <th width="5%">Action</th>
+                    <th width="5%">@localizer["Action"]</th>
                 </tr>
             </thead>
             <tbody>

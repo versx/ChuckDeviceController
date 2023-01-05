@@ -1,23 +1,23 @@
 ﻿@model IvList
 @{
-    ViewData["Title"] = "IV List Details " + Model?.Name;
+    ViewData["Title"] = localizer["IV List Details {0}", Model.Name];
 }
 
-<h1>IV List Details</h1>
+<h1>@localizer["IV List Details"]</h1>
 
 <p>@Html.ValidationMessage("IvList", new { @class = "text-danger" })</p>
 
 <br />
-@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "IvList", ControllerText = "IV Lists", CurrentPage = "IV List Details" })
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "IvList", ControllerText = localizer["IV Lists"], CurrentPage = localizer["IV List Details"] })
 
 <div>
-    <h4>IV List '@Model?.Name'</h4>
+    <h4>@localizer["IV List '{0}'", Model.Name]</h4>
     <div>
         <a asp-action="Edit" asp-route-id="@Model?.Name" class="btn btn-primary">
-            <i class="fa-solid fa-pen-to-square"></i>&nbsp;Edit
+            <i class="fa-solid fa-pen-to-square"></i>&nbsp;@localizer["Edit"]
         </a>
         <a asp-action="Delete" asp-route-id="@Model?.Name" class="btn btn-danger">
-            <i class="fa-solid fa-trash"></i>&nbsp;Delete
+            <i class="fa-solid fa-trash"></i>&nbsp;@localizer["Delete"]
         </a>
     </div>
 </div>

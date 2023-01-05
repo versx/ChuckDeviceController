@@ -1,32 +1,32 @@
 ﻿@model ManageUserViewModel
 @{
-    ViewData["Title"] = "Manage User " + Model?.UserName;
+    ViewData["Title"] = localizer["Manage User Account {0}", Model.UserName];
     Layout = "~/Views/Shared/_Layout.cshtml";
-    Model?.Roles.Sort((a, b) => a.RoleName?.CompareTo(b.RoleName) ?? 0);
+    Model.Roles.Sort((a, b) => a.RoleName?.CompareTo(b.RoleName) ?? 0);
 }
 
-<h1>Manage User Account</h1>
+<h1>@localizer["Manage User Account"]</h1>
 
 <p>@Html.ValidationMessage("User", new { @class = "text-danger" })</p>
 
 <br />
-@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "User", ControllerText = "Users", CurrentPage = "Manage User" })
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "User", ControllerText = localizer["Users"], CurrentPage = localizer["Manage User Account"] })
 
 <form asp-action="Manage" asp-route-userId="@ViewBag.UserId">
     <div class="pb-4">
         <div class="float-start">
-            <h4>User Account '@(Model?.UserName)'</h4>
+            <h4>@localizer["User Account '{0}'", Model.UserName]</h4>
         </div>
         <div class="float-end">
-            @if (Model?.UserName != Strings.DefaultUserName)
+            @if (Model.UserName != Strings.DefaultUserName)
             {
                 <a asp-action="Delete" asp-route-id="@ViewBag.UserId" class="btn btn-danger btn-sm">
-                    <i class="fa-solid fa-trash"></i>&nbsp;Delete
+                    <i class="fa-solid fa-trash"></i>&nbsp;@localizer["Delete"]
                 </a>
             }
             &nbsp;
             <button type="submit" class="btn btn-primary btn-sm">
-                <i class="fa-solid fa-floppy-disk"></i>&nbsp;Save
+                <i class="fa-solid fa-floppy-disk"></i>&nbsp;@localizer["Save"]
             </button>
         </div>
     </div>
@@ -65,7 +65,7 @@
         </div>
     </div>
     <div class="card">
-        <div class="card-header"><b>User Permissions</b></div>
+        <div class="card-header"><b>@localizer["User Account Permissions"]</b></div>
         <div class="card-body">
             @for (var i = 0; i < Model?.Roles.Count; i++)
             {

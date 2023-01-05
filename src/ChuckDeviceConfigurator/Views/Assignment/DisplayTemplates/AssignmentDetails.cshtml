@@ -5,7 +5,7 @@
         @Html.DisplayNameFor(model => model.SourceInstanceName)
     </dt>
     <dd class="col-sm-10">
-        @(string.IsNullOrEmpty(Model?.SourceInstanceName) ? "Any" : Model.SourceInstanceName)
+        @(string.IsNullOrEmpty(Model?.SourceInstanceName) ? localizer["Any"] : Model.SourceInstanceName)
     </dd>
     <dt class="col-sm-2">
         @Html.DisplayNameFor(model => model.InstanceName)
@@ -35,7 +35,7 @@
         @Html.DisplayNameFor(model => model.Date)
     </dt>
     <dd class="col-sm-10">
-        @(Model?.Date == null ? "Any" : Model?.Date)
+        @(Model?.Date == null ? localizer["Any"] : Model?.Date)
     </dd>
     <dt class="col-sm-2">
         @Html.DisplayNameFor(model => model.Time)

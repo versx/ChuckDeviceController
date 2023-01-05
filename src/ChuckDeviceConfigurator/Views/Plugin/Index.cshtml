@@ -1,19 +1,19 @@
 ﻿@using ChuckDeviceController.Extensions
 @model PluginsViewModel
 @{
-    ViewData["Title"] = "Plugin Manager";
+    ViewData["Title"] = localizer["Plugin Manager"];
 }
 
-<h1>Plugin Manager</h1>
+<h1>@ViewData["Title"]</h1>
 <br />
-@Html.DisplayFor(model => model, "Breadcrumbs", new { CurrentPage = "Plugins" })
+@Html.DisplayFor(model => model, "Breadcrumbs", new { CurrentPage = ViewData["Title"] })
 
 <ul class="nav nav-pills nav-justified mb-3" id="pills-tab" role="tablist">
     <li class="nav-item" role="presentation">
-        <a class="nav-link active" id="pills-plugins-tab" data-bs-toggle="tab" data-bs-target="#plugins" href="#plugins" role="tab" aria-controls="pills-plugins" aria-selected="true">Plugins</a>
+        <a class="nav-link active" id="pills-plugins-tab" data-bs-toggle="tab" data-bs-target="#plugins" href="#plugins" role="tab" aria-controls="pills-plugins" aria-selected="true">@localizer["Plugins"]</a>
     </li>
     <li class="nav-item" role="presentation">
-        <a class="nav-link" id="pills-apikeys-tab" data-bs-toggle="tab" data-bs-target="#apikeys" href="#apikeys" role="tab" aria-controls="pills-apikeys" aria-selected="false">API Keys</a>
+        <a class="nav-link" id="pills-apikeys-tab" data-bs-toggle="tab" data-bs-target="#apikeys" href="#apikeys" role="tab" aria-controls="pills-apikeys" aria-selected="false">@localizer["API Keys"]</a>
     </li>
 </ul>
 <div class="tab-content">
@@ -36,7 +36,7 @@
                     <th>
                         @Html.DisplayNameFor(model => model.Plugins[0].Plugin.Version)
                     </th>
-                    <th width="5%">Action</th>
+                    <th width="5%">@localizer["Action"]</th>
                 </tr>
             </thead>
             <tbody>
@@ -65,9 +65,9 @@
                                     <i class="fa-solid fa-bars"></i>
                                 </button>
                                 <ul class="dropdown-menu" aria-labelledby="dropdownGroup">
-                                    <li><a class="dropdown-item" asp-controller="Plugin" asp-action="Manage" asp-route-id="@item.Plugin.Name" asp-route-enabled="@(!isEnabled)"><i class="fa-solid @(isEnabled ? "fa-stop" : "fa-play")"></i>&nbsp; @(isEnabled ? "Disable" : "Enable")</a></li>
-                                    <li><a class="dropdown-item" asp-controller="Plugin" asp-action="Reload" asp-route-id="@item.Plugin.Name"><i class="fa-solid fa-arrows-rotate"></i>&nbsp;Reload</a></li>
-                                    <li><a class="dropdown-item" asp-controller="Plugin" asp-action="Details" asp-route-id="@item.Plugin.Name"><i class="fa-solid fa-circle-info"></i>&nbsp;Details</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Plugin" asp-action="Manage" asp-route-id="@item.Plugin.Name" asp-route-enabled="@(!isEnabled)"><i class="fa-solid @(isEnabled ? "fa-stop" : "fa-play")"></i>&nbsp; @(isEnabled ? localizer["Disable"] : localizer["Enable"])</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Plugin" asp-action="Reload" asp-route-id="@item.Plugin.Name"><i class="fa-solid fa-arrows-rotate"></i>&nbsp;@localizer["Reload"]</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Plugin" asp-action="Details" asp-route-id="@item.Plugin.Name"><i class="fa-solid fa-circle-info"></i>&nbsp;@localizer["Details"]</a></li>
                                 </ul>
                             </div>
                         </td>
@@ -78,7 +78,7 @@
     </div>
     <div class="tab-pane fade" id="apikeys" role="tabpanel" aria-labelledby="pills-apikeys-tab">
         <p class="float-end">
-            <a class="btn btn-success btn-sm" asp-controller="ApiKey" asp-action="Create">Create New</a>
+            <a class="btn btn-success btn-sm" asp-controller="ApiKey" asp-action="Create">@localizer["Create New"]</a>
         </p>
         <br />
         <br />
@@ -95,12 +95,12 @@
                         @Html.DisplayNameFor(model => model.ApiKeys[0].ExpirationTimestamp)
                     </th>
                     <th>
-                        No. Plugins
+                        @localizer["No. Plugins"]
                     </th>
                     <th>
                         @Html.DisplayNameFor(model => model.ApiKeys[0].IsEnabled)
                     </th>
-                    <th width="5%">Action</th>
+                    <th width="5%">@localizer["Action"]</th>
                 </tr>
             </thead>
             <tbody>
@@ -114,7 +114,7 @@
                             @Html.Raw(string.Join("<br>", item.Scope.ToString().Split(',')))
                         </td>
                         <td>
-                            @(item.ExpirationTimestamp == 0 ? "Never" : item.ExpirationTimestamp.FromSeconds().Date.ToLocalTime().ToString("yyyy/MM/dd"))
+                            @(item.ExpirationTimestamp == 0 ? @localizer["Never"] : item.ExpirationTimestamp.FromSeconds().Date.ToLocalTime().ToString("yyyy/MM/dd"))
                         </td>
                         <td>
                             @(Model.Plugins.Count(plugin => plugin.ApiKey.Id == item.Id))
@@ -130,12 +130,12 @@
                                 <ul class="dropdown-menu" aria-labelledby="dropdownGroup">
                                         <li>
                                             <button class="dropdown-item" onclick="copyToClipboard('@(item.Key)');">
-                                                <i class="fa-solid fa-copy"></i>&nbsp;Copy Key
+                                                <i class="fa-solid fa-copy"></i>&nbsp;@localizer["Copy Key"]
                                             </button>
                                         </li>
-                                    <li><a class="dropdown-item" asp-controller="ApiKey" asp-action="Details" asp-route-id="@item.Id"><i class="fa-solid fa-circle-info"></i>&nbsp;Details</a></li>
-                                    <li><a class="dropdown-item" asp-controller="ApiKey" asp-action="Edit" asp-route-id="@item.Id"><i class="fa-solid fa-pen-to-square"></i>&nbsp;Edit</a></li>
-                                    <li><a class="dropdown-item" asp-controller="ApiKey" asp-action="Delete" asp-route-id="@item.Id"><i class="fa-solid fa-trash"></i>&nbsp;Delete</a></li>
+                                    <li><a class="dropdown-item" asp-controller="ApiKey" asp-action="Details" asp-route-id="@item.Id"><i class="fa-solid fa-circle-info"></i>&nbsp;@localizer["Details"]</a></li>
+                                    <li><a class="dropdown-item" asp-controller="ApiKey" asp-action="Edit" asp-route-id="@item.Id"><i class="fa-solid fa-pen-to-square"></i>&nbsp;@localizer["Edit"]</a></li>
+                                    <li><a class="dropdown-item" asp-controller="ApiKey" asp-action="Delete" asp-route-id="@item.Id"><i class="fa-solid fa-trash"></i>&nbsp;@localizer["Delete"]</a></li>
                                 </ul>
                             </div>
                         </td>

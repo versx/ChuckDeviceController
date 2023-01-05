@@ -28,7 +28,7 @@
         @Html.DisplayNameFor(model => model.Types)
     </dt>
     <dd class="col-sm-10">
-        @Html.Raw(string.Join("<br>", Model?.Types ?? new()))
+        @Html.Raw(string.Join("<br>", Model.Types ?? new()))
     </dd>
     <dt class="col-sm-2">
         @Html.DisplayNameFor(model => model.Delay)
@@ -40,99 +40,99 @@
         @Html.DisplayNameFor(model => model.Geofences)
     </dt>
     <dd class="col-sm-10">
-        @((Model?.Geofences?.Any() ?? false) ? string.Join(", ", Model?.Geofences ?? new()) : "Any")
+        @((Model.Geofences?.Any() ?? false) ? string.Join(", ", Model.Geofences ?? new()) : localizer["Any"])
     </dd>
     <dt class="col-sm-2">
         @Html.DisplayNameFor(model => model.Enabled)
     </dt>
     <dd class="col-sm-10">
-        @Html.Raw(Utils.FormatBoolean(Model?.Enabled ?? false, html: true))
+        @Html.Raw(Utils.FormatBoolean(Model.Enabled, html: true))
     </dd>
 </dl>
 
 <div class="card">
-    <div class="card-header">Blacklisted Data</div>
+    <div class="card-header">@localizer["Blacklisted Data"]</div>
     <div class="card-body">
         <dl class="row">
-            @if (Model?.Data?.PokemonIds.Any() ?? false)
+            @if (Model.Data?.PokemonIds?.Any() ?? false)
             {
                 <dt class="col-sm-2">
-                    @Html.DisplayNameFor(model => model.Data.PokemonIds)
+                    @Html.DisplayNameFor(model => model.Data!.PokemonIds)
                 </dt>
                 <dd class="col-sm-10">
-                    @Html.Raw(string.Join("<br>", (Model?.Data?.PokemonIds ?? new()).Select(GetPokemonDisplay)))
+                    @Html.Raw(string.Join("<br>", (Model.Data?.PokemonIds ?? new()).Select(GetPokemonDisplay)))
                 </dd>
             }
-            @if (Model?.Data?.PokestopIds.Any() ?? false)
+            @if (Model.Data?.PokestopIds?.Any() ?? false)
             {
                 <dt class="col-sm-2">
-                    @Html.DisplayNameFor(model => model.Data.PokestopIds)
+                    @Html.DisplayNameFor(model => model.Data!.PokestopIds)
                 </dt>
                 <dd class="col-sm-10">
-                    @Html.Raw(string.Join("<br>", Model?.Data?.PokestopIds ?? new()))
+                    @Html.Raw(string.Join("<br>", Model.Data?.PokestopIds ?? new()))
                 </dd>
             }
-            @if (Model?.Data?.LureIds.Any() ?? false)
+            @if (Model.Data?.LureIds?.Any() ?? false)
             {
                 <dt class="col-sm-2">
-                    @Html.DisplayNameFor(model => model.Data.LureIds)
+                    @Html.DisplayNameFor(model => model.Data!.LureIds)
                 </dt>
                 <dd class="col-sm-10">
-                    @Html.Raw(string.Join("<br>", (Model?.Data?.LureIds ?? new()).Select(id => Translator.Instance.GetItem(id))))
+                    @Html.Raw(string.Join("<br>", (Model.Data?.LureIds ?? new()).Select(id => Translator.Instance.GetItem(id))))
                 </dd>
             }
-            @if (Model?.Data?.InvasionIds.Any() ?? false)
+            @if (Model.Data?.InvasionIds?.Any() ?? false)
             {
                 <dt class="col-sm-2">
-                    @Html.DisplayNameFor(model => model.Data.InvasionIds)
+                    @Html.DisplayNameFor(model => model.Data!.InvasionIds)
                 </dt>
                 <dd class="col-sm-10">
-                    @Html.Raw(string.Join("<br>", (Model?.Data?.InvasionIds ?? new()).Select(id => Translator.Instance.GetGruntType(id))))
+                    @Html.Raw(string.Join("<br>", (Model.Data?.InvasionIds ?? new()).Select(id => Translator.Instance.GetGruntType(id))))
                 </dd>
             }
-            @if (Model?.Data?.GymTeamIds.Any() ?? false)
+            @if (Model.Data?.GymTeamIds?.Any() ?? false)
             {
                 <dt class="col-sm-2">
-                    @Html.DisplayNameFor(model => model.Data.GymTeamIds)
+                    @Html.DisplayNameFor(model => model.Data!.GymTeamIds)
                 </dt>
                 <dd class="col-sm-10">
-                    @Html.Raw(string.Join(", ", (Model?.Data?.GymTeamIds ?? new()).Select(id => Translator.Instance.GetTeam(id))))
+                    @Html.Raw(string.Join(", ", (Model.Data?.GymTeamIds ?? new()).Select(id => Translator.Instance.GetTeam(id))))
                 </dd>
             }
-            @if (Model?.Data?.GymIds.Any() ?? false)
+            @if (Model.Data?.GymIds?.Any() ?? false)
             {
                 <dt class="col-sm-2">
-                    @Html.DisplayNameFor(model => model.Data.GymIds)
+                    @Html.DisplayNameFor(model => model.Data!.GymIds)
                 </dt>
                 <dd class="col-sm-10">
-                    @Html.Raw(string.Join("<br>", Model?.Data?.GymIds ?? new()))
+                    @Html.Raw(string.Join("<br>", Model.Data?.GymIds ?? new()))
                 </dd>
             }
-            @if (Model?.Data?.EggLevels.Any() ?? false)
+            @if (Model.Data?.EggLevels?.Any() ?? false)
             {
                 <dt class="col-sm-2">
-                    @Html.DisplayNameFor(model => model.Data.EggLevels)
+                    @Html.DisplayNameFor(model => model.Data!.EggLevels)
                 </dt>
                 <dd class="col-sm-10">
-                    @Html.Raw(string.Join(", ", Model?.Data?.EggLevels ?? new()))
+                    @Html.Raw(string.Join(", ", Model.Data?.EggLevels ?? new()))
                 </dd>
             }
-            @if (Model?.Data?.RaidPokemonIds.Any() ?? false)
+            @if (Model?.Data?.RaidPokemonIds?.Any() ?? false)
             {
                 <dt class="col-sm-2">
-                    @Html.DisplayNameFor(model => model.Data.RaidPokemonIds)
+                    @Html.DisplayNameFor(model => model.Data!.RaidPokemonIds)
                 </dt>
                 <dd class="col-sm-10">
-                    @Html.Raw(string.Join("<br>", (Model?.Data?.RaidPokemonIds ?? new()).Select(GetPokemonDisplay)))
+                    @Html.Raw(string.Join("<br>", (Model.Data?.RaidPokemonIds ?? new()).Select(GetPokemonDisplay)))
                 </dd>
             }
-            @if (Model?.Data?.WeatherConditionIds.Any() ?? false)
+            @if (Model?.Data?.WeatherConditionIds?.Any() ?? false)
             {
                 <dt class="col-sm-2">
-                    @Html.DisplayNameFor(model => model.Data.WeatherConditionIds)
+                    @Html.DisplayNameFor(model => model.Data!.WeatherConditionIds)
                 </dt>
                 <dd class="col-sm-10">
-                    @Html.Raw(string.Join("<br>", (Model?.Data?.WeatherConditionIds ?? new()).Select(weatherId => Translator.Instance.GetWeather(weatherId))))
+                    @Html.Raw(string.Join("<br>", (Model.Data?.WeatherConditionIds ?? new()).Select(weatherId => Translator.Instance.GetWeather(weatherId))))
                 </dd>
             }
         </dl>

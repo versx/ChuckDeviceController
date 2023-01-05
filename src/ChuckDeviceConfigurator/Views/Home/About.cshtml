@@ -1,10 +1,10 @@
 ﻿@{
-    ViewData["Title"] = "About";
+    ViewData["Title"] = localizer["About"];
 }
 
-<h1>About</h1>
+<h1>@ViewData["Title"]</h1>
 <br />
-@Html.DisplayFor(model => model, "Breadcrumbs", new { CurrentPage = "About" })
+@Html.DisplayFor(model => model, "Breadcrumbs", new { CurrentPage = ViewData["Title"] })
 
 <hr />
 <p>

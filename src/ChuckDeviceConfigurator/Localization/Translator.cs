@@ -73,7 +73,7 @@ public class Translator : Language<string, string, Dictionary<string, string>>, 
             if (json == null)
             {
                 _logger.LogWarning($"Failed to fetch locales from {url}, skipping...");
-                return;
+                continue;
             }
 
             _logger.LogInformation($"Creating locale {locale}...");
@@ -362,10 +362,11 @@ public class Translator : Language<string, string, Dictionary<string, string>>, 
     private static IReadOnlyList<string> GetBaseLocaleFileNames(string extension = "*.json", string prefix = "_")
     {
         // Get a list of locale file names that have prefix '_'
-        var files = Directory.GetFiles(_appLocalesFolder, extension)
-                             .Select(fileName => Path.GetFileName(fileName))
-                             .Where(fileName => fileName.StartsWith(prefix))
-                             .ToList();
+        var files = Directory
+            .GetFiles(_appLocalesFolder, extension)
+            .Select(fileName => Path.GetFileName(fileName))
+            .Where(fileName => fileName.StartsWith(prefix))
+            .ToList();
         return files;
     }
 

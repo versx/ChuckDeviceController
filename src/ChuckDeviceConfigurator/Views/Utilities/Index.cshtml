@@ -1,15 +1,15 @@
 ﻿@{
-    ViewData["Title"] = "Utilities";
+    ViewData["Title"] = @localizer["Utilities"];
 }
 
-<h1>Utilities</h1>
+<h1>@ViewData["Title"]</h1>
 
 <ul>
-    <li><a class="btn btn-danger" asp-action="ClearQuests">Clear Quests</a></li>
-    <li><a class="btn btn-primary" asp-action="ConvertForts">Convert Forts</a></li>
-    <li><a class="btn btn-danger" asp-action="ClearStalePokestops">Clear Stale Pokestops</a></li>
-    <li><a class="btn btn-primary" asp-action="ReloadInstance">Reload Instance</a></li>
-    <li><a class="btn btn-danger" asp-action="TruncateData">Truncate Data</a></li>
-    <li><a class="btn btn-primary" asp-action="ReQuest">Re-Quest</a></li>
-    <li><a class="btn btn-primary" asp-action="RouteGenerator">Route Generator/Optimizer</a></li>
+    <li><a class="btn btn-danger" asp-action="ClearQuests">@localizer["Clear Quests"]</a></li>
+    <li><a class="btn btn-primary" asp-action="ConvertForts">@localizer["Convert Forts"]</a></li>
+    <li><a class="btn btn-danger" asp-action="ClearStalePokestops">@localizer["Clear Stale Pokestops"]</a></li>
+    <li><a class="btn btn-primary" asp-action="ReloadInstance">@localizer["Reload Instance"]</a></li>
+    <li><a class="btn btn-danger" asp-action="TruncateData">@localizer["Truncate Data"]</a></li>
+    <li><a class="btn btn-primary" asp-action="ReQuest">@localizer["Re-Quest"]</a></li>
+    <li><a class="btn btn-primary" asp-action="RouteGenerator">@localizer["Route Generator/Optimizer"]</a></li>
 </ul>

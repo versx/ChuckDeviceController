@@ -1,16 +1,16 @@
 ﻿@model AssignmentGroup
 @{
-    ViewData["Title"] = "Edit Assignment Group " + Model?.Name;
+    ViewData["Title"] = localizer["Edit Assignment Group {0}", Model.Name];
 }
 
-<h1>Edit Assignment Group</h1>
+<h1>@localizer["Edit Assignment Group"]</h1>
 
 <p>@Html.ValidationMessage("AssignmentGroup", new { @class = "text-danger" })</p>
 
 <br />
-@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "AssignmentGroup", ControllerText = "Assignment Groups", CurrentPage = "Edit Assignment Group" })
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "AssignmentGroup", ControllerText = localizer["Assignment Groups"], CurrentPage = localizer["Edit Assignment Group"] })
 
-<h4>Assignment Group '@(Model?.Name)'</h4>
+<h4>@localizer["Assignment Group '{0}'", Model.Name]</h4>
 <hr />
 <form asp-action="Edit">
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
@@ -26,7 +26,7 @@
         <span asp-validation-for="AssignmentIds" class="text-danger"></span>
     </div>
     <div class="form-group">
-        <input type="submit" value="Save" class="btn btn-primary" />
+        <input type="submit" value="@localizer["Save"]" class="btn btn-primary" />
     </div>
 </form>
 

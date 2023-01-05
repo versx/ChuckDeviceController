@@ -1,20 +1,20 @@
 ﻿@using ChuckDeviceController.Common
 @model ProtoDataStatisticsViewModel
 @{
-    ViewData["Title"] = "Data Entity Benchmarks";
+    ViewData["Title"] = localizer["Data Entity Benchmarks"];
 }
 
-<h1>Data Entity Benchmarks</h1>
+<h1>@ViewData["Title"]</h1>
 <br />
-@Html.DisplayFor(model => model, "Breadcrumbs", new { CurrentPage = "Data Benchmarks" })
+@Html.DisplayFor(model => model, "Breadcrumbs", new { CurrentPage = ViewData["Title"] })
 
 <div class="mb-5">
-    <a class="btn btn-danger btn-sm float-end" asp-action="Reset">Reset</a>
+    <a class="btn btn-danger btn-sm float-end" asp-action="Reset">@localizer["Reset"]</a>
 </div>
 <br />
 
 <div class="card text-center">
-    <div class="card-header text-center"><b>Overview</b></div>
+    <div class="card-header text-center"><b>@localizer["Overview"]</b></div>
     <div class="card-body">
         <div class="container">
             <div class="row justify-content-center">
@@ -22,8 +22,8 @@
                     <div class="list-group">
                         <div class="list-group-item">
                             <h3 class="pull-right"><i class="fa-solid fa-gauge-simple"></i></h3>
-                            <h4 class="list-group-item-heading">Average Count</h4>
-                            <p class="list-group-item-text">@((Model?.AverageTime?.Count ?? 0).ToString("N0")) entities</p>
+                            <h4 class="list-group-item-heading">@localizer["Average Count"]</h4>
+                            <p class="list-group-item-text">@((Model?.AverageTime?.Count ?? 0).ToString("N0")) @localizer["entities"]</p>
                         </div>
                     </div>
                 </div>
@@ -31,8 +31,8 @@
                     <div class="list-group">
                         <div class="list-group-item">
                             <h3 class="pull-right"><i class="fa-solid fa-clock"></i></h3>
-                            <h4 class="list-group-item-heading">Average Time</h4>
-                            <p class="list-group-item-text">@(Model?.AverageTime?.TimeS ?? 0)s</p>
+                            <h4 class="list-group-item-heading">@localizer["Average Time"]</h4>
+                            <p class="list-group-item-text">@(Model?.AverageTime?.TimeS ?? 0)@localizer["s"]</p>
                         </div>
                     </div>
                 </div>

@@ -1,24 +1,24 @@
 ﻿@model CreateUserViewModel
 @{
-    ViewData["Title"] = "Create User";
+    ViewData["Title"] = localizer["Create User Account"];
     Model?.Roles.Sort((a, b) => a.RoleName?.CompareTo(b.RoleName) ?? 0);
 }
 
-<h1>Create User Account</h1>
+<h1>@ViewData["Title"]</h1>
 
 <p>@Html.ValidationSummary("", new { @class = "text-danger" })</p>
 
 <br />
-@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "User", ControllerText = "Users", CurrentPage = "Create User" })
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "User", ControllerText = localizer["Users"], CurrentPage = ViewData["Title"] })
 
 <form asp-action="Create">
     <div class="pb-4">
         <div class="float-start">
-            <h4>User Account</h4>
+            <h4>@localizer["User Account"]</h4>
         </div>
         <div class="float-end">
             <button type="submit" class="btn btn-primary btn-sm">
-                <i class="fa-solid fa-floppy-disk"></i>&nbsp;Create
+                <i class="fa-solid fa-floppy-disk"></i>&nbsp;@localizer["Create"]
             </button>
         </div>
     </div>
@@ -57,7 +57,7 @@
         </div>
     </div>
     <div class="card">
-        <div class="card-header"><b>User Permissions</b></div>
+        <div class="card-header"><b>@localizer["User Account Permissions"]</b></div>
         <div class="card-body">
             @for (var i = 0; i < Model?.Roles.Count; i++)
             {

@@ -1,15 +1,15 @@
 ﻿@{
-    ViewData["Title"] = "Utilities - Truncate Data";
+    ViewData["Title"] = localizer["Utilities - Truncate Data"];
 }
 
-<h1>Utilities</h1>
+<h1>@localizer["Utilities"]</h1>
 
 <p>@Html.ValidationMessage("Utilities", new { @class = "text-danger" })</p>
 
-<h4>Truncate Data</h4>
+<h4>@localizer["Truncate Data"]</h4>
 
 <br />
-@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Utilities", ControllerText = "Utilities", CurrentPage = "Truncate Data" })
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Utilities", ControllerText = localizer["Utilities"], CurrentPage = localizer["Truncate Data"] })
 
 <hr />
 <div class="row">
@@ -17,12 +17,12 @@
         <form asp-controller="Utilities" asp-action="TruncateData">
             <div class="row">
                 <span>
-                    <label><b>Total Pokemon:</b></label>
+                    <label><b>@localizer["Total Pokemon:"]</b></label>
                     @ViewBag.PokemonCount
                 </span>
                 <br />
                 <span>
-                    <label><b>Total Invasions:</b></label>
+                    <label><b>@localizer["Total Invasions:"]</b></label>
                     @ViewBag.IncidentsCount
                 </span>
             </div>
@@ -30,18 +30,18 @@
 
             <div class="form-floating mb-3">
                 <input id="TimeSpan" type="number" name="TimeSpan" class="form-control" min="0" max="720" value="24" required />
-                <label for="TimeSpan">Time Span (hours - older than)</label>
+                <label for="TimeSpan">@localizer["Time Span (hours - older than)"]</label>
                 <span validation-for="TimeSpan" class="text-danger"></span>
             </div>
             <div class="form-floating mb-3">
                 <select id="DataType" name="DataType" class="form-control" asp-items="@(new SelectList(ViewBag.DataTypes))" required>
-                    <option value="">Please select a data type</option>
+                    <option value="">@localizer["Please select a data type"]</option>
                 </select>
-                <label for="DataType">Data Type</label>
+                <label for="DataType">@localizer["Data Type"]</label>
                 <span validation-for="DataType" class="text-danger"></span>
             </div>
             <div class="form-group mb-3">
-                <input type="submit" value="Truncate" class="btn btn-danger" />
+                <input type="submit" value="@localizer["Truncate"]" class="btn btn-danger" />
             </div>
         </form>
         <div id="count-response">

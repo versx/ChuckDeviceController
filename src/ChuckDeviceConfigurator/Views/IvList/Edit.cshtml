@@ -1,28 +1,28 @@
 ﻿@model IvList
 @{
-    ViewData["Title"] = "Edit IV List " + Model?.Name;
+    ViewData["Title"] = localizer["Edit IV List {0}", Model.Name];
     var pokemonIds = string.Join(",", (Model?.PokemonIds ?? new()));
 }
 
-<h1>Edit IV List</h1>
+<h1>@localizer["Edit IV List"]</h1>
 
 <p>@Html.ValidationMessage("IvList", new { @class = "text-danger" })</p>
 
 <br />
-@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "IvList", ControllerText = "IV Lists", CurrentPage = "Edit IV List" })
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "IvList", ControllerText = localizer["IV Lists"], CurrentPage = localizer["Edit IV List"] })
 
 <form asp-action="Edit">
     <div class="pb-4">
         <div class="float-start">
-            <h4>IV List '@Model?.Name'</h4>
+            <h4>@localizer["IV List '{0}'", Model!.Name]</h4>
         </div>
         <div class="float-end">
             <a asp-action="Delete" asp-route-id="@Model?.Name" class="btn btn-danger btn-sm">
-                <i class="fa-solid fa-trash"></i>&nbsp;Delete
+                <i class="fa-solid fa-trash"></i>&nbsp;@localizer["Delete"]
             </a>
             &nbsp;
             <button type="submit" class="btn btn-primary btn-sm">
-                <i class="fa-solid fa-floppy-disk"></i>&nbsp;Save
+                <i class="fa-solid fa-floppy-disk"></i>&nbsp;@localizer["Save"]
             </button>
         </div>
     </div>

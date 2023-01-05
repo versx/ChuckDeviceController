@@ -3,13 +3,13 @@
 @using ChuckDeviceController.Plugin
 @model DashboardViewModel
 @{
-    ViewData["Title"] = "Dashboard";
+    ViewData["Title"] = localizer["Dashboard"];
 }
 
-<h1 class="text-center">Dashboard</h1>
+<h1 class="text-center">@ViewData["Title"]</h1>
 <div style="margin: 0 auto;">
     <div class="card text-center">
-        <div class="card-header text-center"><b>General</b></div>
+        <div class="card-header text-center"><b>@localizer["General"]</b></div>
         <div class="card-body">
             <div class="container">
                 <div class="row justify-content-center">
@@ -139,7 +139,7 @@
     </div>
     <br>
     <div class="card text-center">
-        <div class="card-header text-center"><b>Statistics</b></div>
+        <div class="card-header text-center"><b>@localizer["Statistics"]</b></div>
         <div class="card-body">
             <div class="container">
                 <ul class="list-group">

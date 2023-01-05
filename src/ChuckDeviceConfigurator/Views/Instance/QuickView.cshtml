@@ -1,7 +1,7 @@
 ﻿@model InstanceDetailsViewModel
 <div id="modal-content" class="modal-content">
     <div class="modal-header">
-        <h5 class="modal-title">Instance Details - @Model.Name</h5>
+        <h5 class="modal-title">@localizer["Instance Details"] - @Model.Name</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
     </div>
     <div class="modal-body">
@@ -24,7 +24,7 @@
                 @Html.Raw(Model?.Status)
             </dd>
             <dt class="col-sm-4">
-                Level
+                @localizer["Level"]
             </dt>
             <dd class="col-sm-8">
                 @($"{Model?.MinimumLevel}-{Model?.MaximumLevel}")
@@ -55,13 +55,13 @@
                 }
                 else
                 {
-                    <p>None</p>
+                    <p>@localizer["None"]</p>
                 }
             </dd>
         </dl>
 
     </div>
     <div class="modal-footer">
-        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">@localizer["Close"]</button>
     </div>
 </div>

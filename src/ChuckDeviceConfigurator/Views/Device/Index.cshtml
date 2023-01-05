@@ -1,17 +1,17 @@
 ﻿@using ChuckDeviceController.Extensions
 @model ViewModelsModel<Device>
 @{
-    ViewData["Title"] = "Devices";
+    ViewData["Title"] = localizer["Devices"];
 }
 
-<h1>Devices</h1>
+<h1>@ViewData["Title"]</h1>
 <br />
-@Html.DisplayFor(model => model, "Breadcrumbs", new { CurrentPage = "Devices" })
+@Html.DisplayFor(model => model, "Breadcrumbs", new { CurrentPage = ViewData["Title"] })
 
 <div id="device-status"></div>
 
 <div class="card text-center mb-3">
-    <div class="card-header text-center"><b>Overview</b></div>
+    <div class="card-header text-center"><b>@localizer["Overview"]</b></div>
     <div class="card-body">
         <div class="container">
             <div class="row justify-content-center">
@@ -21,7 +21,7 @@
                             <h3 class="pull-right">
                                 <i class="fas fa-mobile-alt"></i>
                             </h3>
-                            <h4 class="list-group-item-heading">Total</h4>
+                            <h4 class="list-group-item-heading">@localizer["Total"]</h4>
                             <p class="list-group-item-text">@(Model.Items.Count.ToString("N0"))</p>
                         </div>
                     </div>
@@ -32,7 +32,7 @@
                             <h3 class="pull-right">
                                 @Strings.DeviceOnlineIcon
                             </h3>
-                            <h4 class="list-group-item-heading">Online</h4>
+                            <h4 class="list-group-item-heading">@localizer["Online"]</h4>
                             <p class="list-group-item-text">@(ViewBag.DevicesOnline.ToString("N0"))</p>
                         </div>
                     </div>
@@ -43,7 +43,7 @@
                             <h3 class="pull-right">
                                 @Strings.DeviceOfflineIcon
                             </h3>
-                            <h4 class="list-group-item-heading">Offline</h4>
+                            <h4 class="list-group-item-heading">@localizer["Offline"]</h4>
                             <p class="list-group-item-text">@(ViewBag.DevicesOffline.ToString("N0"))</p>
                         </div>
                     </div>
@@ -54,14 +54,14 @@
 </div>
 
 <div class="mb-5">
-    <a class="btn btn-success btn-sm float-end" asp-action="Create">Create New</a>
+    <a class="btn btn-success btn-sm float-end" asp-action="Create">@localizer["Create New"]</a>
 </div>
 <br />
 
 <table id="table-devices" class="table table-striped table-bordered dt-responsive nowrap">
     <thead class="table-dark">
         <tr>
-            <th width="5%">Status</th>
+            <th width="5%">@localizer["Status"]</th>
             <th>
                 @Html.DisplayNameFor(model => model.Items[0].Uuid)
             </th>
@@ -78,12 +78,12 @@
                 @Html.DisplayNameFor(model => model.Items[0].LastHost)
             </th>
             <th>
-                Last Location
+                @localizer["Last Location"]
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.Items[0].LastSeen)
             </th>
-            <th width="5%">Action</th>
+            <th width="5%">@localizer["Action"]</th>
         </tr>
     </thead>
     <tbody>
@@ -120,11 +120,11 @@
                             <i class="fa-solid fa-bars"></i>
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownGroup">
-                            <li><a class="dropdown-item" asp-action="Edit" asp-route-id="@item.Uuid"><i class="fa-solid fa-pen-to-square"></i>&nbsp;Edit</a></li>
-                            <li><a class="dropdown-item" asp-action="Details" asp-route-id="@item.Uuid"><i class="fa-solid fa-circle-info"></i>&nbsp;Details</a></li>
-                            <li><a class="dropdown-item" asp-action="Delete" asp-route-id="@item.Uuid"><i class="fa-solid fa-trash-can"></i>&nbsp;Delete</a></li>
-                            <li><a class="dropdown-item" asp-action="ForceAccountSwitch" asp-route-id="@item.Uuid" onclick="return confirm('Are you sure you want to force device \'@item.Uuid\' to logout and switch accounts?');"><i class="fa-solid fa-repeat"></i>&nbsp;Switch Account</a></li>
-                            <li><a class="dropdown-item" href="#" onclick="restartGame('@item.LastHost');"><i class="fa-solid fa-power-off"></i>&nbsp;Restart Game</a></li>
+                            <li><a class="dropdown-item" asp-action="Edit" asp-route-id="@item.Uuid"><i class="fa-solid fa-pen-to-square"></i>&nbsp;@localizer["Edit"]</a></li>
+                            <li><a class="dropdown-item" asp-action="Details" asp-route-id="@item.Uuid"><i class="fa-solid fa-circle-info"></i>&nbsp;@localizer["Details"]</a></li>
+                            <li><a class="dropdown-item" asp-action="Delete" asp-route-id="@item.Uuid"><i class="fa-solid fa-trash-can"></i>&nbsp;@localizer["Delete"]</a></li>
+                            <li><a class="dropdown-item" asp-action="ForceAccountSwitch" asp-route-id="@item.Uuid" onclick="return confirm('Are you sure you want to force device \'@item.Uuid\' to logout and switch accounts?');"><i class="fa-solid fa-repeat"></i>&nbsp;@localizer["Switch Account"]</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="restartGame('@item.LastHost');"><i class="fa-solid fa-power-off"></i>&nbsp;@localizer["Restart Game"]</a></li>
                         </ul>
                     </div>
                 </td>

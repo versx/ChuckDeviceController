@@ -32,7 +32,7 @@
         @Html.Raw(Utils.GetLastUpdatedStatus(Model?.LastSeen ?? 0, html: true))
     </dd>
     <dt class="col-sm-2">
-        Last Location
+        @localizer["Last Location"]
     </dt>
     <dd class="col-sm-10">
         @Html.Raw(Utils.GetGoogleMapsLink(Model?.LastLatitude ?? 0, Model?.LastLongitude ?? 0, html: true))

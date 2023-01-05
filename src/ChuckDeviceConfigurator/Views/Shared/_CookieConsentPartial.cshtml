@@ -8,9 +8,9 @@
 @if (showBanner)
 {
     <div id="cookieConsent" class="alert alert-info alert-dismissible fade show text-center cookiealert" role="alert">
-        <b>Do you like cookies?</b> &#x1F36A; We use cookies to ensure you get the best experience on our website. <a asp-controller="Home" asp-action="Privacy" target="_blank">Learn more</a>
+        @Html.Raw(localizer["Do you like cookies? &#x1F36A; We use cookies to ensure you get the best experience on our website."]) <a asp-controller="Home" asp-action="Privacy" target="_blank">@localizer["Learn more"]</a>
         <button type="button" class="btn btn-primary btn-sm acceptcookies accept-policy close" data-dismiss="alert" aria-label="Close" data-cookie-string="@cookieString">
-            I agree
+            @localizer["I Agree"]
         </button>
     </div>
 }

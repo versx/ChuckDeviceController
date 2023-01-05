@@ -52,25 +52,25 @@
                     <li>
                         <a asp-controller="Settings" asp-action="Index">
                             <i class="fa-solid fa-fw fa-gear"></i>
-                            Settings
+                            @localizer["Settings"]
                         </a>
                     </li>
                     <li class="nav-item">
                         <a href="/swagger" target="_blank">
                             <i class="fa-solid fa-fw fa-file-lines"></i>
-                            Swagger API
+                            @localizer["Swagger API"]
                         </a>
                     </li>
                     <li class="nav-item">
                         <a asp-controller="Home" asp-action="About">
                             <i class="fa-solid fa-fw fa-circle-info"></i>
-                            About
+                            @localizer["About"]
                         </a>
                     </li>
                     <li class="nav-item">
                         <div class="form-check form-switch m-2">
                             <input class="form-check-input" type="checkbox" id="darkModeToggle" onchange="toggleDarkMode();">
-                            <label class="form-check-label" for="darkModeToggle">Dark Mode</label>
+                            <label class="form-check-label" for="darkModeToggle">@localizer["Dark Mode"]</label>
                         </div>
                     </li>
                 </ul>

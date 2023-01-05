@@ -17,16 +17,16 @@
                         <option value="@geofenceName">@geofenceName</option>
                     }
                 </select>
-                <label for="geofences">Import Geofence</label>
+                <label for="geofences">@localizer["Import Geofence"]</label>
             </div>
             <button type="button" class="btn btn-primary btn-sm" onclick="getGeofenceData();">
-                Import
+                @localizer["Import"]
             </button>
         </div>
     </div>
     <div class="float-end mt-2">
         <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#exportModal">
-            Export Geofence
+            @localizer["Export Geofence"]
         </button>
     </div>
 </div>
@@ -40,21 +40,21 @@
 
 @await Html.PartialAsync("_ImportGeofenceRouteModalPartial", new GeofenceRouteViewModal
 {
-    Title = "Import Geofence",
+    Title = localizer["Import Geofence"],
     Format = "json",
     Geofence = "",
     FormatChangedMethod = "importFormatChanged(this);",
-    SubmitButtonText = "Import",
+    SubmitButtonText = localizer["Import"],
     SubmitButtonMethod = "importGeofence();",
 })
 
 @await Html.PartialAsync("_ExportGeofenceRouteModalPartial", new GeofenceRouteViewModal
 {
-    Title = "Export Geofence",
+    Title = localizer["Export Geofence"],
     Format = "json",
     Geofence = "",
     FormatChangedMethod = "exportFormatChanged(this);",
-    SubmitButtonText = "Copy to Clipboard",
+    SubmitButtonText = localizer["Copy to Clipboard"],
     SubmitButtonMethod = "exportGeofence();",
 })
 

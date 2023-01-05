@@ -1,14 +1,14 @@
 ﻿@{
-    ViewData["Title"] = "Privacy Policy";
+    ViewData["Title"] = localizer["Privacy Policy"];
 }
 
-<h1>Privacy Policy</h1>
+<h1>@ViewData["Title"]</h1>
 <br />
-@Html.DisplayFor(model => model, "Breadcrumbs", new { CurrentPage = "Privacy Policy" })
+@Html.DisplayFor(model => model, "Breadcrumbs", new { CurrentPage = ViewData["Title"] })
 
 <div class="row">
     <div class="col">
-        <h3><u>Cookie Policy</u></h3>
+        <h3><u>@localizer["Cookie Policy"]</u></h3>
         <p>A cookie is a small piece of data (text file) that a website, when visited by a user, asks your browser to store on your device in order to remember information about you, such as your language preference or login information. Those cookies are set by us and called first-party cookies. We may also use third party cookies, which are cookies from a domain different than the domain of the website you are visiting, for our advertising and marketing efforts.</p>
         <p>More specifically, we use cookies and other tracking technologies for the following purposes:</p>
         <ul>
@@ -19,66 +19,66 @@
         </ul>
         <p>The cookies we use can be categorized as the following:</p>
         <ul>
-            <li>Strictly Necessary Cookies</li>
-            <li>Performance Cookies</li>
-            <li>Functional Cookies</li>
-            <li>Targeting Cookies</li>
+            <li>@localizer["Strictly Necessary Cookies"]</li>
+            <li>@localizer["Performance Cookies"]</li>
+            <li>@localizer["Functional Cookies"]</li>
+            <li>@localizer["Targeting Cookies"]</li>
         </ul>
         <br />
     </div>
 </div>
 
 <div class="container">
-    <h3><u>Cookie Consent</u></h3>
+    <h3><u>@localizer["Cookie Consent"]</u></h3>
     <div class="row">
         <div class="col-10">
-            <h5>Strictly Necessary Cookies</h5>
+            <h5>@localizer["Strictly Necessary Cookies"]</h5>
             <p>These cookies are necessary for the website to function and cannot be switched off in our systems. They are usually only set in response to actions made by you which amount to a request for services, such as setting your privacy preferences, logging in or filling in forms.</p>
             <p>You can set your browser to block or alert you about these cookies, but some parts of the site will not then work. These cookies do not store any personally identifiable information.</p>
         </div>
         <div class="col-2">
             <div class="form-check form-switch">
                 <input class="form-check-input" type="checkbox" id="cookie-consent-strict" checked disabled>
-                <label class="form-check-label" for="cookie-consent-strict">Enabled</label>
+                <label class="form-check-label" for="cookie-consent-strict">@localizer["Enabled"]</label>
             </div>
         </div>
     </div>
     <div class="row">
         <div class="col-10">
-            <h5>Performance Cookies</h5>
+            <h5>@localizer["Performance Cookies"]</h5>
             <p>These cookies allow us to count visits and traffic sources so we can measure and improve the performance of our site. They help us to know which pages are the most and least popular and see how visitors move around the site.</p>
             <p>All information these cookies collect is aggregated and therefore anonymous. If you do not allow these cookies we will not know when you have visited our site, and will not be able to monitor its performance.</p>
         </div>
         <div class="col-2">
             <div class="form-check form-switch">
                 <input class="form-check-input" type="checkbox" id="cookie-consent-performance">
-                <label class="form-check-label" for="cookie-consent-performance">Enabled</label>
+                <label class="form-check-label" for="cookie-consent-performance">@localizer["Enabled"]</label>
             </div>
         </div>
     </div>
     <div class="row">
         <div class="col-10">
-            <h5>Functional Cookies</h5>
+            <h5>@localizer["Functional Cookies"]</h5>
             <p>These cookies enable the website to provide enhanced functionality and personalisation. They may be set by us or by third party providers whose services we have added to our pages.</p>
             <p>If you do not allow these cookies then some or all of these services may not function properly.</p>
         </div>
         <div class="col-2">
             <div class="form-check form-switch">
                 <input class="form-check-input" type="checkbox" id="cookie-consent-functional">
-                <label class="form-check-label" for="cookie-consent-functional">Enabled</label>
+                <label class="form-check-label" for="cookie-consent-functional">@localizer["Enabled"]</label>
             </div>
         </div>
     </div>
     <div class="row">
         <div class="col-10">
-            <h5>Targeting Cookies</h5>
+            <h5>@localizer["Targeting Cookies"]</h5>
             <p>These cookies may be set through our site by our advertising partners. They may be used by those companies to build a profile of your interests and show you relevant adverts on other sites.</p>
             <p>They do not store directly personal information, but are based on uniquely identifying your browser and internet device. If you do not allow these cookies, you will experience less targeted advertising.</p>
         </div>
         <div class="col-2">
             <div class="form-check form-switch">
                 <input class="form-check-input" type="checkbox" id="cookie-consent-targeting">
-                <label class="form-check-label" for="cookie-consent-targeting">Enabled</label>
+                <label class="form-check-label" for="cookie-consent-targeting">@localizer["Enabled"]</label>
             </div>
         </div>
     </div>
