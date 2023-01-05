@@ -93,8 +93,11 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
     [Column("weight")]
     public double? Weight { get; set; }
 
+    [Column("height")]
+    public double? Height { get; set; }
+
     [Column("size")]
-    public double? Size { get; set; }
+    public ushort? Size { get; set; }
 
     [Column("weather")]
     public ushort? Weather { get; set; }
@@ -323,8 +326,9 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
         var cp = Convert.ToUInt16(encounterData.Pokemon.Pokemon.Cp);
         var move1 = Convert.ToUInt16(encounterData.Pokemon.Pokemon.Move1);
         var move2 = Convert.ToUInt16(encounterData.Pokemon.Pokemon.Move2);
-        var size = Convert.ToDouble(encounterData.Pokemon.Pokemon.HeightM);
+        var size = Convert.ToUInt16(encounterData.Pokemon.Pokemon.Size);
         var weight = Convert.ToDouble(encounterData.Pokemon.Pokemon.WeightKg);
+        var height = Convert.ToDouble(encounterData.Pokemon.Pokemon.HeightM);
         var atkIv = Convert.ToUInt16(encounterData.Pokemon.Pokemon.IndividualAttack);
         var defIv = Convert.ToUInt16(encounterData.Pokemon.Pokemon.IndividualDefense);
         var staIv = Convert.ToUInt16(encounterData.Pokemon.Pokemon.IndividualStamina);
@@ -407,8 +411,9 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
         var cp = Convert.ToUInt16(diskEncounterData.Pokemon.Cp);
         var move1 = Convert.ToUInt16(diskEncounterData.Pokemon.Move1);
         var move2 = Convert.ToUInt16(diskEncounterData.Pokemon.Move2);
-        var size = Convert.ToDouble(diskEncounterData.Pokemon.HeightM);
+        var size = Convert.ToUInt16(diskEncounterData.Pokemon.Size);
         var weight = Convert.ToDouble(diskEncounterData.Pokemon.WeightKg);
+        var height = Convert.ToDouble(diskEncounterData.Pokemon.HeightM);
         var atkIv = Convert.ToUInt16(diskEncounterData.Pokemon.IndividualAttack);
         var defIv = Convert.ToUInt16(diskEncounterData.Pokemon.IndividualDefense);
         var staIv = Convert.ToUInt16(diskEncounterData.Pokemon.IndividualStamina);
@@ -490,6 +495,7 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
                 Level = oldPokemonNoEvent.Level;
                 CP = null;
                 Weight = null;
+                Height = null;
                 Size = null;
                 Move1 = null;
                 Move2 = null;
@@ -606,6 +612,7 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
                 StaminaIV = oldPokemon.StaminaIV;
                 CP = oldPokemon.CP;
                 Weight = oldPokemon.Weight;
+                Height = oldPokemon.Height;
                 Size = oldPokemon.Size;
                 Move1 = oldPokemon.Move1;
                 Move2 = oldPokemon.Move2;
@@ -641,6 +648,7 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
                 StaminaIV = null;
                 CP = null;
                 Weight = null;
+                Height = null;
                 Size = null;
                 Move1 = null;
                 Move2 = null;
@@ -797,7 +805,8 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
                         move_1 = Move1,
                         move_2 = Move2,
                         weight = Weight,
-                        height = Size,
+                        height = Height,
+                        size = Size,
                         weather = Weather,
                         capture_1 = Capture1,
                         capture_2 = Capture2,
@@ -908,7 +917,7 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
         CP = null;
         Move1 = null;
         Move2 = null;
-        Size = null;
+        Height = null;
         Weight = null;
         AttackIV = null;
         DefenseIV = null;
@@ -1252,7 +1261,7 @@ public class DittoDetector
         _pokemon.Move2 = DittoStruggleChargeMove;
         _pokemon.Gender = 3;
         _pokemon.Costume = 0;
-        _pokemon.Size = null;
+        _pokemon.Height = null;
         _pokemon.Weight = null;
         if (weather == 0 && level > 30)
         {

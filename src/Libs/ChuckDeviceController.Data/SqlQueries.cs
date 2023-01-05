@@ -437,7 +437,7 @@ ON DUPLICATE KEY UPDATE
 INSERT INTO pokemon (
     id, pokemon_id, lat, lon, spawn_id, expire_timestamp,
     atk_iv, def_iv, sta_iv, move_1, move_2, gender,
-    form, costume, cp, level, weight, size, weather, shiny,
+    form, costume, cp, level, weight, height, size, weather, shiny,
     username, pokestop_id, first_seen_timestamp, updated,
     changed, cell_id, expire_timestamp_verified, capture_1,
     capture_2, capture_3, is_ditto, display_pokemon_id,
@@ -459,6 +459,7 @@ ON DUPLICATE KEY UPDATE
     cp=COALESCE(VALUES(cp), cp),
     level=COALESCE(VALUES(level), level),
     weight=COALESCE(VALUES(weight), weight),
+    height=COALESCE(VALUES(height), height),
     size=COALESCE(VALUES(size), size),
     weather=VALUES(weather),
     shiny=VALUES(shiny),
@@ -485,7 +486,7 @@ ON DUPLICATE KEY UPDATE
 INSERT INTO pokemon (
     id, pokemon_id, lat, lon, spawn_id, expire_timestamp,
     atk_iv, def_iv, sta_iv, move_1, move_2, gender,
-    form, costume, cp, level, weight, size, weather, shiny,
+    form, costume, cp, level, weight, height, size, weather, shiny,
     username, pokestop_id, first_seen_timestamp, updated,
     changed, cell_id, expire_timestamp_verified, capture_1,
     capture_2, capture_3, is_ditto, display_pokemon_id,
@@ -507,6 +508,7 @@ ON DUPLICATE KEY UPDATE
     cp=COALESCE(VALUES(cp), cp),
     level=COALESCE(VALUES(level), level),
     weight=COALESCE(VALUES(weight), weight),
+    height=COALESCE(VALUES(height), height),
     size=COALESCE(VALUES(size), size),
     weather=VALUES(weather),
     shiny=VALUES(shiny),
@@ -547,33 +549,34 @@ ON DUPLICATE KEY UPDATE
     /// 14 - cp
     /// 15 - level
     /// 16 - weight
-    /// 17 - size
-    /// 18 - weather
-    /// 19 - shiny
-    /// 20 - username
-    /// 21 - pokestop_id
-    /// 22 - first_seen_timestamp
-    /// 23 - updated
-    /// 24 - changed
-    /// 25 - cell_id
-    /// 26 - expire_timestamp_verified
-    /// 27 - capture_1
-    /// 28 - capture_2
-    /// 29 - capture_3
-    /// 30 - is_ditto
-    /// 31 - display_pokemon_id
-    /// 32 - base_height
-    /// 33 - base_weight
-    /// 34 - is_event
-    /// 35 - seen_type
-    /// 36 - pvp
+    /// 17 - height
+    /// 18 - size
+    /// 19 - weather
+    /// 20 - shiny
+    /// 21 - username
+    /// 22 - pokestop_id
+    /// 23 - first_seen_timestamp
+    /// 24 - updated
+    /// 25 - changed
+    /// 26 - cell_id
+    /// 27 - expire_timestamp_verified
+    /// 28 - capture_1
+    /// 29 - capture_2
+    /// 30 - capture_3
+    /// 31 - is_ditto
+    /// 32 - display_pokemon_id
+    /// 33 - base_height
+    /// 34 - base_weight
+    /// 35 - is_event
+    /// 36 - seen_type
+    /// 37 - pvp
     /// </summary>
     public const string PokemonValuesRaw = @"
 (
     {0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10},
     {11}, {12}, {13}, {14}, {15}, {16}, {17}, {18}, {19}, {20},
     {21}, {22}, {23}, {24}, {25}, {26}, {27}, {28}, {29}, {30},
-    {31}, {32}, {33}, {34}, {35}, {36}
+    {31}, {32}, {33}, {34}, {35}, {36}, {37}
 )";
 
     #endregion
