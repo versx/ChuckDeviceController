@@ -54,7 +54,7 @@ public class DeviceGroupController : Controller
             DeviceUuids = deviceGroup.DeviceUuids,
             Devices = devices.ToList(),
         };
-        ViewBag.Devices = devices;
+        ViewBag.Devices = devices.ToList();
         return View(model);
     }
 

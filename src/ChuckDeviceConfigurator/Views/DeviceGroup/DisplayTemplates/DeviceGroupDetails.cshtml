@@ -16,7 +16,7 @@
             <ul class="list-group">
                 @foreach (var device in ViewBag.Devices)
                 {
-                    var status = Utils.GetDeviceStatus(device.LastSeen);
+                    var status = Utils.GetDeviceStatus(Convert.ToUInt64(device.LastSeen ?? 0));
                     <li class="list-group-item">@Html.Raw($"{status} {device.Uuid}")</li>
                 }
             </ul>
