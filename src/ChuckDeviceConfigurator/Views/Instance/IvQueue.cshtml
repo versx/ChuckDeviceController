@@ -1,9 +1,9 @@
 ﻿@model IvQueueViewModel
 @{
-    ViewData["Title"] = "IV Queue - " + Model?.Name;
-    var confirmText = "Are you sure you want to clear all pending Pokemon encounters from the IV queue?";
-    var clearAllText = "Clears all pending Pokemon encounters in the IV queue.";
-    var removeEncounterText = "Removes the pending Pokemon encounter from the IV queue.";
+    ViewData["Title"] = localizer["IV Queue - {0}", Model.Name!];
+    var confirmText = localizer["Are you sure you want to clear all pending Pokemon encounters from the IV queue?"];
+    var clearAllText = localizer["Clears all pending Pokemon encounters in the IV queue."];
+    var removeEncounterText = localizer["Removes the pending Pokemon encounter from the IV queue."];
 }
 
 <h1>@ViewData["Title"]</h1>

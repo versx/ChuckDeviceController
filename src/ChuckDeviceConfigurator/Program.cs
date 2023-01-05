@@ -69,6 +69,8 @@ config.Bind("UserAccounts", identityConfig);
 var emailConfig = new AuthMessageSenderOptions();
 config.Bind("EmailService", emailConfig);
 
+var locale = config.GetValue<string>("Locale") ?? "en";
+
 #endregion
 
 #region Logger
@@ -84,7 +86,6 @@ logger.LogInformation($"Started: {started.ToLongDateString()} {started.ToLongTim
 try
 {
     await Translator.CreateLocaleFilesAsync();
-    var locale = config.GetValue<string>("Locale") ?? "en";
     Translator.Instance.SetLocale(locale);
 }
 catch (Exception ex)
@@ -185,7 +186,6 @@ if (builder.Environment.IsDevelopment())
     builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 }
 
-var locale = config.GetValue<string>("Locale");
 CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo(locale);
 CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo(locale);
 CultureInfo.DefaultThreadCurrentCulture = CultureInfo.GetCultureInfo(locale);

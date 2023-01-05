@@ -7,9 +7,9 @@
 <div class="form-group">
     <div class="form-floating mb-3">
         <input id="search" class="form-control" placeholder="i.e Pikachu or 25" onkeyup="onPokemonSearch()" data-toggle="tooltip" data-html="true" title="Search by pokemon name and pokedex id." />
-        <label for="search">Search</label>
+        <label for="search">@localizer["Search"]</label>
     </div>
-    Pokemon
+    @localizer["Pokemon"]
     <div id="pokemon-list" name="pokemon-list" class="pokemon-list">
         @foreach (var pkmn in pokemon)
         {
@@ -20,26 +20,26 @@
         }
     </div>
     <br>
-    <button type="button" class="btn btn-primary btn-sm" onclick="selectAllPokemon(true);">Select All</button>
-    <button type="button" class="btn btn-primary btn-sm" onclick="selectAllPokemon(false);">Select None</button>
-    <button type="button" class="btn btn-primary btn-sm" onclick="invertSelection();">Invert Selection</button>
+    <button type="button" class="btn btn-primary btn-sm" onclick="selectAllPokemon(true);">@localizer["Select All"]</button>
+    <button type="button" class="btn btn-primary btn-sm" onclick="selectAllPokemon(false);">@localizer["Select None"]</button>
+    <button type="button" class="btn btn-primary btn-sm" onclick="invertSelection();">@localizer["Invert Selection"]</button>
     <div class="btn-group">
         <button type="button" class="btn btn-warning btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-            Select Generation
+            @localizer["Select Generation"]
         </button>
         <ul class="dropdown-menu">
-            <li><a href="#" class="dropdown-item" onclick="selectByGen(1);">Select Gen1</a></li>
-            <li><a href="#" class="dropdown-item" onclick="selectByGen(2);">Select Gen2</a></li>
-            <li><a href="#" class="dropdown-item" onclick="selectByGen(3);">Select Gen3</a></li>
-            <li><a href="#" class="dropdown-item" onclick="selectByGen(4);">Select Gen4</a></li>
-            <li><a href="#" class="dropdown-item" onclick="selectByGen(5);">Select Gen5</a></li>
-            <li><a href="#" class="dropdown-item" onclick="selectByGen(6);">Select Gen6</a></li>
-            <li><a href="#" class="dropdown-item" onclick="selectByGen(7);">Select Gen7</a></li>
-            <li><a href="#" class="dropdown-item" onclick="selectByGen(8);">Select Gen8</a></li>
+            <li><a href="#" class="dropdown-item" onclick="selectByGen(1);">@localizer["Select Gen1"]</a></li>
+            <li><a href="#" class="dropdown-item" onclick="selectByGen(2);">@localizer["Select Gen2"]</a></li>
+            <li><a href="#" class="dropdown-item" onclick="selectByGen(3);">@localizer["Select Gen3"]</a></li>
+            <li><a href="#" class="dropdown-item" onclick="selectByGen(4);">@localizer["Select Gen4"]</a></li>
+            <li><a href="#" class="dropdown-item" onclick="selectByGen(5);">@localizer["Select Gen5"]</a></li>
+            <li><a href="#" class="dropdown-item" onclick="selectByGen(6);">@localizer["Select Gen6"]</a></li>
+            <li><a href="#" class="dropdown-item" onclick="selectByGen(7);">@localizer["Select Gen7"]</a></li>
+            <li><a href="#" class="dropdown-item" onclick="selectByGen(8);">@localizer["Select Gen8"]</a></li>
         </ul>
     </div>
-    <button id="select_rare" type="button" class="btn btn-success btn-sm">Select Rare</button>
-    <button id="select_ultra" type="button" class="btn btn-danger btn-sm">Select Ultra Rare</button>
+    <button id="select_rare" type="button" class="btn btn-success btn-sm">@localizer["Select Rare"]</button>
+    <button id="select_ultra" type="button" class="btn btn-danger btn-sm">@localizer["Select Ultra Rare"]</button>
 </div>
 
 <script src="~/lib/jquery/dist/jquery.min.js"></script>

@@ -1,9 +1,9 @@
 ﻿@model QuestQueueViewModel
 @{
-    ViewData["Title"] = "Quest Queue - " + Model?.Name;
-    var confirmText = "Are you sure you want to clear all pending Pokestops from the Quest queue?";
-    var clearAllText = "Clears all pending Pokestops in the Quest queue.";
-    var removePokestopText = "Removes the pending Pokestops from the Quest queue.";
+    ViewData["Title"] = localizer["Quest Queue - {0}", Model.Name];
+    var confirmText = localizer["Are you sure you want to clear all pending Pokestops from the Quest queue?"];
+    var clearAllText = localizer["Clears all pending Pokestops in the Quest queue."];
+    var removePokestopText = localizer["Removes the pending Pokestops from the Quest queue."];
 }
 
 <h1>@ViewData["Title"]</h1>
@@ -14,7 +14,7 @@
 <div class="pb-5">
     <div class="form-group float-start">
         <a class="btn btn-danger btn-sm" title="@(clearAllText)" href="@Model?.Name/Clear" onclick="return confirm('@(confirmText)')">
-            <i class="fa-solid fa-trash-can"></i>&nbsp;Clear Queue
+            <i class="fa-solid fa-trash-can"></i>&nbsp;@localizer["Clear Queue"]
         </a>
     </div>
     <div class="checkbox float-end">

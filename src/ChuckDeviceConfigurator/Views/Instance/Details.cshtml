@@ -1,6 +1,6 @@
 ﻿@model InstanceDetailsViewModel
 @{
-    ViewData["Title"] = localizer["Instance Details"] + " " + Model?.Name;
+    ViewData["Title"] = localizer["Instance Details {0}", Model.Name];
 }
 
 <h1>@localizer["Instance Details"]</h1>
@@ -8,10 +8,10 @@
 <p>@Html.ValidationMessage("Instance", new { @class = "text-danger" })</p>
 
 <br />
-@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = localizer["Instance"], ControllerText = localizer["Instances"], CurrentPage = localizer["Instance Details"] })
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Instance", ControllerText = localizer["Instances"], CurrentPage = localizer["Instance Details"] })
 
 <div>
-    <h4>@localizer["Instance"] '@Model?.Name'</h4>
+    <h4>@localizer["Instance '{0}'", Model.Name]</h4>
     <div>
         <a asp-action="Edit" asp-route-id="@Model?.Name" class="btn btn-primary">
             <i class="fa-solid fa-pen-to-square"></i>&nbsp;@localizer["Edit"]

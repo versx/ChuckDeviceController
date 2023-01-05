@@ -13,11 +13,11 @@
                     <div class="input-group">
                         <div class="form-check form-check-inline float-start">
                             <input class="form-check-input" type="radio" asp-for="Format" value="json" onchange="@Model?.FormatChangedMethod" checked>
-                            <label class="form-check-label" for="Format">GeoJSON</label>
+                            <label class="form-check-label" for="Format">@localizer["GeoJSON"]</label>
                         </div>
                         <div class="form-check form-check-inline float-end">
                             <input class="form-check-input" type="radio" asp-for="Format" value="ini" onchange="@Model?.FormatChangedMethod">
-                            <label class="form-check-label" for="Format">INI</label>
+                            <label class="form-check-label" for="Format">@localizer["INI"]</label>
                         </div>
                     </div>
                 </div>
@@ -28,7 +28,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">@localizer["Close"]</button>
                 <button type="button" class="btn btn-primary btn-sm" onclick="@Model?.SubmitButtonMethod">@Model?.SubmitButtonText</button>
             </div>
         </div>

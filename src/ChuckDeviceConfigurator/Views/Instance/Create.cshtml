@@ -8,7 +8,7 @@
 <p>@Html.ValidationMessage("Instance", new { @class = "text-danger" })</p>
 
 <br />
-@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = localizer["Instance"], ControllerText = localizer["Instance"], CurrentPage = ViewData["Title"] })
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Instance", ControllerText = localizer["Instance"], CurrentPage = ViewData["Title"] })
 
 <form asp-action="Create">
     <div class="pb-4">

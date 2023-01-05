@@ -10,7 +10,7 @@
     <div class="col-md-4 d-flex align-items-center justify-content-center mb-3 mb-md-0 me-md-auto">
         &#10084;&#65039;&nbsp;
         <a asp-controller="Home" asp-action="About" class="text-decoration-none text-muted">
-            In loving memory of Chuckleslove, rest in peace brother
+            @localizer["In loving memory of Chuckleslove, rest in peace brother"]
         </a>
     </div>
 
@@ -18,11 +18,11 @@
         <li class="nav-item">
             <a class="nav-link px-2 text-muted" href="https://github.com/versx/ChuckDeviceController" target="_blank">
                 <i class="fa-brands fa-github"></i>
-                &nbsp;GitHub
+                &nbsp;@localizer["GitHub"]
             </a>
         </li>
     </ul>
 
-    <a asp-controller="Home" asp-action="Privacy" class="text-muted" style="text-decoration: none; color: inherit;">Privacy Policy</a>
-    <span class="text-muted float-end">Page took @(totalSeconds)s</span>
+    <a asp-controller="Home" asp-action="Privacy" class="text-muted" style="text-decoration: none; color: inherit;">@localizer["Privacy Policy"]</a>
+    <span class="text-muted float-end">@localizer["Page took {0}s", @totalSeconds]</span>
 </footer>

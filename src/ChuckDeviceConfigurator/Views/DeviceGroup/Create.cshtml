@@ -1,6 +1,6 @@
 ﻿@model DeviceGroup
 @{
-    ViewData["Title"] = "Create Device Group";
+    ViewData["Title"] = localizer["Create Device Group"];
 }
 
 <h1>@ViewData["Title"]</h1>
@@ -8,9 +8,9 @@
 <p>@Html.ValidationMessage("DeviceGroup", new { @class = "text-danger" })</p>
 
 <br />
-@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "DeviceGroup", ControllerText = "Device Groups", CurrentPage = "Create Device Group" })
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "DeviceGroup", ControllerText = localizer["Device Groups"], CurrentPage = localizer["Create Device Group"] })
 
-<h4>Device Group</h4>
+<h4>@localizer["Device Group"]</h4>
 <hr />
 <form asp-action="Create">
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
@@ -22,12 +22,12 @@
     <div class="form-group mb-3">
         <label asp-for="DeviceUuids" class="control-label"></label>
         <select asp-for="DeviceUuids" class="form-control" asp-items="@(new SelectList(ViewBag.Devices, "Uuid", "Uuid"))">
-            <option value="" disabled selected>Please select one or more</option>
+            <option value="" disabled selected>@localizer["Please select one or more"]</option>
         </select>
         <span asp-validation-for="DeviceUuids" class="text-danger"></span>
     </div>
     <div class="form-group">
-        <input type="submit" value="Create" class="btn btn-primary" />
+        <input type="submit" value="@localizer["Create"]" class="btn btn-primary" />
     </div>
 </form>
 

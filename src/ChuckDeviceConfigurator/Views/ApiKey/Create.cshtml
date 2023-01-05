@@ -1,7 +1,7 @@
 ﻿@using ChuckDeviceController.Data.Abstractions
 @model ManageApiKeyViewModel
 @{
-    ViewData["Title"] = "Create API Key";
+    ViewData["Title"] = localizer["Create API Key"];
     var groups = Model!.Scopes.Keys.ToList();
 }
 
@@ -10,16 +10,16 @@
 <p>@Html.ValidationMessage("ApiKey", new { @class = "text-danger" })</p>
 
 <br />
-@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Plugin", ControllerText = "Api Keys", Fragment = "apikeys", CurrentPage = "Create API Key" })
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Plugin", ControllerText = localizer["API Keys"], Fragment = "apikeys", CurrentPage = ViewData["Title"] })
 
 <form asp-action="Create">
     <div class="pb-4">
         <div class="float-start">
-            <h4>API Key</h4>
+            <h4>@localizer["API Key"]</h4>
         </div>
         <div class="float-end">
             <button type="submit" class="btn btn-primary btn-sm">
-                <i class="fa-solid fa-floppy-disk"></i>&nbsp;Create
+                <i class="fa-solid fa-floppy-disk"></i>&nbsp;@localizer["Create"]
             </button>
         </div>
     </div>
@@ -36,13 +36,13 @@
         <div class="col-sm col-lg-6">
             <div class="form-floating mb-3">
                 <input asp-for="Expiration" class="form-control" type="date" placeholder="API key expiration date" />
-                <label asp-for="Expiration"></label> <small class="text-muted"><i>Leave empty for no expiration</i></small>
+                <label asp-for="Expiration"></label> <small class="text-muted"><i>@localizer["Leave empty for no expiration"]</i></small>
                 <span asp-validation-for="Expiration" class="text-danger"></span>
             </div>
         </div>
     </div>
     <div class="card">
-        <div class="card-header"><b>API Scopes</b></div>
+        <div class="card-header"><b>@localizer["API Scopes"]</b></div>
         <div class="card-body">
             <ul class="list-group list-group-flush">
                 @for (var i = 0; i < groups.Count; i++)
@@ -79,7 +79,7 @@
     </div>
     <br />
     <div class="checkbox mb-3">
-        <label><input type="checkbox" asp-for="IsEnabled" checked> Enabled</label>
+        <label><input type="checkbox" asp-for="IsEnabled" checked> @localizer["Enabled"]</label>
     </div>
 </form>
 

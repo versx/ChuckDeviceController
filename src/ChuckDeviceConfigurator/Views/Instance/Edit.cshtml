@@ -1,6 +1,6 @@
 ﻿@model ManageInstanceViewModel
 @{
-    ViewData["Title"] = @localizer["Edit Instance"] + " " + Model?.Name;
+    ViewData["Title"] = @localizer["Edit Instance {0}", Model.Name];
 }
 
 <h1>@localizer["Edit Instance"]</h1>
@@ -8,12 +8,12 @@
 <p>@Html.ValidationMessage("Instance", new { @class = "text-danger" })</p>
 
 <br />
-@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = localizer["Instance"], ControllerText = localizer["Instances"], CurrentPage = localizer["Edit Instance"] })
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Instance", ControllerText = localizer["Instances"], CurrentPage = localizer["Edit Instance"] })
 
 <form asp-action="Edit">
     <div class="pb-4">
         <div class="float-start">
-            <h4>@localizer["Instance"] '@Model?.Name'</h4>
+            <h4>@localizer["Instance '{0}'", Model.Name]</h4>
         </div>
         <div class="float-end">
             <a asp-action="Delete" asp-route-id="@Model?.Name" class="btn btn-danger btn-sm">

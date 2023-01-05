@@ -1,6 +1,6 @@
 ﻿@model Device
 @{
-    ViewData["Title"] = "Create Device";
+    ViewData["Title"] = localizer["Create Device"];
 }
 
 <h1>@ViewData["Title"]</h1>
@@ -8,33 +8,33 @@
 <p>@Html.ValidationMessage("Device", new { @class = "text-danger" })</p>
 
 <br />
-@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Device", ControllerText = "Devices", CurrentPage = "Create Device" })
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Device", ControllerText = localizer["Devices"], CurrentPage = localizer["Create Device"] })
 
 <h4>Device</h4>
 <hr />
 <form asp-action="Create">
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
     <div class="form-floating mb-3">
-        <input asp-for="Uuid" class="form-control" placeholder="Device unique identifier" />
+        <input asp-for="Uuid" class="form-control" placeholder="@localizer["Device unique identifier"]" />
         <label asp-for="Uuid"></label>
         <span asp-validation-for="Uuid" class="text-danger"></span>
     </div>
     <div class="form-floating mb-3">
-        <select asp-for="InstanceName" class="form-control" asp-items="@(new SelectList(ViewBag.Instances, "Name", "Name"))" placeholder="Device instance name">
-            <option value="" disabled selected>Please select one</option>
+        <select asp-for="InstanceName" class="form-control" asp-items="@(new SelectList(ViewBag.Instances, "Name", "Name"))" placeholder="@localizer["Device instance name"]">
+            <option value="" disabled selected>@localizer["Please select one"]</option>
         </select>
         <label asp-for="InstanceName"></label>
         <span asp-validation-for="InstanceName" class="text-danger"></span>
     </div>
     <div class="form-floating mb-3">
-        <select asp-for="AccountUsername" class="form-control" asp-items="@(new SelectList(ViewBag.Accounts, "Username", "Username"))" placeholder="Account username">
-            <option value="" disabled selected>Please select one</option>
+        <select asp-for="AccountUsername" class="form-control" asp-items="@(new SelectList(ViewBag.Accounts, "Username", "Username"))" placeholder="@localizer["Account username"]">
+            <option value="" disabled selected>@localizer["Please select one"]</option>
         </select>
         <label asp-for="AccountUsername"></label>
         <span asp-validation-for="AccountUsername" class="text-danger"></span>
     </div>
     <div class="form-group">
-        <input type="submit" value="Create" class="btn btn-primary" />
+        <input type="submit" value="@localizer["Create"]" class="btn btn-primary" />
     </div>
 </form>
 

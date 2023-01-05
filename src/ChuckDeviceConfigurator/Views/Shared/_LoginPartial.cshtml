@@ -23,13 +23,13 @@
         <ul class="collapse list-unstyled" id="userSubmenu">
             <li>
                 <a class="dropdown-item account-link" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage Account">
-                    <i class="fa-solid fa-fw fa-address-card"></i>&nbsp;Account
+                    <i class="fa-solid fa-fw fa-address-card"></i>&nbsp;@localizer["Account"]
                 </a>
             </li>
             <li>
                 <form class="form-inline dropdown-item account-link py-0 ps-3" style="font-size: 0.9em;" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
-                    <button type="submit" class="btn btn-sm" title="Logout" style="font-size: 0.9em;">
-                        <i class="fa-solid fa-fw fa-arrow-right-from-bracket"></i>&nbsp;Logout
+                    <button type="submit" class="btn btn-sm" title="Logout" style="font-size: 1.0em;">
+                        <i class="fa-solid fa-fw fa-arrow-right-from-bracket"></i>&nbsp;@localizer["Logout"]
                     </button>
                 </form>
             </li>
@@ -40,14 +40,12 @@ else
 {
     <li class="nav-item">
         <a class="nav-link" asp-area="Identity" asp-page="/Account/Register">
-            <i class="fa-solid fa-fw fa-circle-plus"></i>
-            Register
+            <i class="fa-solid fa-fw fa-circle-plus"></i>&nbsp;@localizer["Register"]
         </a>
     </li>
     <li class="nav-item">
         <a class="nav-link" asp-area="Identity" asp-page="/Account/Login">
-            <i class="fa-solid fa-fw fa-arrow-right-to-bracket"></i>
-            Login
+            <i class="fa-solid fa-fw fa-arrow-right-to-bracket"></i>&nbsp;@localizer["Login"]
         </a>
     </li>
 }
