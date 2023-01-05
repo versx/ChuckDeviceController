@@ -95,8 +95,11 @@
         </div>
     </div>
     <br />
-    <div class="checkbox mb-3">
-        <label><input type="checkbox" asp-for="IsEnabled"> @localizer["Enabled"]</label>
+    <div class="form-check mb-3">
+        <input asp-for="IsEnabled" class="form-check-input" />
+        <label class="form-check-label" asp-for="IsEnabled">
+            @localizer["Enabled"]
+        </label>
     </div>
 </form>
 

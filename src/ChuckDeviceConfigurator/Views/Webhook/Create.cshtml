@@ -57,8 +57,11 @@
                 </select>
                 <span asp-validation-for="Geofences" class="text-danger"></span>
             </div>
-            <div class="checkbox mb-3">
-                <label><input type="checkbox" asp-for="Enabled" checked> @localizer["Enable Webhook Endpoint"]</label>
+            <div class="form-check mb-3">
+                <input asp-for="Enabled" class="form-check-input" checked />
+                <label class="form-check-label" asp-for="Enabled">
+                    @localizer["Enable Webhook Endpoint"]
+                </label>
             </div>
         </div>
         <div class="col-lg-6 col-md-12">

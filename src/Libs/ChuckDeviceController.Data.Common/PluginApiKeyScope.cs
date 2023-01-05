@@ -42,7 +42,7 @@ public enum PluginApiKeyScope : int
     /// <summary>
     /// Create new job controller types that devices can use
     /// </summary>
-    [Display(GroupName = "JobControllers", Name = "Create", Description = "Create new job controllers")]
+    [Display(GroupName = "Job Controllers", Name = "Create", Description = "Create new job controllers")]
     CreateJobControllers = 1 << 4, // 010000  16
 
     #region Instances
@@ -94,13 +94,13 @@ public enum PluginApiKeyScope : int
     /// <summary>
     /// Read file system storage
     /// </summary>
-    [Display(GroupName = "FileSystem", Name = "Read", Description = "Read from the file system")]
+    [Display(GroupName = "File System", Name = "Read", Description = "Read from the file system")]
     ReadFileSystem = 1 << 11, // 10000000  2048
 
     /// <summary>
     /// Write file system storage
     /// </summary>
-    [Display(GroupName = "FileSystem", Name = "Write", Description = "Write to the file system")]
+    [Display(GroupName = "File System", Name = "Write", Description = "Write to the file system")]
     WriteFileSystem = 1 << 12, // 100000000  4096
 
     #endregion
