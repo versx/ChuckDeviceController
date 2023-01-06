@@ -439,5 +439,30 @@
     "Delete Account": "Delete Account",
     "Are you sure you want to delete this account?": "Are you sure you want to delete this account?",
     "Edit Device Group {0}": "Edit Device Group {0}",
-    "Edit Device Group": "Edit Device Group"
+    "Edit Device Group": "Edit Device Group",
+    
+    "Quest Queue - {0}": "Quest Queue - {0}",
+    "Are you sure you want to clear all pending Pokestops from the Quest queue?": "Are you sure you want to clear all pending Pokestops from the Quest queue?",
+    "Clears all pending Pokestops in the Quest queue.": "Clears all pending Pokestops in the Quest queue.",
+    "Removes the pending Pokestops from the Quest queue.": "Removes the pending Pokestops from the Quest queue.",
+    "Quest Queue": "Quest Queue",
+    "Clear Queue": "Clear Queue",
+    "Is Alternative": "Is Alternative",
+    "Location": "Location",
+    
+    "IV Queue - {0}": "IV Queue - {0}",
+    "Are you sure you want to clear all pending Pokemon encounters from the IV queue?": "Are you sure you want to clear all pending Pokemon encounters from the IV queue?",
+    "Clears all pending Pokemon encounters in the IV queue.": "Clears all pending Pokemon encounters in the IV queue.",
+    "Removes the pending Pokemon encounter from the IV queue.": "Removes the pending Pokemon encounter from the IV queue.",
+    "IV Queue": "IV Queue",
+    "#": "#",
+    "Form": "Form",
+    "Costume": "Costume",
+    "Encounter ID": "Encounter ID",
+    "Save Data From Leveling": "Save Data From Leveling",
+    "No Group": "No Group",
+    "Re-Quest": "Re-Quest",
+    "Set to 12am to create On-Complete assignment": "Set to 12am to create \u0027On-Complete\u0027 assignment",
+    "Leave empty for any date (mm/dd/yyyy)": "Leave empty for any date (mm/dd/yyyy)",
+    "An on-complete assignment will be created to switch to the specified instance when the device has completed the assignment.": "An on-complete assignment will be created to switch to the specified instance when the device has completed the assignment."
 }
