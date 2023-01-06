@@ -50,7 +50,7 @@
                             <li><a class="dropdown-item @(item.Enabled ? "" : "disabled")" asp-action="Start" asp-route-id="@item.Name"><i class="fa-solid fa-play"></i>&nbsp;@localizer["Start"]</a></li>
                             @if (ViewBag.AssignmentGroupsWithQuests.Contains(item.Name))
                             {
-                                <li><a class="dropdown-item @(item.Enabled ? "" : "disabled")" asp-action="ReQuest" asp-route-id="@item.Name"><i class="fa-solid fa-arrows-rotate"></i>&nbsp;@localizer["Re-Quest"]</a></li>
+                                <li><a class="dropdown-item @(item.Enabled ? "" : "disabled")" asp-action="ReQuest" asp-route-id="@item.Name" onclick="return confirm('Are you sure that you want to re-quest assignment group \'@item.Name\'?');"><i class="fa-solid fa-arrows-rotate"></i>&nbsp;@localizer["Re-Quest"]</a></li>
                             }
                             <li><a class="dropdown-item" asp-action="Edit" asp-route-id="@item.Name"><i class="fa-solid fa-pen-to-square"></i>&nbsp;@localizer["Edit"]</a></li>
                             <li><a class="dropdown-item" asp-action="Details" asp-route-id="@item.Name"><i class="fa-solid fa-circle-info"></i>&nbsp;@localizer["Details"]</a></li>

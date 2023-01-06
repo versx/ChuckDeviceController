@@ -85,8 +85,8 @@
                             <li><a class="dropdown-item @(item.Enabled ? "" : "disabled")" asp-action="Start" asp-route-id="@item.Id"><i class="fa-solid fa-play"></i>&nbsp;@localizer["Start"]</a></li>
                             @if (ViewBag?.QuestInstances?.Contains(item.InstanceName) ?? false)
                             {
-                                <li><a class="dropdown-item @(item.Enabled ? "" : "disabled")" asp-action="ClearQuests" asp-route-id="@item.Id"><i class="fa-solid fa-broom"></i>&nbsp;@localizer["Clear Quests"]</a></li>
-                                <li><a class="dropdown-item @(item.Enabled ? "" : "disabled")" asp-action="ReQuest" asp-route-id="@item.Id"><i class="fa-solid fa-arrows-rotate"></i>&nbsp;@localizer["Re-Quest"]</a></li>
+                                <li><a class="dropdown-item @(item.Enabled ? "" : "disabled")" asp-action="ClearQuests" asp-route-id="@item.Id" onclick="return confirm('Are you sure that you want to clear quests for instance \'@item.InstanceName\'?');"><i class="fa-solid fa-broom"></i>&nbsp;@localizer["Clear Quests"]</a></li>
+                                <li><a class="dropdown-item @(item.Enabled ? "" : "disabled")" asp-action="ReQuest" asp-route-id="@item.Id" onclick="return confirm('Are you sure that you want to re-quest for instance \'@item.InstanceName\'?');"><i class="fa-solid fa-arrows-rotate"></i>&nbsp;@localizer["Re-Quest"]</a></li>
                             }
                             <li><a class="dropdown-item" asp-action="Edit" asp-route-id="@item.Id"><i class="fa-solid fa-pen-to-square"></i>&nbsp;@localizer["Edit"]</a></li>
                             <li><a class="dropdown-item" asp-action="Details" asp-route-id="@item.Id"><i class="fa-solid fa-circle-info"></i>&nbsp;@localizer["Details"]</a></li>
