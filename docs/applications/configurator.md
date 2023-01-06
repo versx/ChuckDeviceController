@@ -206,33 +206,46 @@ Checks all accounts with any of the following status and marks the interested co
   },
   // Dashboard UI theme.
   "Theme": "dark",
-  // User accounts settings
-  "UserAccounts": {
-    // User account lock out settings.
-    "Lockout": {
-      "AllowedForNewUsers": true,
-      "MaxFailedAccessAttempts": 5,
-      "DefaultLockoutTimeSpan": 15
+  "UserIdentity": {
+    // Device login rate limiter.
+    "LoginLimit": {
+      // Determines whether or not to use the login limiter.
+      "Enabled": false,
+      // Maximum amount of devices to login within the specified
+      // interval below.
+      "MaximumCount": 15,
+      // Number of seconds devices can login before being rate
+      // limited.
+      "IntervalS": 300
     },
-    // User account password settings.
-    "Password": {
-      "RequireDigit": true,
-      "RequiredLength": 8,
-      "RequiredUniqueChars": 1,
-      "RequireLowercase": true,
-      "RequireUppercase": true,
-      "RequireNonAlphanumeric": true
-    },
-    // User account sign-in settings.
-    "SignIn": {
-      "RequireConfirmedAccount": true,
-      "RequireConfirmedEmail": true,
-      "RequireConfirmedPhoneNumber": false
-    },
-    // User account settings.
-    "User": {
-      "AllowedUserNameCharacters": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+",
-      "RequireUniqueEmail": true
+    // User accounts settings
+    "UserAccounts": {
+      // User account lock out settings.
+      "Lockout": {
+        "AllowedForNewUsers": true,
+        "MaxFailedAccessAttempts": 5,
+        "DefaultLockoutTimeSpan": 15
+      },
+      // User account password settings.
+      "Password": {
+        "RequireDigit": true,
+        "RequiredLength": 8,
+        "RequiredUniqueChars": 1,
+        "RequireLowercase": true,
+        "RequireUppercase": true,
+        "RequireNonAlphanumeric": true
+      },
+      // User account sign-in settings.
+      "SignIn": {
+        "RequireConfirmedAccount": true,
+        "RequireConfirmedEmail": true,
+        "RequireConfirmedPhoneNumber": false
+      },
+      // User account settings.
+      "User": {
+        "AllowedUserNameCharacters": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+",
+        "RequireUniqueEmail": true
+      }
     }
   }
 }
