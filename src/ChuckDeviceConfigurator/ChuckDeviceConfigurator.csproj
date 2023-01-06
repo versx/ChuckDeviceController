@@ -105,11 +105,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Remove="Views\Geofence\QuickView.cshtml" />
     <Content Remove="Views\Shared\ExternalLoginProviders.cshtml" />
-    <Content Remove="Views\Shared\_AccountGroupSelector.cshtml" />
-    <Content Remove="Views\Shared\_NotificationsPartial.cshtml" />
-    <Content Remove="Views\User\DisplayTemplates\UserDetails.cshtml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -125,6 +121,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Watch Remove="Views\Account\EditorTemplates\AccountGroupSelector.cshtml" />
     <Watch Remove="Views\Account\EditorTemplates\EditAccountDetails.cshtml" />
     <Watch Remove="Views\ApiKey\DisplayTemplates\ApiKeyPlugins.cshtml" />
     <Watch Remove="Views\ApiKey\EditorTemplates\ApiKeyViewer.cshtml" />
@@ -136,11 +133,13 @@
     <Watch Remove="Views\Instance\EditorTemplates\EditInstanceDevices.cshtml" />
     <Watch Remove="Views\Instance\QuickView.cshtml" />
     <Watch Remove="Views\IvList\EditorTemplates\EditIvListDetails.cshtml" />
+    <Watch Remove="Views\Plugin\DisplayTemplates\PluginDetails.cshtml" />
     <Watch Remove="Views\Shared\DisplayTemplates\Sidebar.cshtml" />
     <Watch Remove="Views\Shared\ExternalLoginProviders.cshtml" />
     <Watch Remove="Views\Shared\_AccountGroupSelector.cshtml" />
     <Watch Remove="Views\Shared\_ApiKeyViewer.cshtml" />
     <Watch Remove="Views\Shared\_NotificationsPartial.cshtml" />
+    <Watch Remove="Views\Shared\_Sidebar.cshtml" />
     <Watch Remove="Views\Shared\_ViewApiKeyScopes.cshtml" />
     <Watch Remove="Views\User\DisplayTemplates\UserDetails.cshtml" />
     <Watch Remove="Views\User\EditorTemplates\EditUserPasswordDetails.cshtml" />
@@ -159,15 +158,6 @@
     <Folder Include="Services\Plugins\Hosts\EventBusService\" />
     <Folder Include="Services\Plugins\Hosts\EventBusService\Publishers\" />
     <Folder Include="Services\Plugins\Hosts\EventBusService\Subscribers\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="Views\Device\_NotificationsPartial.cshtml" />
-    <None Include="Views\Account\_AccountGroupSelector.cshtml" />
-    <None Include="Areas\Identity\Pages\Shared\ExternalLoginProviders.cshtml" />
-    <None Include="Views\Instance\QuickView.cshtml" />
-    <None Include="Views\Shared\DisplayTemplates\Sidebar.cshtml" />
-    <None Include="Views\User\DisplayTemplates\UserDetails.cshtml" />
   </ItemGroup>
 
   <ItemGroup>

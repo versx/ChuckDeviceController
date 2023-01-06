@@ -9,7 +9,7 @@
 
 <div class="row">
     <div class="col">
-        @await Html.PartialAsync("_AccountGroupSelector")
+        @Html.EditorForModel("AccountGroupSelector")
     </div>
     <div class="col">
         <a class="btn btn-success btn-sm float-end" asp-action="Add">@localizer["Import Accounts"]</a>

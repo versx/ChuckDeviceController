@@ -1,0 +1,41 @@
+﻿@using ChuckDeviceController.PluginManager
+@model IPluginHost
+
+<dl class="row">
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.Plugin.Name)
+    </dt>
+    <dd class="col-sm-10">
+        @Html.DisplayFor(model => model.Plugin.Name)
+    </dd>
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.Plugin.Description)
+    </dt>
+    <dd class="col-sm-10">
+        @Html.DisplayFor(model => model.Plugin.Description)
+    </dd>
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.Plugin.Author)
+    </dt>
+    <dd class="col-sm-10">
+        @Html.DisplayFor(model => model.Plugin.Author)
+    </dd>
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.ApiKey.Scope)
+    </dt>
+    <dd class="col-sm-10">
+        @Html.Raw(string.Join("<br>", Model?.ApiKey?.Scope ?? new()))
+    </dd>
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.Plugin.Version)
+    </dt>
+    <dd class="col-sm-10">
+        @Html.DisplayFor(model => model.Plugin.Version)
+    </dd>
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.State)
+    </dt>
+    <dd class="col-sm-10">
+        @Html.Raw(Utils.GetPluginStateColor(Model?.State ?? PluginState.Unset))
+    </dd>
+</dl>
