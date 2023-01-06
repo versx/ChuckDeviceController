@@ -111,7 +111,7 @@ WHERE id={0}
 
     public const string GymTrainerOnMergeUpdate = @"
 INSERT INTO gym_trainer (
-    name, level, team_id, battles_won, km_walked, pokemon_caught, experience
+    name, level, team_id, battles_won, km_walked, pokemon_caught, experience,
     combat_rank, combat_rating, has_shared_ex_pass, gym_badge_type, updated
 )
 VALUES {0}
@@ -144,8 +144,10 @@ ON DUPLICATE KEY UPDATE
     /// 11 - updated
     /// </summary>
     public const string GymTrainerValuesRaw = @"
-{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9},
-{10}, {11}
+(
+    {0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9},
+    {10}, {11}
+)
 ";
 
     #endregion
@@ -155,7 +157,7 @@ ON DUPLICATE KEY UPDATE
     public const string GymDefenderOnMergeUpdate = @"
 INSERT INTO gym_defender (
     id, nickname, pokemon_id, display_pokemon_id, form, costume, gender, cp_when_deployed, cp_now, cp,
-    battles_won, battles_lost, berry_value, times_fed, deployment_duration, trainer_name, fort_id, atv_iv, def_iv, sta_iv,
+    battles_won, battles_lost, berry_value, times_fed, deployment_duration, trainer_name, fort_id, atk_iv, def_iv, sta_iv,
     move_1, move_2, move_3, battles_attacked, battles_defended, buddy_km_walked, buddy_candy_awarded, coins_returned, from_fort, hatched_from_egg,
     is_bad, is_egg, is_lucky, shiny, pvp_combat_won, pvp_combat_total, npc_combat_won, npc_combat_total, height_m, weight_kg,
     updated
@@ -233,11 +235,13 @@ ON DUPLICATE KEY UPDATE
     /// 40 - updated
     /// </summary>
     public const string GymDefenderValuesRaw = @"
-{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9},
-{10}, {11}, {12}, {13}, {14}, {15}, {16}, {17}, {18}, {19},
-{20}, {21}, {22}, {23}, {24}, {25}, {26}, {27}, {28}, {29},
-{30}, {31}, {32}, {33}, {34}, {35}, {36}, {37}, {38}, {39},
-{40}
+(
+    {0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9},
+    {10}, {11}, {12}, {13}, {14}, {15}, {16}, {17}, {18}, {19},
+    {20}, {21}, {22}, {23}, {24}, {25}, {26}, {27}, {28}, {29},
+    {30}, {31}, {32}, {33}, {34}, {35}, {36}, {37}, {38}, {39},
+    {40}
+)
 ";
 
     #endregion
