@@ -13,7 +13,7 @@ using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Repositories;
 
 [Authorize(Roles = RoleConsts.AssignmentsRole)]
-public class AssignmentController : Controller
+public class AssignmentController : BaseMvcController
 {
     private readonly ILogger<AssignmentController> _logger;
     private readonly IUnitOfWork _uow;
@@ -326,6 +326,12 @@ public class AssignmentController : Controller
             // Start device assignment
             await _assignmentService.StartAssignmentAsync(assignment);
 
+            CreateNotification(new NotificationViewModel
+            {
+                Message = $"Assignment with id '{id}' has been started.",
+                Icon = NotificationIcon.Success,
+            });
+
             return RedirectToAction(nameof(Index));
         }
         catch
@@ -351,6 +357,12 @@ public class AssignmentController : Controller
             // Start re-quest for assignment
             await _assignmentService.ReQuestAssignmentAsync(assignment.Id);
 
+            CreateNotification(new NotificationViewModel
+            {
+                Message = $"Assignment with id '{id}' has started re-quest for instance '{assignment.InstanceName}'.",
+                Icon = NotificationIcon.Success,
+            });
+
             return RedirectToAction(nameof(Index));
         }
         catch //(Exception ex)
@@ -373,6 +385,12 @@ public class AssignmentController : Controller
         }
 
         await _assignmentService.ClearQuestsAsync(assignment);
+
+        CreateNotification(new NotificationViewModel
+        {
+            Message = $"Quests have been cleared for assignment with id '{id}' and instance '{assignment.InstanceName}'.",
+            Icon = NotificationIcon.Success,
+        });
 
         return RedirectToAction(nameof(Index));
     }

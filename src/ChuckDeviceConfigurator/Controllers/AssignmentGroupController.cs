@@ -15,7 +15,7 @@ using ChuckDeviceController.Data.Repositories;
 
 [Controller]
 [Authorize(Roles = RoleConsts.AssignmentGroupsRole)]
-public class AssignmentGroupController : Controller
+public class AssignmentGroupController : BaseMvcController
 {
     private readonly ILogger<AssignmentGroupController> _logger;
     private readonly IUnitOfWork _uow;
@@ -333,6 +333,12 @@ public class AssignmentGroupController : Controller
 
             // Start re-quest for all device assignments in assignment group
             await _assignmentService.ReQuestAssignmentsAsync(assignmentGroup.AssignmentIds);
+
+            CreateNotification(new NotificationViewModel
+            {
+                Message = $"Re-quest has started for assignment group '{id}'.",
+                Icon = NotificationIcon.Success,
+            });
 
             return RedirectToAction(nameof(Index));
         }
