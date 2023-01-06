@@ -172,7 +172,7 @@
 </div>
 <div class="form-floating mb-3">
     <select asp-for="Data.AccountGroup" class="form-control" asp-items="@(new SelectList(ViewBag.AccountGroups))" placeholder="Available account group name">
-        <option value="" disabled selected>@localizer["Please select one"]</option>
+        <option value="" selected>@localizer["No Group"]</option>
     </select>
     <label asp-for="Data.AccountGroup"></label>
     <span asp-validation-for="Data.AccountGroup" class="text-danger"></span>

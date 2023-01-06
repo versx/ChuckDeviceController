@@ -48,8 +48,8 @@ public class AccountController : Controller
             .Select(device => device.AccountUsername)
             .ToList();
         var accountGroups = allAccounts
-            .DistinctBy(x => x.GroupName)
             .Select(x => x.GroupName)
+            .Distinct()
             .Where(x => !string.IsNullOrEmpty(x))
             .ToList();
 

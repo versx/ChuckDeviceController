@@ -162,6 +162,7 @@ public class InstanceController : Controller
         var accountGroups = (await _uow.Accounts.FindAllAsync())
             .Select(x => x.GroupName)
             .Distinct()
+            .Where(x => !string.IsNullOrEmpty(x))
             .ToList();
         var geofences = await _uow.Geofences.FindAllAsync();
         ViewBag.AccountGroups = accountGroups;
@@ -249,6 +250,7 @@ public class InstanceController : Controller
         var accountGroups = (await _uow.Accounts.FindAllAsync())
             .Select(x => x.GroupName)
             .Distinct()
+            .Where(x => !string.IsNullOrEmpty(x))
             .ToList();
         var geofences = await _uow.Geofences.FindAllAsync();
         ViewBag.AccountGroups = accountGroups;
