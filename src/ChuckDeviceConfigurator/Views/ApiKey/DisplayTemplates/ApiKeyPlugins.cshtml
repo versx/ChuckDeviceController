@@ -1,0 +1,20 @@
+﻿@using ChuckDeviceController.PluginManager
+@model IReadOnlyList<IPluginHost>
+
+@if (Model.Any())
+{
+    <ul class="list-group">
+        @foreach (var plugin in Model)
+        {
+            <li class="list-group-item">
+                <a asp-controller="Plugin" asp-action="Details" asp-route-id="@plugin.Plugin.Name" style="text-decoration: none; color: inherit;">
+                    @Html.DisplayFor(model => plugin.Plugin.Name)
+                </a>
+            </li>
+        }
+    </ul>
+}
+else
+{
+    <p>@localizer["None"]</p>
+}

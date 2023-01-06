@@ -1,10 +1,10 @@
 ﻿@model ManageApiKeyViewModel
 @{
-    var groups = (ViewData["groups"] as List<string> ?? new List<string>());
+    var groups = Model!.Scopes.Keys.ToList();
 }
 
 <div class="card">
-    <div class="card-header"><b>@localizer["API Scopes"]</b></div>
+    <!--<div class="card-header"><b>@localizer["API Scopes"]</b></div>-->
     <div class="card-body">
         <ul class="list-group list-group-flush">
             @for (var i = 0; i < groups.Count; i++)
@@ -15,12 +15,15 @@
                     <ul class="list-group list-group-flush">
                         @for (var j = 0; j < Model.Scopes[groupName].Count; j++)
                         {
+                            //if (!Model.Scope.HasFlag(Model.Scopes[groupName][j].Value))
+                            //    continue;
+
                             <li class="list-group-item border-0 py-0">
                                 <div class="row">
                                     <div class="col-2">
                                         <div class="form-check">
                                             <input type="hidden" asp-for="@Model.Scopes[groupName][j].Value" />
-                                            <input asp-for="@Model.Scopes[groupName][j].Selected" class="form-check-input" />
+                                            <input asp-for="@Model.Scopes[groupName][j].Selected" class="form-check-input" disabled />
                                             <label class="form-check-label" asp-for="@Model.Scopes[groupName][j].Selected">
                                                 @Model.Scopes[groupName][j].Name
                                             </label>

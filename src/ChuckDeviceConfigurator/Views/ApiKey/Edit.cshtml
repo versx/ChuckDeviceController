@@ -46,17 +46,7 @@
         </div>
     </div>
     <div class="input-group mb-3">
-        <div class="form-floating" style="width: 90%;">
-            <input asp-for="Key" class="form-control" readonly />
-            <label asp-for="Key"></label>
-            <span asp-validation-for="Key" class="text-danger"></span>
-        </div>
-        <button id="toggle-button" class="btn btn-outline-secondary btn-sm" onclick="toggleVisibility(); return false;" data-bs-toggle="tooltip" data-bs-placement="top" title="Toggle API key visibility">
-            <i id="toggle-icon" class="fa fa-fw fa-eye-slash"></i>
-        </button>
-        <button class="btn btn-outline-secondary btn-sm" onclick="copyToClipboard('@(Model?.Key)'); return false;" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to clipboard">
-            <i class="fa fa-fw fa-copy"></i>
-        </button>
+        @await Html.PartialAsync("_ApiKeyViewer", Model)
     </div>
     @Html.EditorForModel("EditApiKeyScopes", new { groups })
     <br />
