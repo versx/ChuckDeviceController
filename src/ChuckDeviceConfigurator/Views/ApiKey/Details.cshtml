@@ -15,13 +15,13 @@
         <h4>@localizer["API Key '{0}'", Model.Name]</h4>
     </div>
     <div class="float-end">
-        <button class="btn btn-primary" onclick="copyToClipboard('@(Model?.Key)');">
+        <button class="btn btn-primary btn-sm" onclick="copyToClipboard('@(Model?.Key)');">
             <i class="fa-solid fa-copy"></i>&nbsp;@localizer["Copy Key"]
         </button>
-        <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn btn-primary">
+        <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn btn-primary btn-sm">
             <i class="fa-solid fa-pen-to-square"></i>&nbsp;@localizer["Edit"]
         </a>
-        <a asp-action="Delete" asp-route-id="@Model?.Id" class="btn btn-danger">
+        <a asp-action="Delete" asp-route-id="@Model?.Id" class="btn btn-danger btn-sm">
             <i class="fa-solid fa-trash"></i>&nbsp;@localizer["Delete"]
         </a>
     </div>

@@ -15,19 +15,19 @@
         <h4>@localizer["Assignment Group '{0}'", Model.Name]</h4>
     </div>
     <div class="float-end">
-        <a asp-action="Start" asp-route-id="@Model?.Name" class="btn btn-success">
+        <a asp-action="Start" asp-route-id="@Model?.Name" class="btn btn-success btn-sm">
             <i class="fa-solid fa-play"></i>&nbsp;@localizer["Start"]
         </a>
         @if (ViewBag?.HasQuestInstance ?? false)
         {
-            <a asp-action="ReQuest" asp-route-id="@Model?.Name" class="btn btn-warning">
+            <a asp-action="ReQuest" asp-route-id="@Model?.Name" class="btn btn-warning btn-sm">
                 <i class="fa-solid fa-arrows-rotate"></i>&nbsp;@localizer["Re-Quest"]
             </a>
         }
-        <a asp-action="Edit" asp-route-id="@Model?.Name" class="btn btn-primary">
+        <a asp-action="Edit" asp-route-id="@Model?.Name" class="btn btn-primary btn-sm">
             <i class="fa-solid fa-pen-to-square"></i>&nbsp;@localizer["Edit"]
         </a>
-        <a asp-action="Delete" asp-route-id="@Model?.Name" class="btn btn-danger">
+        <a asp-action="Delete" asp-route-id="@Model?.Name" class="btn btn-danger btn-sm">
             <i class="fa-solid fa-trash"></i>&nbsp;@localizer["Delete"]
         </a>
     </div>

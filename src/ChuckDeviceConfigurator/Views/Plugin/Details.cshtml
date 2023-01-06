@@ -18,13 +18,13 @@
         <h4>Plugin '@Model.Plugin.Name'</h4>
     </div>
     <div class="float-end">
-        <a asp-action="Manage" asp-route-id="@Model.Plugin.Name" asp-route-enabled="@(!isEnabled)" class="btn btn-@(isEnabled ? "danger" : "success")">
+        <a asp-action="Manage" asp-route-id="@Model.Plugin.Name" asp-route-enabled="@(!isEnabled)" class="btn btn-@(isEnabled ? "danger" : "success") btn-sm">
             <i class="fa-solid @(isEnabled ? "fa-stop" : "fa-play")"></i>&nbsp; @(isEnabled ? localizer["Disable"] : localizer["Enable"])
         </a>
-        <a asp-action="Reload" asp-route-id="@Model.Plugin.Name" class="btn btn-primary">
+        <a asp-action="Reload" asp-route-id="@Model.Plugin.Name" class="btn btn-primary btn-sm">
             <i class="fa-solid fa-pen-to-square"></i>&nbsp;@localizer["Reload"]
         </a>
-        <a asp-action="Delete" asp-route-id="@Model.Plugin.Name" class="btn btn-danger">
+        <a asp-action="Delete" asp-route-id="@Model.Plugin.Name" class="btn btn-danger btn-sm">
             <i class="fa-solid fa-trash"></i>&nbsp;@localizer["Delete"]
         </a>
     </div>
