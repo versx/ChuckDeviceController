@@ -1,0 +1,40 @@
+﻿@model ManageApiKeyViewModel
+@{
+    var groups = (ViewData["groups"] as List<string> ?? new List<string>());
+}
+<div class="card">
+    <div class="card-header"><b>@localizer["API Scopes"]</b></div>
+    <div class="card-body">
+        <ul class="list-group list-group-flush">
+            @for (var i = 0; i < groups.Count; i++)
+            {
+                var groupName = groups[i];
+                <li class="list-group-item border-0 py-0">
+                    <label class="form-label"><b>@groupName</b></label>
+                    <ul class="list-group list-group-flush">
+                        @for (var j = 0; j < Model.Scopes[groupName].Count; j++)
+                        {
+                            <li class="list-group-item border-0 py-0">
+                                <div class="row">
+                                    <div class="col-2">
+                                        <div class="form-check">
+                                            <input type="hidden" asp-for="@Model.Scopes[groupName][j].Value" />
+                                            <input asp-for="@Model.Scopes[groupName][j].Selected" class="form-check-input" />
+                                            <label class="form-check-label" asp-for="@Model.Scopes[groupName][j].Selected">
+                                                @Model.Scopes[groupName][j].Name
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-10">
+                                        <span class="mb-1 text-muted">@Model.Scopes[groupName][j].Description</span>
+                                    </div>
+                                </div>
+                            </li>
+                        }
+                    </ul>
+                    <hr>
+                </li>
+            }
+        </ul>
+    </div>
+</div>

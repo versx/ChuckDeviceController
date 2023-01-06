@@ -1,7 +1,4 @@
-﻿@using POGOProtos.Rpc
-@using static POGOProtos.Rpc.EnumWrapper.Types
-@using static POGOProtos.Rpc.GameplayWeatherProto.Types
-@model Webhook
+﻿@model Webhook
 @{
     ViewData["Title"] = localizer["Create Webhook"];
 }
@@ -33,107 +30,10 @@
                 <label asp-for="Name"></label>
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
-            <div class="form-floating mb-3">
-                <input asp-for="Url" class="form-control" placeholder="Webhook url endpoint" />
-                <label asp-for="Url"></label>
-                <span asp-validation-for="Url" class="text-danger"></span>
-            </div>
-            <div class="form-floating mb-3">
-                <input asp-for="Delay" class="form-control" min="0" max="3600" type="number" placeholder="Webhook delay" />
-                <label asp-for="Delay"></label> <small class="text-muted"><i>@localizer["in seconds"]</i></small>
-                <span asp-validation-for="Delay" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-3">
-                <label asp-for="Types"></label>
-                <select asp-for="Types" class="form-control" asp-items="Html.GetEnumSelectList<WebhookType>()" placeholder="Webhook type">
-                    <option value="" disabled selected>@localizer["Please select one or more"]</option>
-                </select>
-                <span asp-validation-for="Types" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-3">
-                <label asp-for="Geofences"></label>
-                <select asp-for="Geofences" class="form-control" asp-items="@(new SelectList(ViewBag.Geofences, "Name", "Name"))" placeholder="Webhook geofences">
-                    <option value="" selected>@localizer["Please select one or more"]</option>
-                </select>
-                <span asp-validation-for="Geofences" class="text-danger"></span>
-            </div>
-            <div class="form-check mb-3">
-                <input asp-for="Enabled" class="form-check-input" checked />
-                <label class="form-check-label" asp-for="Enabled">
-                    @localizer["Enable Webhook Endpoint"]
-                </label>
-            </div>
+            @Html.EditorForModel("EditWebhookDetails")
         </div>
         <div class="col-lg-6 col-md-12">
-            <div class="card">
-                <div class="card-header">@localizer["Blacklisted Data"]</div>
-                <div class="card-body">
-                    <div class="form-floating mb-3 pokemon">
-                        <textarea asp-for="Data!.PokemonIds" class="form-control" placeholder="i.e. 1_f123_c11_g1"></textarea>
-                        <label asp-for="Data!.PokemonIds"></label> <small class="text-muted"><i>@localizer["Each entry should be on a newline"]</i></small>
-                        <span asp-validation-for="Data!.PokemonIds" class="text-danger"></span>
-                    </div>
-                    <div class="form-floating mb-3 pokestops">
-                        <textarea asp-for="Data!.PokestopIds" class="form-control" placeholder="i.e. 000350f25244314e8b1bec531c7aa7a0.16"></textarea>
-                        <label asp-for="Data!.PokestopIds"></label> <small class="text-muted"><i>@localizer["Each entry should be on a newline"]</i></small>
-                        <span asp-validation-for="Data!.PokestopIds" class="text-danger"></span>
-                    </div>
-                    <div class="form-floating mb-3 raids">
-                        <textarea asp-for="Data!.RaidPokemonIds" class="form-control" placeholder="i.e. 150_f123_c11_g1"></textarea>
-                        <label asp-for="Data!.RaidPokemonIds"></label> <small class="text-muted"><i>@localizer["Each entry should be on a newline"]</i></small>
-                        <span asp-validation-for="Data!.RaidPokemonIds" class="text-danger"></span>
-                    </div>
-                    <div class="form-group mb-3 eggs">
-                        <label asp-for="Data!.EggLevels"></label>
-                        <select asp-for="Data!.EggLevels" class="form-control" multiple>
-                            <option value="" selected>@localizer["Please select one or more"]</option>
-                            @for (var i = 1; i < 9; i++)
-                            {
-                                <option value="@i">@localizer[$"raid_{i}"]</option>
-                            }
-                        </select>
-                        <span asp-validation-for="Data!.EggLevels" class="text-danger"></span>
-                    </div>
-                    <div class="form-group mb-3 lures">
-                        <label asp-for="Data!.LureIds"></label>
-                        <select asp-for="Data!.LureIds" class="form-control" multiple>
-                            <option value="" selected>@localizer["Please select one or more"]</option>
-                            <option value="501">@localizer["lure_501"]</option>
-                            <option value="502">@localizer["lure_502"]</option>
-                            <option value="503">@localizer["lure_503"]</option>
-                            <option value="504">@localizer["lure_504"]</option>
-                            <option value="505">@localizer["lure_505"]</option>
-                        </select>
-                        <span asp-validation-for="Data!.LureIds" class="text-danger"></span>
-                    </div>
-                    <div class="form-group mb-3 invasions">
-                        <label asp-for="Data!.InvasionIds"></label>
-                        <select asp-for="Data!.InvasionIds" class="form-control" asp-items="Html.GetEnumSelectList<InvasionCharacter>()" multiple>
-                            <option value="" selected>@localizer["Please select one or more"]</option>
-                        </select>
-                        <span asp-validation-for="Data!.InvasionIds" class="text-danger"></span>
-                    </div>
-                    <div class="form-group mb-3 gyms">
-                        <label asp-for="Data!.GymTeamIds"></label>
-                        <select asp-for="Data!.GymTeamIds" class="form-control" asp-items="Html.GetEnumSelectList<Team>()" multiple>
-                            <option value="" selected>@localizer["Please select one or more"]</option>
-                        </select>
-                        <span asp-validation-for="Data!.GymTeamIds" class="text-danger"></span>
-                    </div>
-                    <div class="form-floating mb-3 gyminfo">
-                        <textarea asp-for="Data!.GymIds" class="form-control" placeholder="i.e. 0002a1b5721140cc847c20b59030727a.16"></textarea>
-                        <label asp-for="Data!.GymIds"></label> <small class="text-muted"><i>@localizer["Each entry should be on a newline"]</i></small>
-                        <span asp-validation-for="Data!.GymIds" class="text-danger"></span>
-                    </div>
-                    <div class="form-group mb-3 weather">
-                        <label asp-for="Data!.WeatherConditionIds"></label>
-                        <select asp-for="Data!.WeatherConditionIds" class="form-control" asp-items="Html.GetEnumSelectList<WeatherCondition>()" multiple>
-                            <option value="" selected>@localizer["Please select one or more"]</option>
-                        </select>
-                        <span asp-validation-for="Data!.WeatherConditionIds" class="text-danger"></span>
-                    </div>
-                </div>
-            </div>
+            @Html.EditorForModel("EditWebhookDataDetails")
         </div>
     </div>
 </form>
@@ -160,13 +60,16 @@
         for (const type of types) {
             hideElements(type, false);
         }
-        $('#Types').change(function() {
+
+        $('#Types').change(() => toggleElements());
+
+        function toggleElements() {
             const selected = $('#Types').val().map(type => types[type]);
             for (const type of types) {
                 const show = selected.includes(type);
                 hideElements(type, show);
             }
-        });
+        }
 
         function hideElements(className, show) {
             const elements = document.getElementsByClassName(className);

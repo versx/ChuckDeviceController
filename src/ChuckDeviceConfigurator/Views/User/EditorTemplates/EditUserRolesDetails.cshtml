@@ -1,0 +1,25 @@
+﻿@model ManageUserViewModel
+
+<div class="card">
+    <div class="card-header"><b>@localizer["User Account Permissions"]</b></div>
+    <div class="card-body">
+        @for (var i = 0; i < Model?.Roles.Count; i++)
+        {
+            <div class="form-check">
+                <input type="hidden" asp-for="@Model.Roles[i].RoleId" />
+                <input type="hidden" asp-for="@Model.Roles[i].RoleName" />
+                @if (Model.UserName == Strings.DefaultUserName && Model.Roles[i].RoleName == Strings.DefaultRootRoleName)
+                {
+                    <input asp-for="@Model.Roles[i].Selected" class="form-check-input" checked disabled />
+                }
+                else
+                {
+                    <input asp-for="@Model.Roles[i].Selected" class="form-check-input" />
+                }
+                <label class="form-check-label" asp-for="@Model.Roles[i].Selected">
+                    @Model.Roles[i].RoleName
+                </label>
+            </div>
+        }
+    </div>
+</div>

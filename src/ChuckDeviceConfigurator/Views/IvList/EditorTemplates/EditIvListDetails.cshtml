@@ -1,0 +1,8 @@
+﻿@model IvList
+
+<div class="form-group" hidden>
+    <textarea asp-for="PokemonIds" class="form-control" rows="2" placeholder="IV list pokemon IDs"></textarea>
+    <label asp-for="PokemonIds"></label>
+    <span asp-validation-for="PokemonIds" class="text-danger"></span>
+</div>
+@await Html.PartialAsync("_PokemonSelectorPartial", ViewData["Pokemon"])

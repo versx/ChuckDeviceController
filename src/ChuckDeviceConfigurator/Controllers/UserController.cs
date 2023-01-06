@@ -69,7 +69,7 @@ public class UserController : Controller
             };
             roles.Add(userRolesViewModel);
         }
-        var model = new CreateUserViewModel
+        var model = new ManageUserViewModel
         {
             Roles = roles,
         };
@@ -79,7 +79,7 @@ public class UserController : Controller
     // POST: UserController/Create
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(CreateUserViewModel model)
+    public async Task<IActionResult> Create(ManageUserViewModel model)
     {
         try
         {
@@ -157,7 +157,6 @@ public class UserController : Controller
                     return View(model);
                 }
 
-                // REVIEW: Make assigning default 'Registered' role configurable
                 if (!await _userManager.IsInRoleAsync(user, Roles.Registered.ToString()))
                 {
                     // User not assigned default registered role, assign it

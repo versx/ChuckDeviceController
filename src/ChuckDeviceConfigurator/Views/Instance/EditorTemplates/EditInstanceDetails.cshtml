@@ -1,0 +1,152 @@
+﻿@model ManageInstanceViewModel
+
+<div class="form-floating mb-3">
+    <select asp-for="Type" class="form-control" asp-items="Html.GetEnumSelectList<InstanceType>()" placeholder="Instance type">
+        <option value="" disabled selected>@localizer["Please select one"]</option>
+    </select>
+    <label asp-for="Type"></label>
+    <span asp-validation-for="Type" class="text-danger"></span>
+    <p id="instance-type-description" class="text-muted"></p>
+</div>
+<div class="form-floating mb-3 custom">
+    <select asp-for="Data.CustomInstanceType" id="Data.CustomInstanceType" class="form-control" asp-items="@(new SelectList(ViewBag.CustomInstanceTypes.Keys))" placeholder="Custom instance type">
+        <option value="" disabled selected>@localizer["Please select one"]</option>
+    </select>
+    <label asp-for="Data.CustomInstanceType"></label>
+    <span asp-validation-for="Data.CustomInstanceType" class="text-danger"></span>
+</div>
+<div class="form-floating mb-3 circle_route">
+    <select asp-for="Data.CircleRouteType" class="form-control" asp-items="Html.GetEnumSelectList<CircleInstanceRouteType>()" placeholder="Instance circle route type">
+        <option value="" disabled selected>@localizer["Please select one"]</option>
+    </select>
+    <label asp-for="Data.CircleRouteType"></label>
+    <span asp-validation-for="Data.CircleRouteType" class="text-danger"></span>
+</div>
+<div class="form-group">
+    <div class="row">
+        <div class="col-sm col-lg-6">
+            <div class="form-floating mb-3">
+                <input asp-for="MinimumLevel" class="form-control" min="0" max="50" placeholder="Instance minimum level" required />
+                <label asp-for="MinimumLevel"></label>
+                <span asp-validation-for="MinimumLevel" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="col-sm col-lg-6">
+            <div class="form-floating mb-3">
+                <input asp-for="MaximumLevel" class="form-control" min="0" max="50" placeholder="Instance maximum level" required />
+                <label asp-for="MaximumLevel"></label>
+                <span asp-validation-for="MaximumLevel" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="form-group mb-3">
+    <label asp-for="Geofences"></label>
+    <select asp-for="Geofences" class="form-control" asp-items="@(new SelectList(ViewBag.Geofences, "Name", "Name"))" placeholder="Instance geofences">
+        <option value="" disabled selected>@localizer["Please select one or more"]</option>
+    </select>
+    <span asp-validation-for="Geofences" class="text-danger"></span>
+</div>
+<div class="form-floating mb-3 pokemon_iv">
+    <select asp-for="Data.IvList" class="form-control" asp-items="@(new SelectList(ViewBag.IvLists, "Name", "Name"))" placeholder="Instance IV list">
+        <option value="" disabled selected>@localizer["Please select one"]</option>
+    </select>
+    <label asp-for="Data.IvList"></label>
+    <span asp-validation-for="Data.IvList" class="text-danger"></span>
+</div>
+<div class="form-floating mb-3 pokemon_iv">
+    <input asp-for="Data.IvQueueLimit" class="form-control" min="1" max="1000" step="1" value="100" placeholder="Instance IV queue limit" />
+    <label asp-for="Data.IvQueueLimit"></label>
+    <span asp-validation-for="Data.IvQueueLimit" class="text-danger"></span>
+</div>
+<div class="checkbox lure_encounters mb-3">
+    <label><input type="checkbox" asp-for="Data.EnableLureEncounters"> @localizer["Enable Lure Encounters"]</label>
+</div>
+<div class="form-floating mb-3 bootstrap">
+    <select asp-for="Data.BootstrapCompleteInstanceName" class="form-control" asp-items="@(new SelectList(ViewBag.Instances, "Name", "Name"))" placeholder="Bootstrap instance name">
+        <option value="" disabled selected>@localizer["Please select one"]</option>
+    </select>
+    <label asp-for="Data.BootstrapCompleteInstanceName"></label>
+    <span asp-validation-for="Data.BootstrapCompleteInstanceName" class="text-danger"></span>
+</div>
+<div class="form-floating mb-3 bootstrap">
+    <input asp-for="Data.CircleSize" class="form-control" min="5" max="1000" step="1" placeholder="Instance circle size" />
+    <label asp-for="Data.CircleSize"></label> <small class="text-muted"><i>(@localizer["meters i.e: `70, 500, 750, etc`"])</i></small>
+    <span asp-validation-for="Data.CircleSize" class="text-danger"></span>
+</div>
+<div class="form-floating mb-3 quests">
+    <select asp-for="Data.QuestMode" class="form-control" asp-items="Html.GetEnumSelectList<QuestMode>()" placeholder="Instance quest mode">
+        <option value="" disabled selected>@localizer["Please select one"]</option>
+    </select>
+    <label asp-for="Data.QuestMode"></label>
+    <span asp-validation-for="Data.QuestMode" class="text-danger"></span>
+</div>
+<div class="form-floating mb-3 quests">
+    <input asp-for="Data.SpinLimit" class="form-control" min="1" max="10000" value="10000" placeholder="Maximum spin limit">
+    <label asp-for="Data.SpinLimit"></label>
+    <span asp-validation-for="Data.SpinLimit" class="text-danger"></span>
+</div>
+<div class="form-floating mb-3 quests">
+    <input asp-for="Data.MaximumSpinAttempts" class="form-control" min="1" max="255" value="5" placeholder="Instance maximum spin attempts">
+    <label asp-for="Data.MaximumSpinAttempts"></label>
+    <span asp-validation-for="Data.MaximumSpinAttempts" class="text-danger"></span>
+</div>
+<div class="form-floating mb-3 quests">
+    <input asp-for="Data.LogoutDelay" class="form-control" min="1" max="65535" value="900" placeholder="Instance logout delay">
+    <label asp-for="Data.LogoutDelay"></label>
+    <span asp-validation-for="Data.LogoutDelay" class="text-danger"></span>
+</div>
+<div class="form-floating mb-3 quests">
+    <select asp-for="Data.TimeZone" class="form-control" asp-items="@(new SelectList(ViewBag.TimeZones, "Name", "Name"))" placeholder="Instance time zone">
+        <option value="" disabled selected>@localizer["Please select one"]</option>
+    </select>
+    <label asp-for="Data.TimeZone"></label>
+    <span asp-validation-for="Data.TimeZone" class="text-danger"></span>
+</div>
+<div class="checkbox quests mb-3">
+    <label><input type="checkbox" asp-for="Data.EnableDst"> @localizer["Enable Daylight Savings Time"]</label>
+</div>
+<div class="checkbox quests mb-3">
+    <label><input type="checkbox" asp-for="Data.UseWarningAccounts"> @localizer["Use Warning Accounts"]</label>
+</div>
+<div class="checkbox quests mb-3">
+    <label><input type="checkbox" asp-for="Data.IgnoreS2CellBootstrap"> @localizer["Ignore S2 Cell Bootstrapping"]</label>
+</div>
+<div class="checkbox bootstrap mb-3">
+    <label><input type="checkbox" asp-for="Data.FastBootstrapMode"> @localizer["Enable Fast Bootstrapping"] (@localizer["5s vs 10s load time"])</label>
+</div>
+<div class="checkbox bootstrap mb-3">
+    <label><input type="checkbox" asp-for="Data.OptimizeBootstrapRoute"> @localizer["Optimize Bootstrap Route"]</label>
+</div>
+<div class="checkbox spawnpoints mb-3">
+    <label><input type="checkbox" asp-for="Data.OptimizeSpawnpointsRoute"> @localizer["Optimize Spawnpoints Route"]</label>
+</div>
+<div class="checkbox spawnpoints mb-3">
+    <label><input type="checkbox" asp-for="Data.OnlyUnknownSpawnpoints"> @localizer["Only Unknown Spawnpoints"]</label>
+</div>
+<div class="checkbox dynamic mb-3">
+    <label><input type="checkbox" asp-for="Data.OptimizeDynamicRoute"> @localizer["Optimize Dynamic Route"]</label>
+</div>
+<div class="form-floating mb-3 leveling">
+    <input asp-for="Data.LevelingRadius" class="form-control" min="1" max="100000" placeholder="Instance leveling radius">
+    <label asp-for="Data.LevelingRadius"></label>
+    <span asp-validation-for="Data.LevelingRadius" class="text-danger"></span>
+</div>
+<div class="checkbox leveling mb-3">
+    <label><input type="checkbox" asp-for="Data.StoreLevelingData"> @localizer["Save Leveling Data"]</label>
+</div>
+<div class="form-floating mb-3 leveling">
+    <input asp-for="Data.StartingCoordinate" class="form-control" placeholder="Instance starting coordinate">
+    <label asp-for="Data.StartingCoordinate"></label> <small class="text-muted"><i>(@localizer["Leave blank to use first in route"])</i></small>
+    <span asp-validation-for="Data.StartingCoordinate" class="text-danger"></span>
+</div>
+<div class="form-floating mb-3">
+    <select asp-for="Data.AccountGroup" class="form-control" asp-items="@(new SelectList(ViewBag.AccountGroups))" placeholder="Available account group name">
+        <option value="" disabled selected>@localizer["Please select one"]</option>
+    </select>
+    <label asp-for="Data.AccountGroup"></label>
+    <span asp-validation-for="Data.AccountGroup" class="text-danger"></span>
+</div>
+<div class="checkbox mb-3">
+    <label><input type="checkbox" asp-for="Data.IsEvent"> @localizer["Is Unique Event"]</label>
+</div>

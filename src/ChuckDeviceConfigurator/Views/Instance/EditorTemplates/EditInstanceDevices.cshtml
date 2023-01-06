@@ -1,0 +1,9 @@
+﻿@model ManageInstanceViewModel
+
+<div class="form-group mb-3">
+    <label asp-for="AssignedDevices"></label> <small class="text-muted"><i>(@localizer["optional"])</i></small>
+    <select asp-for="AssignedDevices" class="form-control" size="15" asp-items="@(new SelectList(ViewBag.Devices, "Uuid", "Uuid"))" placeholder="Instance assigned devices">
+        <option value="" disabled>@localizer["Please select one"]</option>
+    </select>
+    <span asp-validation-for="AssignedDevices" class="text-danger"></span>
+</div>

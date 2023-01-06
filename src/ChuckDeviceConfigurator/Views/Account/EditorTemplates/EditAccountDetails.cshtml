@@ -1,0 +1,27 @@
+﻿@model Account
+
+<div class="form-floating mb-3">
+    <input asp-for="Password" class="form-control" placeholder="Account password" />
+    <label asp-for="Password"></label>
+    <span asp-validation-for="Password" class="text-danger"></span>
+</div>
+<div class="form-floating mb-3">
+    <input asp-for="Level" class="form-control" min="0" max="50" placeholder="Account level" />
+    <label asp-for="Level"></label>
+    <span asp-validation-for="Level" class="text-danger"></span>
+</div>
+<div class="form-floating mb-3">
+    <input asp-for="GroupName" class="form-control" placeholder="Account group name" />
+    <label asp-for="GroupName"></label>
+    <span asp-validation-for="GroupName" class="text-danger"></span>
+</div>
+<div class="form-floating mb-3">
+    <input asp-for="Spins" class="form-control" placeholder="Account spins" />
+    <label asp-for="Spins"></label>
+    <span asp-validation-for="Spins" class="text-danger"></span>
+</div>
+<div class="form-floating mb-3">
+    <input asp-for="Tutorial" class="form-control" placeholder="Account tutorial" />
+    <label asp-for="Tutorial"></label>
+    <span asp-validation-for="Tutorial" class="text-danger"></span>
+</div>

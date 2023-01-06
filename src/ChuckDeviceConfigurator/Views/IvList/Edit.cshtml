@@ -33,12 +33,7 @@
         <label asp-for="Name"></label>
         <span asp-validation-for="Name" class="text-danger"></span>
     </div>
-    <div class="form-group" hidden>
-        <textarea id="PokemonIds" name="PokemonIds" class="form-control" rows="2" placeholder="IV list pokemon IDs">@pokemonIds</textarea>
-        <label asp-for="PokemonIds"></label>
-        <span asp-validation-for="PokemonIds" class="text-danger"></span>
-    </div>
-    @await Html.PartialAsync("_PokemonSelectorPartial", ViewData["Pokemon"])
+    @Html.EditorForModel("EditIvListDetails")
 </form>
 
 @section Scripts {

@@ -1,7 +1,7 @@
-﻿@model CreateUserViewModel
+﻿@model ManageUserViewModel
 @{
     ViewData["Title"] = localizer["Create User Account"];
-    Model?.Roles.Sort((a, b) => a.RoleName?.CompareTo(b.RoleName) ?? 0);
+    Model.Roles.Sort((a, b) => a.RoleName?.CompareTo(b.RoleName) ?? 0);
 }
 
 <h1>@ViewData["Title"]</h1>
@@ -25,14 +25,14 @@
     <hr />
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
     <div class="row">
-        <div class="col-sm col-lg-6">
+        <div class="col-lg-6 col-sm-12">
             <div class="form-floating mb-3">
                 <input asp-for="UserName" class="form-control" maxlength="255" placeholder="User account name" />
                 <label asp-for="UserName"></label>
                 <span asp-validation-for="UserName" class="text-danger"></span>
             </div>
         </div>
-        <div class="col-sm col-lg-6">
+        <div class="col-lg-6 col-sm-12">
             <div class="form-floating mb-3">
                 <input asp-for="Email" class="form-control" maxlength="255" placeholder="User account email address" />
                 <label asp-for="Email"></label>
@@ -40,38 +40,8 @@
             </div>
         </div>
     </div>
-    <div class="row">
-        <div class="col-sm col-lg-6">
-            <div class="form-floating mb-3">
-                <input asp-for="Password" type="password" class="form-control" placeholder="User account password" />
-                <label asp-for="Password"></label>
-                <span asp-validation-for="Password" class="text-danger"></span>
-            </div>
-        </div>
-        <div class="col-sm col-lg-6">
-            <div class="form-floating mb-3">
-                <input asp-for="ConfirmPassword" type="password" class="form-control" placeholder="Confirmed user account password" />
-                <label asp-for="ConfirmPassword"></label>
-                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
-            </div>
-        </div>
-    </div>
-    <div class="card">
-        <div class="card-header"><b>@localizer["User Account Permissions"]</b></div>
-        <div class="card-body">
-            @for (var i = 0; i < Model?.Roles.Count; i++)
-            {
-                <div class="form-check">
-                    <input type="hidden" asp-for="@Model.Roles[i].RoleId" />
-                    <input type="hidden" asp-for="@Model.Roles[i].RoleName" />
-                    <input asp-for="@Model.Roles[i].Selected" class="form-check-input" />
-                    <label class="form-check-label" asp-for="@Model.Roles[i].Selected">
-                        @Model.Roles[i].RoleName
-                    </label>
-                </div>
-            }
-        </div>
-    </div>
+    @Html.EditorForModel("EditUserPasswordDetails")
+    @Html.EditorForModel("EditUserRolesDetails")
 </form>
 
 @section Scripts {

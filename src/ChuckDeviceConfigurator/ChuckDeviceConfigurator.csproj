@@ -109,6 +109,7 @@
     <Content Remove="Views\Shared\ExternalLoginProviders.cshtml" />
     <Content Remove="Views\Shared\_AccountGroupSelector.cshtml" />
     <Content Remove="Views\Shared\_NotificationsPartial.cshtml" />
+    <Content Remove="Views\User\DisplayTemplates\UserDetails.cshtml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -124,17 +125,31 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Watch Remove="Views\Account\EditorTemplates\EditAccountDetails.cshtml" />
+    <Watch Remove="Views\ApiKey\EditorTemplates\EditApiKeyScopes.cshtml" />
+    <Watch Remove="Views\Assignment\EditorTemplates\EditAssignmentDetails.cshtml" />
+    <Watch Remove="Views\Device\EditorTemplates\EditDeviceDetails.cshtml" />
     <Watch Remove="Views\Geofence\QuickView.cshtml" />
+    <Watch Remove="Views\Instance\EditorTemplates\EditInstanceDetails.cshtml" />
+    <Watch Remove="Views\Instance\EditorTemplates\EditInstanceDevices.cshtml" />
     <Watch Remove="Views\Instance\QuickView.cshtml" />
+    <Watch Remove="Views\IvList\EditorTemplates\EditIvListDetails.cshtml" />
     <Watch Remove="Views\Shared\DisplayTemplates\Sidebar.cshtml" />
     <Watch Remove="Views\Shared\ExternalLoginProviders.cshtml" />
     <Watch Remove="Views\Shared\_AccountGroupSelector.cshtml" />
     <Watch Remove="Views\Shared\_NotificationsPartial.cshtml" />
+    <Watch Remove="Views\User\DisplayTemplates\UserDetails.cshtml" />
+    <Watch Remove="Views\User\EditorTemplates\EditUserPasswordDetails.cshtml" />
+    <Watch Remove="Views\User\EditorTemplates\EditUserRolesDetails.cshtml" />
+    <Watch Remove="Views\Webhook\EditorTemplates\EditWebhookDataDetails.cshtml" />
+    <Watch Remove="Views\Webhook\EditorTemplates\EditWebhookDetails.cshtml" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Services\Geofences\" />
-    <Folder Include="Views\Device\EditorTemplates\" />
+    <Folder Include="Views\AssignmentGroup\EditorTemplates\" />
+    <Folder Include="Views\DeviceGroup\EditorTemplates\" />
+    <Folder Include="Views\Geofence\EditorTemplates\" />
     <Folder Include="Views\Shared\Components\" />
     <Folder Include="Views\Shared\EditorTemplates\" />
     <Folder Include="Services\Plugins\Hosts\EventBusService\" />
@@ -148,6 +163,7 @@
     <None Include="Areas\Identity\Pages\Shared\ExternalLoginProviders.cshtml" />
     <None Include="Views\Instance\QuickView.cshtml" />
     <None Include="Views\Shared\DisplayTemplates\Sidebar.cshtml" />
+    <None Include="Views\User\DisplayTemplates\UserDetails.cshtml" />
   </ItemGroup>
 
   <ItemGroup>
