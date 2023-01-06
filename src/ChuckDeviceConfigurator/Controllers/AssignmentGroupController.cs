@@ -125,6 +125,7 @@ public class AssignmentGroupController : Controller
             var assignments = collection["AssignmentIds"].ToList();
             var assignmentIds = assignments.Select(x => Convert.ToUInt32(x))
                                            .ToList();
+            var enabled = collection["Enabled"].Contains("true") || collection["Enabled"].Contains("on");
 
             if (_uow.AssignmentGroups.Any(assignmentGroup => assignmentGroup.Name == name))
             {
@@ -144,6 +145,7 @@ public class AssignmentGroupController : Controller
             {
                 Name = name,
                 AssignmentIds = assignmentIds,
+                Enabled = enabled,
             };
 
             // Add assignment group to database
@@ -205,6 +207,7 @@ public class AssignmentGroupController : Controller
             var assignments = collection["AssignmentIds"].ToList();
             var assignmentIds = assignments.Select(x => Convert.ToUInt32(x))
                                            .ToList();
+            var enabled = collection["Enabled"].Contains("true") || collection["Enabled"].Contains("on");
 
             if (_uow.AssignmentGroups.Any(assignmentGroup => assignmentGroup.Name == name && assignmentGroup.Name != id))
             {
@@ -222,6 +225,7 @@ public class AssignmentGroupController : Controller
 
             assignmentGroup.Name = name;
             assignmentGroup.AssignmentIds = assignmentIds;
+            assignmentGroup.Enabled = enabled;
 
             // Update assignment group to database
             await _uow.AssignmentGroups.UpdateAsync(assignmentGroup);
@@ -290,6 +294,12 @@ public class AssignmentGroupController : Controller
                 return View(assignmentGroup);
             }
 
+            if (!assignmentGroup.Enabled)
+            {
+                ModelState.AddModelError("AssignmentGroup", $"Assignment group with id '{id}' is disabled, unable to start assignment group.");
+                return View(assignmentGroup);
+            }
+
             // Start all device assignments in assignment group
             await _assignmentService.StartAssignmentGroupAsync(assignmentGroup);
 
@@ -313,6 +323,12 @@ public class AssignmentGroupController : Controller
                 // Failed to retrieve assignment group from database, does it exist?
                 ModelState.AddModelError("AssignmentGroup", $"Assignment group does not exist with name '{id}'.");
                 return View();
+            }
+
+            if (!assignmentGroup.Enabled)
+            {
+                ModelState.AddModelError("AssignmentGroup", $"Assignment group with id '{id}' is disabled, unable to start re-quest for assignment group.");
+                return View(assignmentGroup);
             }
 
             // Start re-quest for all device assignments in assignment group
