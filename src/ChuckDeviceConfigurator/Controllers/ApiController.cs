@@ -29,6 +29,7 @@ public class ApiController : ControllerBase
     {
         _logger = logger;
         _jobControllerService = jobControllerService;
+        _memCache = memCache;
     }
 
     #endregion
