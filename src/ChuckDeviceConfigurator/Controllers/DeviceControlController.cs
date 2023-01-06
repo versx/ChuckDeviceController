@@ -501,9 +501,10 @@ public class DeviceControlController : ControllerBase
         // otherwise this will lead to a continuous loop
         if (!device.IsPendingAccountSwitch)
         {
-            //await SetEntityAsync(device.Uuid, device, skipCache: false);
+            device.AccountUsername = null;
             await _uow.Devices.UpdateAsync(device);
             await _uow.CommitAsync();
+
             _memCache.Set(device.Uuid, device);
         }
 
