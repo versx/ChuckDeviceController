@@ -8,7 +8,7 @@
     <span asp-validation-for="InstanceName" class="text-danger"></span>
 </div>
 <div class="form-floating mb-3">
-    <select asp-for="AccountUsername" class="form-control" asp-items="@(new SelectList(ViewBag.Accounts, "Username", "Username"))" placeholder="@localizer["Account username"]">
+    <select asp-for="AccountUsername" class="form-control" asp-items="@ViewBag.Accounts" placeholder="@localizer["Account username"]">
         <option value="" disabled selected>@localizer["Please select one"]</option>
     </select>
     <label asp-for="AccountUsername"></label>

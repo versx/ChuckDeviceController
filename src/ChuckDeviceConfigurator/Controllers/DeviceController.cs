@@ -3,6 +3,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 using ChuckDeviceConfigurator.Services.Jobs;
 using ChuckDeviceConfigurator.Utilities;
@@ -83,7 +84,7 @@ public class DeviceController : BaseMvcController
         var accounts = await _uow.Accounts.FindAsync(account => !accountsInUse.Contains(account.Username));
         var instances = await _uow.Instances.FindAllAsync();
         ViewBag.Instances = instances;
-        ViewBag.Accounts = accounts;
+        ViewBag.Accounts = await BuildAccountSelectListAsync();
         return View();
     }
 
@@ -187,7 +188,7 @@ public class DeviceController : BaseMvcController
         var accounts = await _uow.Accounts.FindAsync(account => !accountsInUse.Contains(account.Username));
         var instances = await _uow.Instances.FindAllAsync();
         ViewBag.Instances = instances;
-        ViewBag.Accounts = accounts;
+        ViewBag.Accounts = await BuildAccountSelectListAsync(device.AccountUsername);
         return View(device);
     }
 
@@ -358,5 +359,35 @@ public class DeviceController : BaseMvcController
         });
 
         return RedirectToAction(nameof(Index));
+    }
+
+    private async Task<List<SelectListItem>> BuildAccountSelectListAsync(string? selectedAccount = null, int maxCount = 10000)
+    {
+        var accounts = await _uow.Accounts.FindAllAsync();
+        var sortedAccounts = accounts
+            .Where(x => x.IsAccountClean)
+            .ToList();
+        sortedAccounts.Sort((a, b) => b.Level.CompareTo(a.Level));
+
+        var groupedAccounts = sortedAccounts
+            .GroupBy(x => x.Level)
+            .ToDictionary(x => x.Key, x => x.ToList());
+
+        var results = new List<SelectListItem>();
+        foreach (var (level, levelAccounts) in groupedAccounts)
+        {
+            var levelGroup = new SelectListGroup { Name = $"Level {level}" };
+            foreach (var account in levelAccounts)
+            {
+                results.Add(new SelectListItem
+                {
+                    Text = account.Username,
+                    Value = account.Username,
+                    Selected = selectedAccount == account.Username,
+                    Group = levelGroup,
+                });
+            }
+        }
+        return results.Take(maxCount).ToList();
     }
 }
