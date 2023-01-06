@@ -15,8 +15,12 @@ public class JsonStringLocalizer : IStringLocalizer
     private readonly Dictionary<string, string> _manifest = new();
     private static readonly Dictionary<string, string> _missing = new();
 
+    public bool LogMissingKeys { get; set; }
+
     public JsonStringLocalizer(IDistributedCache cache, IConfiguration configuration)
     {
+        LogMissingKeys = true;
+
         _cache = cache;
         _localesBasePath = $"{Strings.BasePath}/{Strings.LocaleFolder}";
 
@@ -81,10 +85,10 @@ public class JsonStringLocalizer : IStringLocalizer
         if (!_manifest.TryGetValue(key, out var result))
         {
             // Value not in cache
-            if (!_missing.ContainsKey(key))
+            if (LogMissingKeys && !_missing.ContainsKey(key))
             {
                 _missing.Add(key, key);
-                File.WriteAllText($"locales.txt", _missing.ToJson(pretty: true));
+                File.WriteAllText($"missing_locales.txt", _missing.ToJson(pretty: true));
             }
             return key;
         }

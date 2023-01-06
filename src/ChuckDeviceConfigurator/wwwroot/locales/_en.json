@@ -464,7 +464,7 @@
     "Re-Quest": "Re-Quest",
     "Set to 12am to create On-Complete assignment": "Set to 12am to create \u0027On-Complete\u0027 assignment",
     "Leave empty for any date (mm/dd/yyyy)": "Leave empty for any date (mm/dd/yyyy)",
-    "An on-complete assignment will be created to switch to the specified instance when the device has completed the assignment.": "An on-complete assignment will be created to switch to the specified instance when the device has completed the assignment.",
+    "An on-complete assignment will be created to switch to the specified instance when the device has completed the previously assigned assignment.": "An on-complete assignment will be created to switch to the specified instance when the device has completed the previously assigned assignment.",
     
     "Circle Pokemon": "Circle Pokemon",
     "Dynamic Routing": "Dynamic Routing",
