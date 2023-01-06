@@ -4,7 +4,7 @@ public interface IGymDefender : IBaseEntity
 {
     ulong Id { get; }
 
-    string Nickname { get; }
+    string? Nickname { get; }
 
     ushort PokemonId { get; }
 

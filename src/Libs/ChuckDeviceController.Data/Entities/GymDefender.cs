@@ -24,7 +24,7 @@ public class GymDefender : BaseEntity, IGymDefender, IWebhookEntity
     public ulong Id { get; set; }
 
     [Column("nickname")]
-    public string Nickname { get; set; }
+    public string? Nickname { get; set; } = null!;
 
     [Column("pokemon_id")]
     public ushort PokemonId { get; set; }

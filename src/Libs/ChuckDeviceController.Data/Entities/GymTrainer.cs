@@ -8,6 +8,7 @@ using POGOProtos.Rpc;
 
 using ChuckDeviceController.Common;
 using ChuckDeviceController.Data.Abstractions;
+using ChuckDeviceController.Extensions;
 
 [Table("gym_trainer")]
 public class GymTrainer : BaseEntity, IGymTrainer, IWebhookEntity
@@ -83,6 +84,7 @@ public class GymTrainer : BaseEntity, IGymTrainer, IWebhookEntity
         CombatRating = Convert.ToDouble(profileData.CombatRating);
         HasSharedExPass = profileData.HasSharedExPass;
         GymBadgeType = Convert.ToUInt16(profileData.GymBadgeType);
+        Updated = DateTime.UtcNow.ToTotalSeconds();
     }
 
     #endregion

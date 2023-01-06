@@ -47,13 +47,13 @@ public enum SqlQueryType
     /// </summary>
     GymDetailsOnMergeUpdate,
     /// <summary>
-    /// Gym defender insert
-    /// </summary>
-    GymDefenderOnMergeUpdate,
-    /// <summary>
     /// Gym trainer insert
     /// </summary>
     GymTrainerOnMergeUpdate,
+    /// <summary>
+    /// Gym defender insert
+    /// </summary>
+    GymDefenderOnMergeUpdate,
     /// <summary>
     /// Account insert and update
     /// </summary>
