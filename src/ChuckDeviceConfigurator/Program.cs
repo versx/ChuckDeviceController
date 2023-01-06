@@ -28,6 +28,7 @@ using ChuckDeviceConfigurator.Services.Plugins.Hosts.EventBusService.Publishers;
 using ChuckDeviceConfigurator.Services.Rpc;
 using ChuckDeviceConfigurator.Services.TimeZone;
 using ChuckDeviceConfigurator.Services.Webhooks;
+using ChuckDeviceConfigurator.Utilities;
 using ChuckDeviceController.Authorization.Jwt.Middleware;
 using ChuckDeviceController.Caching.Memory;
 using ChuckDeviceController.Configuration;
@@ -63,7 +64,7 @@ config.Bind("Jwt", jwtConfig);
 
 // User identity options
 var identityConfig = GetDefaultIdentityOptions();
-config.Bind("UserAccounts", identityConfig);
+config.Bind("UserIdentity::UserAccounts", identityConfig);
 
 // SendGrid email sender service options
 var emailConfig = new AuthMessageSenderOptions();
@@ -207,6 +208,7 @@ builder.Services.Configure<AuthMessageSenderOptions>(config.GetSection("EmailSer
 builder.Services.Configure<EntityMemoryCacheConfig>(config.GetSection("Cache"));
 builder.Services.Configure<JwtAuthConfig>(config.GetSection("Jwt"));
 builder.Services.Configure<LeafletMapConfig>(config.GetSection("Map"));
+builder.Services.Configure<LoginLimitConfig>(config.GetSection("UserIdentity::LoginLimit"));
 builder.Services.Configure<MySqlResiliencyOptions>(config.GetSection("Database"));
 
 #endregion
@@ -259,6 +261,7 @@ if (emailConfig.Enabled)
 builder.Services.AddTransient<IRouteCalculator, RouteCalculator>();
 
 builder.Services.AddScoped<IApiKeyManagerService, ApiKeyManagerService>();
+builder.Services.AddSingleton<ILoginLimiter, LoginLimiter>();
 
 builder.Services.AddGrpc(options =>
 {
