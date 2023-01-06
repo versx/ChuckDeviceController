@@ -1,4 +1,5 @@
-﻿@using ChuckDeviceController.Extensions
+﻿@using ChuckDeviceConfigurator.Utilities
+@using ChuckDeviceController.Extensions
 @model ViewModelsModel<AssignmentGroup>
 @{
     ViewData["Title"] = localizer["Assignment Groups"];
@@ -21,6 +22,9 @@
             <th>
                 @Html.DisplayNameFor(model => model.Items[0].AssignmentIds)
             </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Items[0].Enabled)
+            </th>
             <th width="5%">@localizer["Action"]</th>
         </tr>
     </thead>
@@ -35,15 +39,18 @@
                     @string.Join(", ", item.AssignmentIds)
                 </td>
                 <td>
+                    @Html.Raw(Utils.FormatBoolean(item.Enabled, html: true))
+                </td>
+                <td>
                     <div class="dropdown">
                         <button class="btn btn-primary btn-sm dropdown-toggle" type="button" id="dropdownGroup" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fa-solid fa-bars"></i>
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownGroup">
-                            <li><a class="dropdown-item" asp-action="Start" asp-route-id="@item.Name"><i class="fa-solid fa-play"></i>&nbsp;@localizer["Start"]</a></li>
-                            @if (ViewBag?.AssignmentGroupsWithQuests?.Contains(item.Name) ?? false)
+                            <li><a class="dropdown-item @(item.Enabled ? "" : "disabled")" asp-action="Start" asp-route-id="@item.Name"><i class="fa-solid fa-play"></i>&nbsp;@localizer["Start"]</a></li>
+                            @if (ViewBag.AssignmentGroupsWithQuests.Contains(item.Name))
                             {
-                                <li><a class="dropdown-item" asp-action="ReQuest" asp-route-id="@item.Name"><i class="fa-solid fa-arrows-rotate"></i>&nbsp;@localizer["Re-Quest"]</a></li>
+                                <li><a class="dropdown-item @(item.Enabled ? "" : "disabled")" asp-action="ReQuest" asp-route-id="@item.Name"><i class="fa-solid fa-arrows-rotate"></i>&nbsp;@localizer["Re-Quest"]</a></li>
                             }
                             <li><a class="dropdown-item" asp-action="Edit" asp-route-id="@item.Name"><i class="fa-solid fa-pen-to-square"></i>&nbsp;@localizer["Edit"]</a></li>
                             <li><a class="dropdown-item" asp-action="Details" asp-route-id="@item.Name"><i class="fa-solid fa-circle-info"></i>&nbsp;@localizer["Details"]</a></li>
@@ -62,7 +69,8 @@
             $('#table-assignment-groups').DataTable({
                 columnDefs: [
                     { responsivePriority: 0, targets: 0 },
-                    { responsivePriority: 2, targets: 1, render: $.fn.dataTable.render.ellipsis(25) },
+                    { responsivePriority: 3, targets: 1, render: $.fn.dataTable.render.ellipsis(25) },
+                    { responsivePriority: 2, targets: 2 },
                     { responsivePriority: 1, targets: -1, orderable: false },
                 ],
                 order: [[0, 'asc']],

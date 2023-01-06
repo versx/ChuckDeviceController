@@ -21,4 +21,10 @@ public class AssignmentGroup : BaseEntity, IAssignmentGroup
         Column("assignment_ids"),
     ]
     public List<uint> AssignmentIds { get; set; } = new();
+
+    [
+        DisplayName("Enabled"),
+        Column("enabled"),
+    ]
+    public bool Enabled { get; set; }
 }
