@@ -163,7 +163,7 @@ Adds `VisualStudioOnline.com` user authentication support
 <hr>
 
 ## TODO  
-- [ ] Finish localization  
+- [ ] Finish account management page localization  
 - [ ] Finish TTH finder job controller  
 - [ ] Finish implementing permissions provided by API keys  
 - [ ] Finish documentation  
