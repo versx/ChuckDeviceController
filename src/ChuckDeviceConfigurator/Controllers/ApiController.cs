@@ -3,8 +3,9 @@
 using Microsoft.AspNetCore.Mvc;
 
 using ChuckDeviceConfigurator.Services.Jobs;
+using ChuckDeviceController.Caching.Memory;
 using ChuckDeviceController.Common.Jobs;
-using ChuckDeviceController.Data.Contexts;
+using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Extensions;
 using ChuckDeviceController.Geometry.Models;
 
@@ -13,22 +14,21 @@ public class ApiController : ControllerBase
 {
     #region Variables
 
-    private readonly ILogger<IJobControllerService> _logger;
+    private readonly ILogger<ApiController> _logger;
     private readonly IJobControllerService _jobControllerService;
-    private readonly ControllerDbContext _controllerContext;
+    private readonly IMemoryCacheService _memCache;
 
     #endregion
 
     #region Constructor
 
     public ApiController(
-        ILogger<IJobControllerService> logger,
+        ILogger<ApiController> logger,
         IJobControllerService jobControllerService,
-        ControllerDbContext controllerContext)
+        IMemoryCacheService memCache)
     {
         _logger = logger;
         _jobControllerService = jobControllerService;
-        _controllerContext = controllerContext;
     }
 
     #endregion
@@ -86,4 +86,132 @@ public class ApiController : ControllerBase
         };
         return new JsonResult(obj);
     }
+
+    [HttpPost("api/instance/reload/{instanceName?}")]
+    public async Task<JsonResult> ReloadInstance(string? instanceName = null)
+    {
+        if (string.IsNullOrEmpty(instanceName))
+        {
+            _jobControllerService.ReloadAllInstances();
+            _logger.LogDebug($"Reloading all instances");
+        }
+        else
+        {
+            await _jobControllerService.ReloadInstanceAsync(instanceName).ConfigureAwait(false);
+            _logger.LogDebug($"Reloading instance '{instanceName}'");
+        }
+        var obj = new
+        {
+            status = "ok",
+        };
+        return new JsonResult(obj);
+    }
+
+    [HttpPost("api/instance/quests/clear")]
+    public async Task<JsonResult> ClearQuests()
+    {
+        await Task.CompletedTask;
+        return new JsonResult(new
+        {
+            status = "ok",
+        });
+    }
+
+    [HttpPost("api/gym/set_details/{id}")]
+    public async Task<JsonResult> SetGymDetails(string id, FortDetailsPayload payload)
+    {
+        if (string.IsNullOrEmpty(id))
+        {
+            return new JsonResult(new
+            {
+                status = "error",
+            });
+        }
+
+        await Task.CompletedTask;
+        return new JsonResult(new
+        {
+            status = "ok",
+        });
+    }
+
+    [HttpPost("api/pokestop/set_details/{id}")]
+    public async Task<JsonResult> SetPokestopDetails(string id, FortDetailsPayload payload)
+    {
+        if (string.IsNullOrEmpty(id))
+        {
+            return new JsonResult(new
+            {
+                status = "error",
+            });
+        }
+
+        await Task.CompletedTask;
+        return new JsonResult(new
+        {
+            status = "ok",
+        });
+    }
+
+    [HttpPost("api/cache/clear")]
+    public async Task<JsonResult> ClearCache()
+    {
+        if (!_memCache.Clear<Account>())
+        {
+            return new JsonResult(new
+            {
+                status = "error",
+                message = "Failed to clear account memory cache.",
+            });
+        }
+
+        if (!_memCache.Clear<Device>())
+        {
+            return new JsonResult(new
+            {
+                status = "error",
+                message = "Failed to clear device memory cache.",
+            });
+        }
+
+        await Task.CompletedTask;
+        return new JsonResult(new
+        {
+            status = "ok",
+        });
+    }
+
+    [HttpPost("api/assignment/request/{id}")]
+    public async Task<JsonResult> ReQuest(uint id)
+    {
+        await Task.CompletedTask;
+        return new JsonResult(new
+        {
+            status = "ok",
+        });
+    }
+
+    [HttpPost("api/device/assign/{uuid}")]
+    public async Task<JsonResult> AssignDevice(string uuid, AssignDevicePayload payload)
+    {
+        await Task.CompletedTask;
+        return new JsonResult(new
+        {
+            status = "ok",
+        });
+    }
+
+    // TODO: Start Assignment/AssignmentGroup
+}
+
+public class FortDetailsPayload
+{
+    public string Name { get; set; } = null!;
+
+    public string Url { get; set; } = null!;
+}
+
+public class AssignDevicePayload
+{
+    public string InstanceName { get; set; } = null!;
 }

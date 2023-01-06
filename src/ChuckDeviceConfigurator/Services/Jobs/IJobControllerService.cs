@@ -75,6 +75,12 @@ public interface IJobControllerService : IJobControllerServiceHost, IQueueManage
     Task ReloadInstanceAsync(Instance newInstance, string oldInstanceName);
 
     /// <summary>
+    /// Reloads the specified instance in the cache.
+    /// </summary>
+    /// <param name="instanceName">Name of instance to reload.</param>
+    Task ReloadInstanceAsync(string instanceName);
+
+    /// <summary>
     /// Reloads all job controller instances.
     /// </summary>
     void ReloadAllInstances();

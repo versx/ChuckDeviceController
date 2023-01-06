@@ -448,6 +448,22 @@ public class JobControllerService : IJobControllerService
         await AddInstanceAsync(newInstance);
     }
 
+    public async Task ReloadInstanceAsync(string instanceName)
+    {
+        if (!_instances.ContainsKey(instanceName))
+        {
+            _logger.LogError($"[{instanceName}] Instance does not exist in instance cache, skipping instance reload...");
+            return;
+        }
+
+        var instance = GetInstanceControllerByName(instanceName);
+        if (instance != null)
+        {
+            await instance.StopAsync();
+            await instance.ReloadAsync();
+        }
+    }
+
     public async Task RemoveInstanceAsync(string instanceName)
     {
         _instances[instanceName]?.StopAsync();
