@@ -10,9 +10,11 @@
 <br />
 @Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Account", ControllerText = localizer["Accounts"], CurrentPage = localizer["Account Details"] })
 
-<div>
-    <h4>@localizer["Account '{0}'", Model.Username]</h4>
-    <div>
+<div class="mb-4">
+    <div class="float-start">
+        <h4>@localizer["Account '{0}'", Model.Username]</h4>
+    </div>
+    <div class="float-end">
         <a asp-action="Edit" asp-route-id="@Model?.Username" class="btn btn-primary">
             <i class="fa-solid fa-pen-to-square"></i>&nbsp;@localizer["Edit"]
         </a>
@@ -21,6 +23,7 @@
         </a>
     </div>
 </div>
+<br />
 
 <hr />
 @Html.DisplayForModel("AccountDetails")

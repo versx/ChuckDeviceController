@@ -10,9 +10,11 @@
 <br />
 @Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Assignment", ControllerText = localizer["Assignments"], CurrentPage = localizer["Assignment Details"] })
 
-<div class="mb-3">
-    <h4>@localizer["Assignment '{0}'", Model.Id]</h4>
-    <div>
+<div class="mb-5">
+    <div class="float-start">
+        <h4>@localizer["Assignment '{0}'", Model.Id]</h4>
+    </div>
+    <div class="float-end">
         <a asp-action="Start" asp-route-id="@Model?.Id" class="btn btn-success @(Model?.Enabled ?? false ? "" : "disabled")">
             <i class="fa-solid fa-play"></i>&nbsp;@localizer["Start"]
         </a>
@@ -30,6 +32,8 @@
         </a>
     </div>
 </div>
+<br />
+
 @if (!(Model?.Enabled ?? false))
 {
     <i class="text-muted">@Html.Raw(localizer["Assignments cannot be started or re-quested if disabled."])</i>
