@@ -10,7 +10,7 @@
 <br />
 @Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Webhook", ControllerText = localizer["Webhooks"], CurrentPage = localizer["Webhook Details"] })
 
-@await Html.PartialAsync("_ManageButtons", new { Title = localizer["Webhook '{0}'", Model.Name], Name = Model.Name })
+@await Html.PartialAsync("_ManageButtons", new { Title = localizer["Webhook '{0}'", Model.Name], Name = Model.Name, Controller = "Webhook" })
 <br />
 
 <hr />

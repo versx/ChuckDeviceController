@@ -138,6 +138,7 @@
     <Watch Remove="Views\Shared\ExternalLoginProviders.cshtml" />
     <Watch Remove="Views\Shared\_AccountGroupSelector.cshtml" />
     <Watch Remove="Views\Shared\_ApiKeyViewer.cshtml" />
+    <Watch Remove="Views\Shared\_ManageButtons.cshtml" />
     <Watch Remove="Views\Shared\_NotificationsPartial.cshtml" />
     <Watch Remove="Views\Shared\_Sidebar.cshtml" />
     <Watch Remove="Views\Shared\_ViewApiKeyScopes.cshtml" />

@@ -262,4 +262,17 @@ public static partial class Utils
         }
         return await Task.FromResult(dict);
     }
+
+    public static bool HasProperty(dynamic obj, string name)
+    {
+        var objType = obj.GetType();
+
+        if (objType == typeof(System.Dynamic.ExpandoObject))
+        {
+            return ((IDictionary<string, object>)obj).ContainsKey(name);
+        }
+
+        var result = objType.GetProperty(name) != null;
+        return result;
+    }
 }
