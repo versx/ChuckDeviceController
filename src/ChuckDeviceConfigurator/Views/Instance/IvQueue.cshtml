@@ -7,9 +7,10 @@
 }
 
 <h1>@ViewData["Title"]</h1>
+<p>@Html.ValidationMessage("IvQueue", new { @class = "text-danger" })</p>
 <br />
 
-<p>@Html.ValidationMessage("IvQueue", new { @class = "text-danger" })</p>
+@Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "Instance", ControllerText = localizer["Instances"], CurrentPage = localizer["IV Queue"] })
 
 <div class="pb-5">
     <div class="form-group float-start">

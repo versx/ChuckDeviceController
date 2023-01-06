@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
+using Microsoft.EntityFrameworkCore;
 using MySqlConnector;
 using POGOProtos.Rpc;
 
@@ -90,10 +91,16 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
     [Column("level")]
     public ushort? Level { get; set; }
 
-    [Column("weight")]
+    [
+        Column("weight"),
+        Precision(18, 6),
+    ]
     public double? Weight { get; set; }
 
-    [Column("height")]
+    [
+        Column("height"),
+        Precision(18, 6),
+    ]
     public double? Height { get; set; }
 
     [Column("size")]
@@ -152,10 +159,16 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
     [Column("display_pokemon_id")]
     public uint? DisplayPokemonId { get; set; }
 
-    [Column("base_height")]
+    [
+        Column("base_height"),
+        Precision(18, 6),
+    ]
     public double BaseHeight { get; set; }
 
-    [Column("base_weight")]
+    [
+        Column("base_weight"),
+        Precision(18, 6),
+    ]
     public double BaseWeight { get; set; }
 
     [Column("is_event")]
