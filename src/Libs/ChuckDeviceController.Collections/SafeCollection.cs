@@ -56,6 +56,16 @@ public class SafeCollection<T> : IProducerConsumerCollection<T>
 
     #region Collection Impl
 
+    public void Sort()
+    {
+        _entities.Sort();
+    }
+
+    public void Sort(Comparison<T> comparison)
+    {
+        _entities.Sort(comparison);
+    }
+
     public void AddRange(IEnumerable<T> items)
     {
         lock (_lock)
@@ -241,7 +251,7 @@ public class SafeCollection<T> : IProducerConsumerCollection<T>
         {
             _entities.Clear();
         }
-
-        #endregion
     }
+
+    #endregion
 }

@@ -245,6 +245,7 @@ public class ProtoProcessorService : TimedHostedService, IProtoProcessorService
                         var hasAr = hasArQuestReqGlobal
                             ?? hasArQuestReq
                             ?? GetArQuestMode(uuid!, timestamp);
+                        hasAr = false; // TODO: Remove
                         var title = fsr.ChallengeQuest.QuestDisplay.Title;
                         var quest = fsr.ChallengeQuest.Quest;
 

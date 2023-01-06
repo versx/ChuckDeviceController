@@ -22,7 +22,7 @@ using ChuckDeviceController.Net.Models.Responses;
 public class DeviceControlController : ControllerBase
 {
     private const string ContentTypeJson = "application/json";
-    private const ushort AccountLastUsedM = 1800; // 30 minutes
+    private const ushort AccountLastUsedS = 1800; // 30 minutes
 
     #region Variables
 
@@ -212,21 +212,11 @@ public class DeviceControlController : ControllerBase
             maxLevel = jobController.MaximumLevel;
         }
 
-        Account? account = null;
+        Account? account;
         if (string.IsNullOrEmpty(device.AccountUsername))
         {
-            //var devices = _context.Devices.ToList();
-            var devices = await _uow.Devices.FindAllAsync();
-            var inUseAccounts = devices
-                .Where(d => !string.IsNullOrEmpty(d.AccountUsername))
-                .OrderBy(d => d.LastSeen)
-                .Select(d => d.AccountUsername?.ToLower())
-                .ToList();
-
             // Get new account between min/max level and not in inUseAccount list
-            //account = _context.GetNewAccount(minLevel, maxLevel, Strings.DefaultSpinLimit, inUseAccounts!);
-            account = await GetNewAccountAsync(minLevel, maxLevel, Strings.DefaultSpinLimit, inUseAccounts!);
-
+            account = await GetNewAccountAsync(minLevel, maxLevel);
             _logger.LogDebug($"[{device.Uuid}] GetNewAccount '{account?.Username}'");
             if (account == null)
             {
@@ -235,28 +225,25 @@ public class DeviceControlController : ControllerBase
             }
 
             device.AccountUsername = account.Username;
-            //await SetEntityAsync(device.Uuid, device);
             await _uow.Devices.UpdateAsync(device);
             await _uow.CommitAsync();
         }
         else
         {
-            //account = await GetEntityAsync<string, Account>(_context, device.AccountUsername);
             account = await _uow.Accounts.FindByIdAsync(device.AccountUsername);
             if (account == null)
             {
                 // Failed to get account
-                return CreateErrorResponse($"[{device.Uuid}] Failed to retrieve account assigned to device from database");
+                return CreateErrorResponse($"[{device.Uuid}] Failed to retrieve account assigned to device from database '{account.Username}'.");
             }
 
             _logger.LogDebug($"[{device.Uuid}] GetOldAccount '{account.Username}'");
             if (!account.IsValid(minLevel, maxLevel, ignoreWarning: false, groupName: null))
             {
-                _logger.LogWarning($"[{device.Uuid}] Assigned account '{account.Username}' is no longer valid, switching accounts...");
+                _logger.LogWarning($"[{device.Uuid}] Assigned account '{account.Username}' is no longer valid with status '{account.Status}', switching accounts...");
 
                 // Current account does not meet requirements
                 device.AccountUsername = null;
-                //await SetEntityAsync(device.Uuid, device);
                 await _uow.Devices.UpdateAsync(device);
                 await _uow.CommitAsync();
 
@@ -273,7 +260,6 @@ public class DeviceControlController : ControllerBase
                 _logger.LogDebug($"[{device.Uuid}] Pending manual account switch, reverting flag to prevent loop.");
 
                 device.IsPendingAccountSwitch = false;
-                //await SetEntityAsync(device.Uuid, device, skipCache: false);
                 await _uow.Devices.UpdateAsync(device);
                 await _uow.CommitAsync();
                 _memCache.Set(device.Uuid, device);
@@ -553,14 +539,21 @@ public class DeviceControlController : ControllerBase
 
     #region Helper Methods
 
-    private async Task<Account?> GetNewAccountAsync(ushort minLevel, ushort maxLevel, uint maxSpins = 3500, IReadOnlyList<string>? accountsInUse = null)
+    private async Task<Account?> GetNewAccountAsync(ushort minLevel, ushort maxLevel)
     {
         var now = DateTime.UtcNow.ToTotalSeconds();
+        var devices = await _uow.Devices.FindAllAsync();
+        var inUseAccounts = devices
+            .Where(d => !string.IsNullOrEmpty(d.AccountUsername))
+            .OrderBy(d => d.LastSeen)
+            .Select(d => d.AccountUsername?.ToLower())
+            .ToList();
+
         var accounts = await _uow.Accounts.FindAsync(x =>
             x.Level >= minLevel && x.Level <= maxLevel &&
             x.IsAccountClean &&
-            (x.LastUsedTimestamp == null || (x.LastUsedTimestamp > 0 && now - x.LastUsedTimestamp >= AccountLastUsedM)) &&
-            !(accountsInUse ?? new List<string>()).Contains(x.Username.ToLower())
+            (x.LastUsedTimestamp == null || (x.LastUsedTimestamp != null && x.LastUsedTimestamp > 0 && now - AccountLastUsedS > x.LastUsedTimestamp)) &&
+            !inUseAccounts.Contains(x.Username.ToLower())
         );
         var account = accounts.FirstOrDefault();
         return account;

@@ -68,7 +68,7 @@ public class InstanceData : Dictionary<string, object?>
     public QuestMode? QuestMode { get; set; } = Common.QuestMode.Normal;
 
     [
-        DisplayName("Maximum Pokestop Spin Attempts"),
+        DisplayName("Maximum Spin Attempts"),
         JsonPropertyName("max_spin_attempts"),
     ]
     public byte MaximumSpinAttempts { get; set; }
