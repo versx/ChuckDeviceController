@@ -157,7 +157,6 @@ public class UserController : Controller
                     return View(model);
                 }
 
-                // REVIEW: Make assigning default 'Registered' role configurable
                 if (!await _userManager.IsInRoleAsync(user, Roles.Registered.ToString()))
                 {
                     // User not assigned default registered role, assign it
