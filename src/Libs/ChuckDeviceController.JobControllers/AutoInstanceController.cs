@@ -553,17 +553,19 @@ public class AutoInstanceController : IJobController
                 _todayStops.Clear();
                 _todayStopsAttempts.Clear();
                 _completionDate = 0;
-                /*
+
+                // TODO: Provide starting coord/get last coord
+                var polygonCoord = MultiPolygons[0][0];
+                var startCoord = new Coordinate(polygonCoord[0], polygonCoord[1]);
                 _allStops.Sort((a, b) =>
-                {
+                {                   
                     var coordA = a.Pokestop.ToCoordinate();
                     var coordB = b.Pokestop.ToCoordinate();
-                    var distanceA = coordA.DistanceTo(coordB);
-                    var distanceB = coordB.DistanceTo(coordA);
-                    var distance = Convert.ToInt32(((distanceA + distanceB) * 100) / 2);
-                    return distance;
+                    var distanceA = coordA.DistanceTo(startCoord);
+                    var distanceB = coordB.DistanceTo(startCoord);
+                    var result = distanceA.CompareTo(distanceB);
+                    return result;
                 });
-                */
 
                 // Loop through all Pokestops found within geofence to build list of Pokestops to
                 // spin for today that do not have quests found
