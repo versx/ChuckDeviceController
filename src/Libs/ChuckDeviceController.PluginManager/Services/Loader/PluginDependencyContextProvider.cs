@@ -101,8 +101,13 @@ public class PluginDependencyContextProvider : IPluginDependencyContextProvider
 
     private static void CheckFrameworkCompatibility(string hostFramework, string pluginFramework, bool ignorePlatformInconsistencies)
     {
-        // TODO: MIGRATIONS Add conditional to ignore compatibility check when adding migrations
-        //return;
+        // NOTE: Add conditional to ignore compatibility check when adding migrations
+        if (hostFramework == ".NETCoreApp,Version=v2.0" && pluginFramework == ".NETCoreApp,Version=v7.0" && !ignorePlatformInconsistencies)
+        {
+            // Migration, return to skip compatibility check
+            _logger.LogDebug($"Host: {hostFramework}, Plugin: {pluginFramework}");
+            return;
+        }
 
         if (ignorePlatformInconsistencies)
             return;

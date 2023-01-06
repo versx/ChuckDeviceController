@@ -77,6 +77,7 @@ public class Account : BaseEntity, IAccount, IWebhookEntity
     [
         DisplayName("Level"),
         Column("level"),
+        Range(0, 50),
     ]
     public ushort Level { get; set; }
 

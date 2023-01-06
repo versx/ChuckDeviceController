@@ -34,6 +34,7 @@ public class Instance : BaseEntity, IInstance
         DisplayName("Minimum Level"),
         Column("min_level"),
         Required,
+        Range(0, 50),
         JsonPropertyName("min_level"),
     ]
     public ushort MinimumLevel { get; set; }
@@ -42,6 +43,7 @@ public class Instance : BaseEntity, IInstance
         DisplayName("Maximum Level"),
         Column("max_level"),
         Required,
+        Range(0, 50),
         JsonPropertyName("max_level"),
     ]
     public ushort MaximumLevel { get; set; }
