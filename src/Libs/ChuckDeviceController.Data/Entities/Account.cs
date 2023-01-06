@@ -170,7 +170,7 @@ public class Account : BaseEntity, IAccount, IWebhookEntity
         Column("last_used_timestamp"),
         JsonPropertyName("last_used_timestamp"),
     ]
-    public ulong? LastUsedTimestamp { get; set; } = 0;
+    public ulong? LastUsedTimestamp { get; set; }
 
     [
         DisplayName("Group"),
@@ -254,7 +254,10 @@ public class Account : BaseEntity, IAccount, IWebhookEntity
         NotMapped,
         JsonPropertyName("is_account_in_cooldown"),
     ]
-    public bool IsAccountInCooldown => LastEncounterTime > 0 && LastEncounterTime >= DateTime.UtcNow.ToTotalSeconds() - CooldownPeriodS;
+    public bool IsAccountInCooldown =>
+        LastEncounterTime != null &&
+        LastEncounterTime > 0 &&
+        LastEncounterTime >= DateTime.UtcNow.ToTotalSeconds() - CooldownPeriodS;
 
     [
         NotMapped,
@@ -365,7 +368,8 @@ public class Account : BaseEntity, IAccount, IWebhookEntity
         var matchesGroup = string.Compare(GroupName, groupName, true) == 0;
         var matchesLevel = Level >= minLevel && Level <= maxLevel;
         var matches = matchesGroup && matchesLevel;
-        var isValid = matches && (IsAccountClean || (IsAccountWarned && ignoreWarning));
+        //var isValid = matches && (IsAccountClean || (IsAccountWarned && ignoreWarning));
+        var isValid = matches && IsAccountClean;
         return isValid;
     }
 
