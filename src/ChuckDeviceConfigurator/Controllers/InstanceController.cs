@@ -68,6 +68,21 @@ public class InstanceController : Controller
         return View(model);
     }
 
+    // GET: InstanceController/GetGeofences/5?customInstanceType=test
+    public async Task<ActionResult> GetGeofences(int id, string? customInstanceType = null)
+    {
+        var instanceType = (InstanceType)id;
+        var geofenceType = instanceType == InstanceType.Custom && !string.IsNullOrEmpty(customInstanceType)
+            ? _jobControllerService.CustomInstanceTypes[customInstanceType]
+            : instanceType == InstanceType.CirclePokemon || instanceType == InstanceType.CircleRaid
+                ? GeofenceType.Circle
+                : GeofenceType.Geofence;
+
+        var geofences = await _uow.Geofences.FindAsync(g => g.Type == geofenceType);// || instanceType == InstanceType.Custom);
+        var geofenceNames = geofences.Select(g => new { g.Name, g.Type });
+        return new JsonResult(geofenceNames);
+    }
+
     public async Task<ActionResult> QuickView(string id)
     {
         var instance = await _uow.Instances.FindByIdAsync(id);

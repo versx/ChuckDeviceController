@@ -66,7 +66,14 @@ $('#Type').change(function() {
     setInstanceDescription(parseInt(instanceTypeId));
 });
 
-function hideAllElements(instanceTypeId) {
+const customInstanceType = document.getElementById('Data.CustomInstanceType');
+customInstanceType.addEventListener('change', function(ev) {
+    const instanceTypeId = $('#Type').val();
+    const customInstanceType = this.value;
+    handleInstanceTypeChanged(instanceTypeId, customInstanceType);
+});
+
+function hideAllElements(instanceTypeId, customInstanceType) {
     const isQuest = instanceTypeId == @((int)InstanceType.AutoQuest);
     const isBootstrap = instanceTypeId == @((int)InstanceType.Bootstrap);
     const isPokemonIV = instanceTypeId == @((int)InstanceType.PokemonIV);
@@ -92,36 +99,30 @@ function handleInstanceTypeChanged(instanceTypeId) {
     // Hide geofences (geofence/circle) depending on instance type selected
     const isCircle = instanceTypeId == @((int)InstanceType.CirclePokemon) ||
         instanceTypeId == @((int)InstanceType.CircleRaid);
+    const customInstanceType = document.getElementById('Data.CustomInstanceType').value;
+    const url = `/Instance/GetGeofences/${instanceTypeId}?customInstanceType=${customInstanceType}`;
+    $.get(url, function (data) {
+        if (!data) {
+            return;
+        }
 
-    // Keep track of already selected geofences to reselect if type matches instance type
-    const selectedGeofences = $('#Geofences').val();
-    const geofencesJson = `@(ViewBag.GeofencesJson)`.replace(/&quot;/g, '"');
-    // Parse all available geofences
-    const availableGeofences = parseGeofencesJson(geofencesJson);
-    // Clear all existing geofences in the list
-    $('#Geofences').empty();
-    $('#Geofences').append(new Option('Please select one or more', ''));
-    // Loop all available geofences and add them back to the select element if they match
-    // the selected instance type
-    for (const geofence of availableGeofences) {
-        // Check if selected instance type matches geofence type
-        if (isCircle && geofence.type === 'Circle' ||
-            !isCircle && geofence.type === 'Geofence' ||
-            instanceTypeId == @((int)InstanceType.Custom)) {
-            // TODO: Check if custom instance type is geofence or circle
-            //if (instanceTypeId == @((int)InstanceType.Custom)) {
-            //    const customTypeName = document.getElementById('Data.CustomInstanceType').value;
-            //    console.log('custom type name:', customTypeName);
-            //}
+        // Keep track of already selected geofences to reselect if type matches instance type
+        const selectedGeofences = $('#Geofences').val();
+        // Clear all existing geofences in the list
+        $('#Geofences').empty();
+        $('#Geofences').append(new Option('@localizer["Please select one"] or more', ''));
+        // Loop all available geofences and add them back to the select element if they match
+        // the selected instance type
+        for (const geofence of data) {
             // Create new select option for valid geofence
             const option = new Option(geofence.name, geofence.name);
             // Add select option to geofences multi select element
             $('#Geofences').append(option);
         }
-    }
-    // Set back the previously selected geofences, any none matched geofences will be ignored since
-    // they are not in the select list
-    $('#Geofences').val(selectedGeofences);
+        // Set back the previously selected geofences, any none matched geofences will be ignored since
+        // they are not in the select list
+        $('#Geofences').val(selectedGeofences);
+    });
 }
 
 function setInstanceDescription(instanceTypeId) {
