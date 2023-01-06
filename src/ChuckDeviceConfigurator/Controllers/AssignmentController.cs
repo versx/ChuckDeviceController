@@ -97,8 +97,8 @@ public class AssignmentController : Controller
                 : DateTime.Parse(date);
             var time = Convert.ToString(collection["Time"]);
             var timeValue = GetTimeNumeric(time);
-            var createOnComplete = collection["OnComplete"].Contains("true");
-            var enabled = collection["Enabled"].Contains("true");
+            var createOnComplete = collection["OnComplete"].Contains("true") || collection["OnComplete"].Contains("on");
+            var enabled = collection["Enabled"].Contains("true") || collection["Enabled"].Contains("on");
 
             if (_uow.Assignments.Any(a =>
                 a.DeviceUuid == uuid &&
@@ -206,7 +206,7 @@ public class AssignmentController : Controller
                 : DateTime.Parse(date);
             var time = Convert.ToString(collection["Time"]);
             var timeValue = GetTimeNumeric(time);
-            var enabled = collection["Enabled"].Contains("on");
+            var enabled = collection["Enabled"].Contains("true") || collection["Enabled"].Contains("on");
 
             if (_uow.Assignments.Any(a =>
                 a.DeviceUuid == uuid &&

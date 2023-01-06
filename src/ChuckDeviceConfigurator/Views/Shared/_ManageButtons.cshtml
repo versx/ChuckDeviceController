@@ -1,0 +1,26 @@
+﻿@using ChuckDeviceConfigurator.Utilities
+@model dynamic
+@{
+    var title = Model.Title;
+    var id = Utils.HasProperty(Model, "Id")
+        ? Model.Id
+        : Model.Name;
+    var marginBottom = Utils.HasProperty(Model, "Margin")
+        ? Model.Margin
+        : 4;
+    var controller = Model.Controller;
+}
+
+<div class="mb-@marginBottom">
+    <div class="float-start">
+        <h4>@title</h4>
+    </div>
+    <div class="float-end">
+        <a asp-controller="@controller" asp-action="Edit" asp-route-id="@id" class="btn btn-primary btn-sm">
+            <i class="fa-solid fa-pen-to-square"></i>&nbsp;@localizer["Edit"]
+        </a>
+        <a asp-controller="@controller" asp-action="Delete" asp-route-id="@id" class="btn btn-danger btn-sm">
+            <i class="fa-solid fa-trash"></i>&nbsp;@localizer["Delete"]
+        </a>
+    </div>
+</div>

@@ -1,8 +1,7 @@
 ﻿@model ViewModelsModel<UserRolesViewModel>
 @{
     ViewData["Title"] = @localizer["User Accounts"];
-    Layout = "~/Views/Shared/_Layout.cshtml";
-    var defaultUserName = ViewBag.DefaultUserName ?? "root";
+    var defaultUserName = ViewBag.DefaultUserName ?? Strings.DefaultUserName;
 }
 <h1>@ViewData["Title"]</h1>
 <br />

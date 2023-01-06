@@ -3,82 +3,40 @@
 @model ManageApiKeyViewModel
 
 <dl class="row">
-    <dt class="col-sm-3">
-        @Html.DisplayNameFor(model => model.Id)
-    </dt>
-    <dd class="col-sm-9">
-        @Html.DisplayFor(model => model.Id)
-    </dd>
-    <dt class="col-sm-3">
+    <dt class="col-sm-2">
         @Html.DisplayNameFor(model => model.Name)
     </dt>
-    <dd class="col-sm-9">
+    <dd class="col-sm-10">
         @Html.DisplayFor(model => model.Name)
     </dd>
-    <dt class="col-sm-3">
-        @Html.DisplayNameFor(model => model.Key)
-    </dt>
-    <dd class="col-sm-9">
-        <div class="input-group">
-            @Html.TextBoxFor(model => model.Key, new { type = "password", @class = "form-control", @readonly = true })
-            <button id="toggle-button" class="btn btn-outline-secondary btn-sm" onclick="toggleVisibility();" data-bs-toggle="tooltip" data-bs-placement="top" title="Toggle API key visibility">
-                <i id="toggle-icon" class="fa fa-fw fa-eye-slash"></i>
-            </button>
-            <button class="btn btn-outline-secondary btn-sm" onclick="copyToClipboard('@(Model.Key)');" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to clipboard">
-                <i class="fa fa-fw fa-copy"></i>
-            </button>
-        </div>
-    </dd>
-    <dt class="col-sm-3">
+    <dt class="col-sm-2">
         @Html.DisplayNameFor(model => model.Expiration)
     </dt>
-    <dd class="col-sm-9">
-        @(Model.Expiration == null ? "Never" : (Model.Expiration ?? default).Date.ToLocalTime().ToString("yyyy/MM/dd"))
+    <dd class="col-sm-10">
+        @(Model.Expiration == null ? localizer["Never"] : (Model.Expiration ?? default).Date.ToLocalTime().ToLongDateString())
     </dd>
-    <dt class="col-sm-3">
-        @Html.DisplayNameFor(model => model.Scope)
-    </dt>
-    <dd class="col-sm-9">
-        @Html.Raw(string.Join("<br>", (Model?.Scope ?? PluginApiKeyScope.None).ToString().Split(',')))
-    </dd>
-    <dt class="col-sm-3">
+    <dt class="col-sm-2">
         @Html.DisplayNameFor(model => model.IsEnabled)
     </dt>
-    <dd class="col-sm-9">
+    <dd class="col-sm-10">
         @Html.Raw(Utils.FormatBoolean(Model?.IsEnabled ?? false, html: true))
     </dd>
-    <dt class="col-sm-3">
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.Key)
+    </dt>
+    <dd class="col-sm-10">
+        @await Html.PartialAsync("_ApiKeyViewer", Model)
+    </dd>
+    <dt class="col-sm-2">
+        @Html.DisplayNameFor(model => model.Scope)
+    </dt>
+    <dd class="col-sm-10">
+        @await Html.PartialAsync("_ViewApiKeyScopes", Model)
+    </dd>
+    <dt class="col-sm-2">
         @localizer["Plugins"]
     </dt>
-    <dd class="col-sm-9">
-        @if (Model?.Plugins?.Any() ?? false)
-        {
-            <ul class="list-group">
-            @foreach (var plugin in Model?.Plugins ?? new List<IPluginHost>())
-            {
-                <li class="list-group-item">
-                    <a asp-controller="Plugin" asp-action="Details" asp-route-id="@plugin.Plugin.Name" style="text-decoration: none; color: inherit;">
-                        @Html.DisplayFor(model => plugin.Plugin.Name)
-                    </a>
-                </li>
-            }
-            </ul>
-        }
-        else
-        {
-            <p>@localizer["None"]</p>
-        }
+    <dd class="col-sm-10">
+        @Html.DisplayFor(model => model.Plugins, "ApiKeyPlugins")
     </dd>
 </dl>
-<script>
-    function toggleVisibility() {
-        const icon = document.getElementById('toggle-icon');
-        icon.classList.toggle('fa-eye');
-        icon.classList.toggle('fa-eye-slash');
-
-        const input = document.getElementById('Key');
-        input.type = input.type === 'password'
-            ? 'text'
-            : 'password';
-    }
-</script>

@@ -45,7 +45,7 @@
             </div>
             @if (SignInManager.IsSignedIn(User))
             {
-                @Html.DisplayFor(model => model, "Sidebar")
+                @await Html.PartialAsync("_Sidebar")
 
                 <hr class="dropdown-divider">
                 <ul class="list-unstyled">

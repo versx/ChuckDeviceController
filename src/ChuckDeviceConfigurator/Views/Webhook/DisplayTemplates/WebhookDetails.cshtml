@@ -50,6 +50,19 @@
     </dd>
 </dl>
 
+@if (!Model.Data!.PokemonIds!.Any() &&
+   !Model.Data!.RaidPokemonIds!.Any() &&
+   !Model.Data!.PokestopIds!.Any() &&
+   !Model.Data!.GymIds!.Any() &&
+   !Model.Data!.GymTeamIds!.Any() &&
+   !Model.Data!.LureIds!.Any() &&
+   !Model.Data!.InvasionIds!.Any() &&
+   !Model.Data!.EggLevels!.Any() &&
+   !Model.Data!.WeatherConditionIds!.Any())
+{
+    return;
+}
+
 <div class="card">
     <div class="card-header">@localizer["Blacklisted Data"]</div>
     <div class="card-body">

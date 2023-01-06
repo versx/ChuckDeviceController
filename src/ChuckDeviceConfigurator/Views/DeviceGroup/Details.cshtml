@@ -10,17 +10,8 @@
 <br />
 @Html.DisplayFor(model => model, "Breadcrumbs", new { Controller = "DeviceGroup", ControllerText = localizer["Device Groups"], CurrentPage = localizer["Device Group Details"] })
 
-<div>
-    <h4>@localizer["Device Group '{0}'", Model.Name]</h4>
-    <div>
-        <a asp-action="Edit" asp-route-id="@Model?.Name" class="btn btn-primary">
-            <i class="fa-solid fa-pen-to-square"></i>&nbsp;@localizer["Edit"]
-        </a>
-        <a asp-action="Delete" asp-route-id="@Model?.Name" class="btn btn-danger">
-            <i class="fa-solid fa-trash"></i>&nbsp;@localizer["Delete"]
-        </a>
-    </div>
-</div>
+@await Html.PartialAsync("_ManageButtons", new { Title = localizer["Device Group '{0}'", Model.Name], Name = Model.Name, Controller = "DeviceGroup" })
+<br />
 
 <hr />
 @Html.DisplayForModel("DeviceGroupDetails")

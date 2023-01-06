@@ -1,0 +1,32 @@
+﻿@model Webhook
+
+<div class="form-floating mb-3">
+    <input asp-for="Url" class="form-control" placeholder="Webhook url endpoint" />
+    <label asp-for="Url"></label>
+    <span asp-validation-for="Url" class="text-danger"></span>
+</div>
+<div class="form-floating mb-3">
+    <input asp-for="Delay" class="form-control" min="0" max="3600" type="number" placeholder="Webhook delay" />
+    <label asp-for="Delay"></label> <small class="text-muted"><i>@localizer["in seconds"]</i></small>
+    <span asp-validation-for="Delay" class="text-danger"></span>
+</div>
+<div class="form-group mb-3">
+    <label asp-for="Types"></label>
+    <select asp-for="Types" class="form-control" asp-items="Html.GetEnumSelectList<WebhookType>()" placeholder="Webhook type">
+        <option value="" disabled selected>@localizer["Please select one or more"]</option>
+    </select>
+    <span asp-validation-for="Types" class="text-danger"></span>
+</div>
+<div class="form-group mb-3">
+    <label asp-for="Geofences"></label>
+    <select asp-for="Geofences" class="form-control" asp-items="@(new SelectList(ViewBag.Geofences, "Name", "Name"))" placeholder="Webhook geofences">
+        <option value="" selected>@localizer["Please select one or more"]</option>
+    </select>
+    <span asp-validation-for="Geofences" class="text-danger"></span>
+</div>
+<div class="form-check mb-3">
+    <input asp-for="Enabled" class="form-check-input" checked />
+    <label class="form-check-label" asp-for="Enabled">
+        @localizer["Enable Webhook Endpoint"]
+    </label>
+</div>

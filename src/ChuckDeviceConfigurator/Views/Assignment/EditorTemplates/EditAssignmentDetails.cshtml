@@ -1,0 +1,67 @@
+﻿@model Assignment
+@{
+    var enabled = ViewData.ContainsKey("Enabled")
+        ? Convert.ToBoolean(ViewData["Enabled"])
+        : Model.Enabled;
+}
+
+<div class="row">
+    <div class="col-lg-6 col-sm-12">
+        <div class="form-floating mb-3">
+            <select asp-for="SourceInstanceName" class="form-control" asp-items="@(new SelectList(ViewBag.Instances, "Name", "Name"))" placeholder="Assignment source instance">
+                <option value="" selected>@localizer["Please select one"]</option>
+            </select>
+            <label asp-for="SourceInstanceName"></label>
+            <span asp-validation-for="SourceInstanceName" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-lg-6 col-sm-12">
+        <div class="form-floating mb-3">
+            <select asp-for="InstanceName" class="form-control" asp-items="@(new SelectList(ViewBag.Instances, "Name", "Name"))" placeholder="Assignment instance">
+                <option value="" disabled selected>@localizer["Please select one"]</option>
+            </select>
+            <label asp-for="InstanceName"></label>
+            <span asp-validation-for="InstanceName" class="text-danger"></span>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-lg-6 col-sm-12">
+        <div class="form-floating mb-3">
+            <input asp-for="Time" class="form-control" type="time" placeholder="Assignment time" />
+            <label asp-for="Time"></label> <small class="text-muted"><i>@localizer["Set to 12am to create 'On-Complete' assignment"]</i></small>
+            <span asp-validation-for="Time" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-lg-6 col-sm-12">
+        <div class="form-floating mb-3">
+            <input asp-for="Date" class="form-control" type="date" placeholder="Assignment date" />
+            <label asp-for="Date"></label> <small class="text-muted"><i>@localizer["Leave empty for any date (mm/dd/yyyy)"]</i></small>
+            <span asp-validation-for="Date" class="text-danger"></span>
+        </div>
+    </div>
+</div>
+@if (Convert.ToBoolean(ViewData["ShowOnComplete"]))
+{
+    <div class="form-check mb-3">
+        <input type="checkbox" id="OnComplete" name="OnComplete" class="form-check-input" />
+        <label class="form-check-label mb-3" for="OnComplete">
+            @localizer["Create On-Complete Assignment"]
+        </label>
+        <br>
+        <small class="text-muted"><i>@localizer["An on-complete assignment will be created to switch to the specified instance when the device has completed the assignment."]</i></small>
+    </div>
+}
+<div class="form-check mb-3">
+    @if (enabled)
+    {
+        <input asp-for="Enabled" class="form-check-input" checked="checked" />
+    }
+    else
+    {
+        <input asp-for="Enabled" class="form-check-input" />
+    }
+    <label class="form-check-label" asp-for="Enabled">
+        @localizer["Enabled"]
+    </label>
+</div>
