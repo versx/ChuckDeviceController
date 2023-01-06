@@ -59,8 +59,11 @@
     <label asp-for="Data.IvQueueLimit"></label>
     <span asp-validation-for="Data.IvQueueLimit" class="text-danger"></span>
 </div>
-<div class="checkbox lure_encounters mb-3">
-    <label><input type="checkbox" asp-for="Data.EnableLureEncounters"> @localizer["Enable Lure Encounters"]</label>
+<div class="form-check mb-3 lure_encounters">
+    <input asp-for="Data.EnableLureEncounters" class="form-check-input" />
+    <label class="form-check-label" asp-for="Data.EnableLureEncounters">
+        @localizer["Enable Lure Encounters"]
+    </label>
 </div>
 <div class="form-floating mb-3 bootstrap">
     <select asp-for="Data.BootstrapCompleteInstanceName" class="form-control" asp-items="@(new SelectList(ViewBag.Instances, "Name", "Name"))" placeholder="Bootstrap instance name">
@@ -103,37 +106,64 @@
     <label asp-for="Data.TimeZone"></label>
     <span asp-validation-for="Data.TimeZone" class="text-danger"></span>
 </div>
-<div class="checkbox quests mb-3">
-    <label><input type="checkbox" asp-for="Data.EnableDst"> @localizer["Enable Daylight Savings Time"]</label>
+<div class="form-check mb-3 quests">
+    <input asp-for="Data.EnableDst" class="form-check-input" />
+    <label class="form-check-label" asp-for="Data.EnableDst">
+        @localizer["Enable Daylight Savings Time"]
+    </label>
 </div>
-<div class="checkbox quests mb-3">
-    <label><input type="checkbox" asp-for="Data.UseWarningAccounts"> @localizer["Use Warning Accounts"]</label>
+<div class="form-check mb-3 quests">
+    <input asp-for="Data.UseWarningAccounts" class="form-check-input" />
+    <label class="form-check-label" asp-for="Data.UseWarningAccounts">
+        @localizer["Use Warning Accounts"]
+    </label>
 </div>
-<div class="checkbox quests mb-3">
-    <label><input type="checkbox" asp-for="Data.IgnoreS2CellBootstrap"> @localizer["Ignore S2 Cell Bootstrapping"]</label>
+<div class="form-check mb-3 quests">
+    <input asp-for="Data.IgnoreS2CellBootstrap" class="form-check-input" />
+    <label class="form-check-label" asp-for="Data.IgnoreS2CellBootstrap">
+        @localizer["Ignore S2 Cell Bootstrapping"]
+    </label>
 </div>
-<div class="checkbox bootstrap mb-3">
-    <label><input type="checkbox" asp-for="Data.FastBootstrapMode"> @localizer["Enable Fast Bootstrapping"] (@localizer["5s vs 10s load time"])</label>
+<div class="form-check mb-3 bootstrap">
+    <input asp-for="Data.FastBootstrapMode" class="form-check-input" />
+    <label class="form-check-label" asp-for="Data.FastBootstrapMode">
+        @localizer["Enable Fast Bootstrapping"]
+    </label>
 </div>
-<div class="checkbox bootstrap mb-3">
-    <label><input type="checkbox" asp-for="Data.OptimizeBootstrapRoute"> @localizer["Optimize Bootstrap Route"]</label>
+<div class="form-check mb-3 bootstrap">
+    <input asp-for="Data.OptimizeBootstrapRoute" class="form-check-input" />
+    <label class="form-check-label" asp-for="Data.OptimizeBootstrapRoute">
+        @localizer["Optimize Bootstrap Route"]
+    </label>
 </div>
-<div class="checkbox spawnpoints mb-3">
-    <label><input type="checkbox" asp-for="Data.OptimizeSpawnpointsRoute"> @localizer["Optimize Spawnpoints Route"]</label>
+<div class="form-check mb-3 spawnpoints">
+    <input asp-for="Data.OptimizeSpawnpointsRoute" class="form-check-input" />
+    <label class="form-check-label" asp-for="Data.OptimizeSpawnpointsRoute">
+        @localizer["Optimize Spawnpoints Route"]
+    </label>
 </div>
-<div class="checkbox spawnpoints mb-3">
-    <label><input type="checkbox" asp-for="Data.OnlyUnknownSpawnpoints"> @localizer["Only Unknown Spawnpoints"]</label>
+<div class="form-check mb-3 spawnpoints">
+    <input asp-for="Data.OnlyUnknownSpawnpoints" class="form-check-input" />
+    <label class="form-check-label" asp-for="Data.OnlyUnknownSpawnpoints">
+        @localizer["Only Unknown Spawnpoints"]
+    </label>
 </div>
-<div class="checkbox dynamic mb-3">
-    <label><input type="checkbox" asp-for="Data.OptimizeDynamicRoute"> @localizer["Optimize Dynamic Route"]</label>
+<div class="form-check mb-3 dynamic">
+    <input asp-for="Data.OptimizeDynamicRoute" class="form-check-input" />
+    <label class="form-check-label" asp-for="Data.OptimizeDynamicRoute">
+        @localizer["Optimize Dynamic Route"]
+    </label>
 </div>
 <div class="form-floating mb-3 leveling">
     <input asp-for="Data.LevelingRadius" class="form-control" min="1" max="100000" placeholder="Instance leveling radius">
     <label asp-for="Data.LevelingRadius"></label>
     <span asp-validation-for="Data.LevelingRadius" class="text-danger"></span>
 </div>
-<div class="checkbox leveling mb-3">
-    <label><input type="checkbox" asp-for="Data.StoreLevelingData"> @localizer["Save Leveling Data"]</label>
+<div class="form-check mb-3 leveling">
+    <input asp-for="Data.StoreLevelingData" class="form-check-input" />
+    <label class="form-check-label" asp-for="Data.StoreLevelingData">
+        @localizer["Save Data From Leveling"]
+    </label>
 </div>
 <div class="form-floating mb-3 leveling">
     <input asp-for="Data.StartingCoordinate" class="form-control" placeholder="Instance starting coordinate">
@@ -147,6 +177,9 @@
     <label asp-for="Data.AccountGroup"></label>
     <span asp-validation-for="Data.AccountGroup" class="text-danger"></span>
 </div>
-<div class="checkbox mb-3">
-    <label><input type="checkbox" asp-for="Data.IsEvent"> @localizer["Is Unique Event"]</label>
+<div class="form-check mb-3">
+    <input asp-for="Data.IsEvent" class="form-check-input" />
+    <label class="form-check-label" asp-for="Data.IsEvent">
+        @localizer["Is Unique Event"]
+    </label>
 </div>

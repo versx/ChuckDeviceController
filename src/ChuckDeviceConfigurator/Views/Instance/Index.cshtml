@@ -12,7 +12,12 @@
         <a class="btn btn-success btn-sm" asp-action="Create">@localizer["Create New"]</a>
     </div>
     <div class="checkbox float-end">
-        <label><input type="checkbox" asp-for="AutoRefresh" onchange="handleAutoRefresh(this);">&nbsp;@localizer["Auto Refresh"]</label>
+        <div class="form-check mb-3">
+            <input asp-for="AutoRefresh" class="form-check-input" onchange="handleAutoRefresh(this);" />
+            <label class="form-check-label" asp-for="AutoRefresh">
+                &nbsp;@localizer["Auto Refresh"]
+            </label>
+        </div>
     </div>
 </div>
 
