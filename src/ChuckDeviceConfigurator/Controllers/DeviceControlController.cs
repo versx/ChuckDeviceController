@@ -558,15 +558,9 @@ public class DeviceControlController : ControllerBase
         var now = DateTime.UtcNow.ToTotalSeconds();
         var accounts = await _uow.Accounts.FindAsync(x =>
             x.Level >= minLevel && x.Level <= maxLevel &&
-            string.IsNullOrEmpty(x.Failed) &&
-            x.Spins < maxSpins &&
-            x.LastEncounterTime == null &&
+            x.IsAccountClean &&
             (x.LastUsedTimestamp == null || (x.LastUsedTimestamp > 0 && now - x.LastUsedTimestamp >= AccountLastUsedM)) &&
-            x.FirstWarningTimestamp == null &&
-            (x.HasWarn == null || !(x.HasWarn ?? false)) &&
-            (x.WarnExpireTimestamp == null || x.WarnExpireTimestamp == 0) &&
-            x.IsBanned == null &&
-            !((accountsInUse ?? new List<string>()).Contains(x.Username.ToLower()))
+            !(accountsInUse ?? new List<string>()).Contains(x.Username.ToLower())
         );
         var account = accounts.FirstOrDefault();
         return account;
