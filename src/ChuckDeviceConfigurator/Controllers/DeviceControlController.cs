@@ -17,7 +17,6 @@ using ChuckDeviceController.Extensions.Http;
 using ChuckDeviceController.JobControllers.Tasks;
 using ChuckDeviceController.Net.Models.Requests;
 using ChuckDeviceController.Net.Models.Responses;
-using Elfie.Serialization;
 
 [ApiController]
 public class DeviceControlController : ControllerBase
@@ -102,7 +101,6 @@ public class DeviceControlController : ControllerBase
             return CreateErrorResponse($"Device UUID is not set in payload.");
         }
 
-        //var device = await GetEntityAsync<string, Device>(_context, payload.Uuid);
         var device = await _uow.Devices.FindByIdAsync(payload.Uuid);
 
         switch (payload!.Type!.ToLower())
@@ -118,8 +116,9 @@ public class DeviceControlController : ControllerBase
             case "account_banned" or
                  "account_warning" or
                  "account_invalid_credentials" or
-                 "account_suspended":
-                return await HandleAccountStatusRequestAsync(device?.Uuid, device?.AccountUsername, payload?.Type);
+                 "account_suspended" or
+                 "error_26":
+                return await HandleAccountStatusRequestAsync(device?.Uuid, device?.AccountUsername ?? payload?.Username, payload?.Type);
             case "tutorial_done":
                 return await HandleTutorialStatusRequestAsync(device?.AccountUsername);
             case "logged_out":
