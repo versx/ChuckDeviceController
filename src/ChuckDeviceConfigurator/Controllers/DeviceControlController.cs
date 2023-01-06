@@ -17,6 +17,7 @@ using ChuckDeviceController.Extensions.Http;
 using ChuckDeviceController.JobControllers.Tasks;
 using ChuckDeviceController.Net.Models.Requests;
 using ChuckDeviceController.Net.Models.Responses;
+using Elfie.Serialization;
 
 [ApiController]
 public class DeviceControlController : ControllerBase
@@ -26,6 +27,7 @@ public class DeviceControlController : ControllerBase
 
     #region Variables
 
+    private static readonly Random _rand = new();
     private readonly ILogger<DeviceControlController> _logger;
     private readonly IUnitOfWork _uow;
     private readonly IJobControllerService _jobControllerService;
@@ -215,16 +217,23 @@ public class DeviceControlController : ControllerBase
         Account? account;
         if (string.IsNullOrEmpty(device.AccountUsername))
         {
-            // Get new account between min/max level and not in inUseAccount list
+            // Get new account between min/max level and not already in use
             account = await GetNewAccountAsync(minLevel, maxLevel);
-            _logger.LogDebug($"[{device.Uuid}] GetNewAccount '{account?.Username}'");
+            _logger.LogDebug($"[{device.Uuid}] GetNewAccount '{account?.Username}' (Status: {account?.Status}, Level: {account?.Level})");
             if (account == null)
             {
                 // Failed to get new account from database
                 return CreateErrorResponse($"[{device.Uuid}] Failed to get account, are you sure you have enough acounts?");
             }
 
-            device.AccountUsername = account.Username;
+            if (!account.IsValid(minLevel, maxLevel, ignoreWarning: false, groupName: null))
+            {
+                device.AccountUsername = null;
+            }
+            else
+            {
+                device.AccountUsername = account.Username;
+            }
             await _uow.Devices.UpdateAsync(device);
             await _uow.CommitAsync();
         }
@@ -234,10 +243,10 @@ public class DeviceControlController : ControllerBase
             if (account == null)
             {
                 // Failed to get account
-                return CreateErrorResponse($"[{device.Uuid}] Failed to retrieve account assigned to device from database '{account.Username}'.");
+                return CreateErrorResponse($"[{device.Uuid}] Failed to retrieve account assigned to device from database '{device.AccountUsername}'.");
             }
 
-            _logger.LogDebug($"[{device.Uuid}] GetOldAccount '{account.Username}'");
+            _logger.LogDebug($"[{device.Uuid}] GetOldAccount '{account.Username}' (Status: {account.Status}, Level: {account.Level})");
             if (!account.IsValid(minLevel, maxLevel, ignoreWarning: false, groupName: null))
             {
                 _logger.LogWarning($"[{device.Uuid}] Assigned account '{account.Username}' is no longer valid with status '{account.Status}', switching accounts...");
@@ -326,12 +335,10 @@ public class DeviceControlController : ControllerBase
         if (!string.IsNullOrEmpty(username))
         {
             // Get account by username from request payload
-            //account = await GetEntityAsync<string, Account>(_context, username);
             account = await _uow.Accounts.FindByIdAsync(username);
             if (account == null)
             {
                 // Unable to find account based on payload username, look for device's assigned account username instead
-                //account = await GetEntityAsync<string, Account>(_context, device.AccountUsername);
                 account = await _uow.Accounts.FindByIdAsync(device.AccountUsername);
                 if (account == null)
                 {
@@ -376,7 +383,6 @@ public class DeviceControlController : ControllerBase
         }
 
         var now = DateTime.UtcNow.ToTotalSeconds();
-        //var account = await GetEntityAsync<string, Account>(_context, username);
         var account = await _uow.Accounts.FindByIdAsync(username);
         if (account == null)
         {
@@ -394,11 +400,11 @@ public class DeviceControlController : ControllerBase
                 }
                 break;
             case "account_suspended":
-                //if (account.FirstWarningTimestamp == null || string.IsNullOrEmpty(account.Failed))
-                //{
+                if (account.FirstWarningTimestamp == null || string.IsNullOrEmpty(account.Failed))
+                {
                     account.FailedTimestamp = now;
                     account.Failed = "suspended";
-                //}
+                }
                 break;
             case "account_warning":
                 account.FirstWarningTimestamp ??= now;
@@ -425,7 +431,6 @@ public class DeviceControlController : ControllerBase
             _logger.LogInformation($"Status changed for account '{account.Username}' from '{oldStatus}' to '{account.Status}'.");
         }
 
-        //await SetEntityAsync(account.Username, account, skipCache: false);
         await _uow.Accounts.UpdateAsync(account);
         await _uow.CommitAsync();
         _memCache.Set(account.Username, account);
@@ -438,7 +443,6 @@ public class DeviceControlController : ControllerBase
 
     private async Task<DeviceResponse> HandleTutorialStatusRequestAsync(string? username)
     {
-        //var account = await GetEntityAsync<string, Account>(_context, username);
         var account = await _uow.Accounts.FindByIdAsync(username);
         if (string.IsNullOrEmpty(username) || account == null)
         {
@@ -450,7 +454,6 @@ public class DeviceControlController : ControllerBase
         }
         account.Tutorial = 1;
 
-        //await SetEntityAsync(account.Username, account, skipCache: false);
         await _uow.Accounts.UpdateAsync(account);
         await _uow.CommitAsync();
         _memCache.Set(account.Username, account);
@@ -555,8 +558,13 @@ public class DeviceControlController : ControllerBase
             (x.LastUsedTimestamp == null || (x.LastUsedTimestamp != null && x.LastUsedTimestamp > 0 && now - AccountLastUsedS > x.LastUsedTimestamp)) &&
             !inUseAccounts.Contains(x.Username.ToLower())
         );
-        var account = accounts.FirstOrDefault();
-        return account;
+
+        var matchCount = accounts.Count();
+        if (matchCount == 0)
+        {
+            return accounts.FirstOrDefault();
+        }
+        return accounts.ElementAt(_rand.Next(0, matchCount));
     }
 
     //private async Task<TEntity?> GetEntityAsync<TKey, TEntity>(ControllerDbContext context, TKey? key, bool skipCache = true)
