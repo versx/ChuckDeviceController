@@ -11,6 +11,7 @@ using ChuckDeviceController.Extensions.Json;
 public class JsonStringLocalizer : IStringLocalizer
 {
     private readonly IDistributedCache _cache;
+    private readonly IConfiguration _configuration;
     private readonly string _localesBasePath;
     private readonly Dictionary<string, string> _manifest = new();
     private static readonly Dictionary<string, string> _missing = new();
@@ -22,9 +23,10 @@ public class JsonStringLocalizer : IStringLocalizer
         LogMissingKeys = true;
 
         _cache = cache;
+        _configuration = configuration;
         _localesBasePath = $"{Strings.BasePath}/{Strings.LocaleFolder}";
 
-        var locale = configuration["locale"];
+        var locale = _configuration.GetValue<string>("Locale");
         var filePath = $"{_localesBasePath}/{locale}.json";
 
         using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
@@ -58,9 +60,8 @@ public class JsonStringLocalizer : IStringLocalizer
 
     public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures)
     {
-        // TODO: Get locale from config
-        var currentLocale = Thread.CurrentThread.CurrentCulture.TwoLetterISOLanguageName;
-        var filePath = $"{_localesBasePath}/{currentLocale}.json";
+        var locale = _configuration.GetValue<string>("Locale");
+        var filePath = $"{_localesBasePath}/{locale}.json";
         using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
 
         var manifest = JsonSerializer.Deserialize<Dictionary<string, string>>(stream);
@@ -72,8 +73,8 @@ public class JsonStringLocalizer : IStringLocalizer
 
     private string GetString(string key)
     {
-        var currentLocale = Thread.CurrentThread.CurrentCulture.TwoLetterISOLanguageName;
-        var cacheKey = $"locale_{currentLocale}_{key}";
+        var locale = _configuration.GetValue<string>("Locale");
+        var cacheKey = $"locale_{locale}_{key}";
         var cacheValue = _cache.GetString(cacheKey);
         // If cache value is not null, return it
         if (!string.IsNullOrEmpty(cacheValue))

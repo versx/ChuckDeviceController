@@ -8,6 +8,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Localization;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using MySqlConnector;
 
 using ChuckDeviceConfigurator;
 using ChuckDeviceConfigurator.Data;
@@ -34,7 +35,9 @@ using ChuckDeviceController.Caching.Memory;
 using ChuckDeviceController.Configuration;
 using ChuckDeviceController.Data.Contexts;
 using ChuckDeviceController.Data.Entities;
+using ChuckDeviceController.Data.Factories;
 using ChuckDeviceController.Data.Repositories;
+using ChuckDeviceController.Data.Repositories.Dapper;
 using ChuckDeviceController.Extensions.Data;
 using ChuckDeviceController.Logging;
 using ChuckDeviceController.Plugin;
@@ -234,6 +237,20 @@ builder.Services.AddDbContextFactory<PluginDbContext>(options =>
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork<ControllerDbContext>>();
 //builder.Services.AddScoped<IUnitOfWork, UnitOfWork<MapDbContext>>();
 
+builder.Services.AddScoped<MySqlConnection>(options =>
+{
+    var connection = new MySqlConnection(connectionString);
+    //Task.Run(connection.OpenAsync).Wait();
+    connection.Open();
+    return connection;
+});
+builder.Services.AddSingleton<IMySqlConnectionFactory>(sp =>
+{
+    var factory = new MySqlConnectionFactory(config);
+    return factory;
+});
+builder.Services.AddSingleton<IDapperUnitOfWork, DapperUnitOfWork>();
+
 #endregion
 
 #region Services
@@ -328,7 +345,6 @@ builder.Services.AddSingleton<IInstanceServiceHost>(jobControllerService);
 // Load all devices
 jobControllerService.LoadDevices(serviceProvider);
 
-// TODO: Use builder.Services registered instead of 'sharedServiceHosts' - Fix issue with IDbContextFactory and eventually ILogger<T> parameters (just make static and use logger factory instead)
 var sharedServiceHosts = new Dictionary<Type, object>
 {
     { typeof(IAuthorizeHost), authHost },

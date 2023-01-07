@@ -52,7 +52,6 @@ public class SendGridEmailSender : IEmailSender
 
         //msg.SetFooterSetting(true, "html", "text");
         //msg.SetGoogleAnalytics(true, "");
-        // TODO: Add GoogleAnalytics config option
 
         var response = await client.SendEmailAsync(msg);
         if (response.IsSuccessStatusCode)

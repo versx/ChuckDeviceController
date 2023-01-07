@@ -102,7 +102,6 @@ public abstract class BaseSmartInstanceController : IJobController, ILureInstanc
         }
         else
         {
-            // TODO: Get total average of all devices last completed time
             // Get the sum of all route round times for all devices if they have completed the
             // route at least once. Twice so that LastCompleted and LastCompletedWholeRoute are
             // both set. (maybe average too?)

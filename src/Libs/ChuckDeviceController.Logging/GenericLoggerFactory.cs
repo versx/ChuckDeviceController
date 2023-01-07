@@ -4,8 +4,7 @@ using Microsoft.Extensions.Logging;
 
 public static class GenericLoggerFactory
 {
-    // TODO: Use ILogger instead of Logger
-    public static Logger<T> CreateLogger<T>(LogLevel logLevel = LogLevel.Information)
+    public static ILogger<T> CreateLogger<T>(LogLevel logLevel = LogLevel.Information)
     {
         var factory = LoggerFactory.Create(options =>
         {

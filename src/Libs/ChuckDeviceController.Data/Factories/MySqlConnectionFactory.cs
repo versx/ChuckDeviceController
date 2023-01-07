@@ -3,15 +3,6 @@
 using Microsoft.Extensions.Configuration;
 using MySqlConnector;
 
-public interface IMySqlConnectionFactory
-{
-    string ConnectionString { get; }
-
-    MySqlConnection CreateConnection(bool open = true);
-
-    Task<MySqlConnection> CreateConnectionAsync(bool open = true, CancellationToken stoppingToken = default);
-}
-
 public class MySqlConnectionFactory : IMySqlConnectionFactory
 {
     //private readonly IConfiguration _configuration;

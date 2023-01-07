@@ -238,7 +238,7 @@ _ = EntityRepository.InstanceWithOptions(
 );
 sw.Stop();
 var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
-logger.LogDebug($"Opening database connection took {totalSeconds}s");
+logger.LogDebug("Opening database connection took {TotalSeconds}s", totalSeconds);
 
 app.Run();
 
@@ -274,7 +274,7 @@ async Task MonitorResults(TimeSpan duration, Stopwatch stopwatch)
         lastElapsed = elapsed;
     }
 
-    logger.LogInformation($"Total database connections created: {EntityRepository.InstanceCount:N0}");
+    logger.LogInformation("Total database connections created: {InstanceCount:N0}", EntityRepository.InstanceCount);
     logger.LogInformation(
         $"Requests per second:                {Math.Round(ProtoDataStatistics.Instance.TotalRequestsProcessed / stopwatch.Elapsed.TotalSeconds):N0}");
 

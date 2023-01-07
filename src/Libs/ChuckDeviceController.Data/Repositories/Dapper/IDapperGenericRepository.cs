@@ -1,5 +1,7 @@
 ﻿namespace ChuckDeviceController.Data.Repositories.Dapper;
 
+using System.Linq.Expressions;
+
 public interface IDapperGenericRepository<TKey, TEntity>
     where TKey : notnull
     where TEntity : class
@@ -9,6 +11,10 @@ public interface IDapperGenericRepository<TKey, TEntity>
 
     Task<TEntity> FindAsync(
         TKey id,
+        CancellationToken stoppingToken = default);
+
+    Task<IEnumerable<TEntity>> FindAsync(
+        Expression<Func<TEntity, bool>> predicate,
         CancellationToken stoppingToken = default);
 
     Task<int> InsertAsync(
