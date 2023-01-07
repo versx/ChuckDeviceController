@@ -18,9 +18,9 @@ public class AssignmentControllerService : IAssignmentControllerService
 
     #region Variables
 
+    private readonly ILogger<IAssignmentControllerService> _logger;
     private readonly IDbContextFactory<ControllerDbContext> _controllerFactory;
     private readonly IDbContextFactory<MapDbContext> _mapFactory;
-    private readonly ILogger<IAssignmentControllerService> _logger;
     private readonly IGeofenceControllerService _geofenceService;
 
     private readonly System.Timers.Timer _timer;
@@ -135,7 +135,7 @@ public class AssignmentControllerService : IAssignmentControllerService
     public IReadOnlyList<Assignment> GetByNames(IReadOnlyList<uint> names)
     {
         var assignments = names
-            .Select(name => GetByName(name))
+            .Select(GetByName)
             .ToList();
         return assignments;
     }
@@ -172,8 +172,9 @@ public class AssignmentControllerService : IAssignmentControllerService
     public async Task ReQuestAssignmentsAsync(IEnumerable<uint> assignmentIds)
     {
         var assignments = assignmentIds
-            .Select(id => _assignments.FirstOrDefault(a => a.Id == id))
-            .Where(assignment => assignment!.Enabled)
+            .Select(id => _assignments.FirstOrDefault(x => x.Id == id))
+            .Where(assignment => assignment != null)
+            .Where(assignment => assignment.Enabled)
             .ToList();
 
         using var context = _controllerFactory.CreateDbContext();
@@ -203,8 +204,9 @@ public class AssignmentControllerService : IAssignmentControllerService
         using var mapContext = _mapFactory.CreateDbContext();
         foreach (var instance in instancesToClear)
         {
-            var instanceGeofences = geofences.Where(geofence => instance.Geofences.Contains(geofence.Name))
-                                             .ToList();
+            var instanceGeofences = geofences
+                .Where(geofence => instance.Geofences.Contains(geofence.Name))
+                .ToList();
             if (instanceGeofences?.Any() ?? false)
             {
                 _logger.LogInformation($"Clearing quests for geofences: {string.Join(", ", instanceGeofences.Select(x => x.Name))}");

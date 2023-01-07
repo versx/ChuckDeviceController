@@ -2,11 +2,18 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 
 using global::Dapper;
+using MicroOrm.Dapper.Repositories.SqlGenerator;
+using MicroOrm.Dapper.Repositories.SqlGenerator.Filters;
 using MySqlConnector;
+
+using ChuckDeviceController.Data.Entities;
+using ChuckDeviceController.Data.Factories;
+using ChuckDeviceController.Data.Translators;
 
 // Reference: https://itnext.io/generic-repository-pattern-using-dapper-bd48d9cd7ead
 // Reference: https://github.com/phnx47/dapper-repositories
@@ -24,6 +31,11 @@ public abstract class DapperGenericRepository<TKey, TEntity> : IDapperGenericRep
     private const string DeleteQuery = "DELETE FROM {0} WHERE {1}=@{2}";
     private const string DeleteRangeQuery = "DELETE FROM {0} WHERE {1} IN @{2}";
     private const string WhereQuery = " WHERE {0}=@{1}";
+    private static readonly IEnumerable<string> _reservedKeywords = new[]
+    {
+        "group",
+        "key",
+    };
 
     #endregion
 
@@ -32,6 +44,9 @@ public abstract class DapperGenericRepository<TKey, TEntity> : IDapperGenericRep
     private static IEnumerable<PropertyInfo> GetProperties => typeof(TEntity).GetProperties();
     private static readonly Func<string, string> ParamTemplateFunc = new(property => $"@{property}");
 
+    private readonly IMySqlConnectionFactory _factory = null!;
+    private readonly SqlGenerator<TEntity> _sqlGenerator;
+    private readonly MySqlQueryTranslator _translator;
     private readonly string _tableName;
     private readonly string _connectionString;
 
@@ -39,10 +54,29 @@ public abstract class DapperGenericRepository<TKey, TEntity> : IDapperGenericRep
 
     #region Constructor
 
+    protected DapperGenericRepository(IMySqlConnectionFactory factory)
+        : this(factory.ConnectionString)
+    {
+        _factory = factory;
+    }
+
+    protected DapperGenericRepository(string connectionString)
+        : this(typeof(TEntity).Name.ToLower(), connectionString)
+    {
+    }
+
     protected DapperGenericRepository(string tableName, string connectionString)
     {
+        //EntityDataRepository.AddTypeMappers();
+        EntityDataRepository.SetTypeMap<Account>();
+        EntityDataRepository.SetTypeMap<Device>();
+        EntityDataRepository.SetTypeMap<Geofence>();
+        EntityDataRepository.SetTypeMap<Instance>();
+
         _tableName = tableName;
         _connectionString = connectionString;
+        _sqlGenerator = new SqlGenerator<TEntity>(SqlProvider.MySQL, useQuotationMarks: true);
+        _translator = new MySqlQueryTranslator(_reservedKeywords);
     }
 
     #endregion
@@ -64,6 +98,25 @@ public abstract class DapperGenericRepository<TKey, TEntity> : IDapperGenericRep
         var selectQuery = string.Format(SelectWhereQuery, _tableName, primaryKeyColumnName, primaryKeyProperty?.Name);
         using var connection = await CreateConnectionAsync(stoppingToken);
         var result = await connection.QuerySingleOrDefaultAsync<TEntity>(selectQuery, parameters);
+        return result;
+    }
+
+    public async Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken stoppingToken = default)
+    {
+        var properties = GenerateListOfProperties(typeof(TEntity).GetProperties());
+        var columnNames = properties.Keys.ToList();
+        var filterData = new FilterData
+        {
+            SelectInfo = new SelectInfo
+            {
+                Columns = columnNames,
+                Permanent = false,
+            },
+        };
+        var (sql, param) = GenerateSelectQuery(predicate, filterData);
+
+        using var connection = await CreateConnectionAsync(stoppingToken);
+        var result = await connection.QueryAsync<TEntity>(sql, param);
         return result;
     }
 
@@ -125,6 +178,21 @@ public abstract class DapperGenericRepository<TKey, TEntity> : IDapperGenericRep
     #endregion
 
     #region Query Generator Methods
+
+    private (string, object?) GenerateSelectQuery(
+        Expression<Func<TEntity, bool>>? predicate,
+        FilterData? filterData,
+        params Expression<Func<TEntity, object>>[] includes)
+    {
+        var whereExpression = _translator.Translate(predicate);
+        var query = _sqlGenerator.GetSelectAll(null, filterData, includes);
+        query.SqlBuilder.Append(" WHERE ");
+        query.SqlBuilder.Append(whereExpression);
+
+        var sql = query.SqlBuilder.ToString();
+        var param = query.Param;
+        return (sql, param);
+    }
 
     private string GenerateInsertQuery()
     {
@@ -251,8 +319,10 @@ public abstract class DapperGenericRepository<TKey, TEntity> : IDapperGenericRep
 
     private async Task<MySqlConnection> CreateConnectionAsync(CancellationToken stoppingToken = default)
     {
-        var connection = new MySqlConnection(_connectionString);
-        await connection.OpenAsync(stoppingToken);
+        //var connection = new MySqlConnection(_connectionString);
+        //await connection.OpenAsync(stoppingToken);
+        //return connection;
+        var connection = await _factory.CreateConnectionAsync(open: true, stoppingToken);
         return connection;
     }
 
@@ -271,7 +341,14 @@ public abstract class DapperGenericRepository<TKey, TEntity> : IDapperGenericRep
             if (genAttr?.DatabaseGeneratedOption == DatabaseGeneratedOption.Computed)
                 continue;
 
-            result.Add(attr.Name, property);
+            if (_reservedKeywords.Contains(attr.Name))
+            {
+                result.Add($"`{attr.Name}`", property);
+            }
+            else
+            {
+                result.Add(attr.Name, property);
+            }
         }
         return result;
     }
