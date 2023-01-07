@@ -4,23 +4,32 @@ using System.Data;
 
 using MicroOrm.Dapper.Repositories;
 using MicroOrm.Dapper.Repositories.SqlGenerator;
-using MySqlConnector;
 
-using ChuckDeviceController.Data.Entities;
+using ChuckDeviceController.Data.Factories;
 
 public class BaseEntityRepository<TEntity> : DapperRepository<TEntity>
-    where TEntity : BaseEntity
+    where TEntity : class
 {
-    private readonly MySqlConnection _connection;
+    private readonly IMySqlConnectionFactory _factory;
 
-    public BaseEntityRepository(MySqlConnection connection, ISqlGenerator<TEntity> sqlGenerator)
-        : base(connection, sqlGenerator)
+    public BaseEntityRepository(IMySqlConnectionFactory factory)
+        : this(factory, new SqlGenerator<TEntity>(SqlProvider.MySQL, useQuotationMarks: true))
     {
-        _connection = connection;
+    }
+
+    public BaseEntityRepository(IMySqlConnectionFactory factory, ISqlGenerator<TEntity> generator)
+        : base(factory.CreateConnection(), generator)
+    {
+        _factory = factory;
     }
 
     protected IDbConnection GetConnection()
     {
-        return _connection;
+        return _factory.CreateConnection();
+    }
+
+    protected async Task<IDbConnection> GetConnectionAsync(CancellationToken stoppingToken = default)
+    {
+        return await _factory.CreateConnectionAsync(open: true, stoppingToken);
     }
 }

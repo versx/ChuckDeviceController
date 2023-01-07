@@ -76,7 +76,7 @@ public class EntityDataRepository : IEntityDataRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError($"[GetByIdAsync] Error: {ex.InnerException?.Message ?? ex.Message}");
+            _logger.LogError("[GetByIdAsync] Error: {Message}", ex.InnerException?.Message ?? ex.Message);
         }
 
         //_semEntity.Release();
@@ -109,7 +109,7 @@ public class EntityDataRepository : IEntityDataRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError($"[GetAllAsync] Error: {ex.InnerException?.Message ?? ex.Message}");
+            _logger.LogError("[GetAllAsync] Error: {Message}", ex.InnerException?.Message ?? ex.Message);
         }
 
         _sem.Release();
@@ -147,7 +147,7 @@ public class EntityDataRepository : IEntityDataRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError($"[ExecuteAsync] Error: {ex.InnerException?.Message ?? ex.Message}");
+            _logger.LogError("[ExecuteAsync] Error: {Message}", ex.InnerException?.Message ?? ex.Message);
         }
 
         _sem.Release();
@@ -185,7 +185,7 @@ public class EntityDataRepository : IEntityDataRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError($"[ExecuteAsync] Error: {ex.InnerException?.Message ?? ex.Message}");
+            _logger.LogError("[ExecuteAsync] Error: {Message}", ex.InnerException?.Message ?? ex.Message);
             await trans.RollbackAsync(stoppingToken);
         }
 
@@ -222,7 +222,7 @@ public class EntityDataRepository : IEntityDataRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError($"[ExecuteBulkAsync] Error: {ex.InnerException?.Message ?? ex.Message}");
+            _logger.LogError("[ExecuteBulkAsync] Error: {Message}", ex.InnerException?.Message ?? ex.Message);
             await trans.RollbackAsync(stoppingToken);
         }
 
