@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="versx" /><link rel="canonical" href="https://github.com/versx/ChuckDeviceController/plugins/overview/" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Overview - ChuckDeviceController</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+        <link href="../../css/base.css" rel="stylesheet" />
+        <link href="../../css/bootstrap-custom.min.css" rel="stylesheet" />
+        <link href="../../css/custom.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Overview";
+        var mkdocs_page_input_path = "plugins/overview.md";
+        var mkdocs_page_url = "/versx/ChuckDeviceController/plugins/overview/";
+      </script>
+    
+    <script src="../../js/jquery-3.6.0.min.js" defer></script>
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/languages/csharp.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/languages/json.min.js"></script>
+      <script>hljs.initHighlightingOnLoad();</script> 
+      <script async src="https://www.googletagmanager.com/gtag/js?id=UA-75960523-2"></script>
+      <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'UA-75960523-2');
+      </script>
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../..">
+          <img src="../../img/chuck.gif" class="logo" alt="Logo"/>
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">General</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../screenshots/">Screenshots</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../requirements/">Install Requirements</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/">Getting Started</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../docker/">Docker</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Configuration</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../applications/configurator/">ChuckDeviceConfigurator</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../applications/controller/">ChuckDeviceController</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../applications/communicator/">ChuckDeviceCommunicator</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../applications/proxy/">ChuckDeviceProxy</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Plugin System</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugin-system/create-a-plugin/">Create a Plugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugin-system/api/">API Documentation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugin-system/examples/">Examples</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugin-system/host-interfaces/">Host Interfaces</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugin-system/entity-interfaces/">Entity Interfaces</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugin-system/job-controllers/">Job Controllers</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugin-system/project-templates/">Visual Studio Templates</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Plugins Included</span></p>
+              <ul class="current">
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Overview</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#bitbucketauthproviderplugin">BitbucketAuthProviderPlugin</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#deviceauthplugin">DeviceAuthPlugin</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#exampledotnetcoreplugin">Example.DotNetCorePlugin</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#findyjumpyplugin">FindyJumpyPlugin</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gitlabauthproviderplugin">GitLabAuthProviderPlugin</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#healthchecksplugin">HealthChecksPlugin</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#memorybenchmarkplugin">MemoryBenchmarkPlugin</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#microsoftauthproviderplugin">MicrosoftAuthProviderPlugin</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#miniprofilerplugin">MiniProfilerPlugin</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#pogoeventsplugin">PogoEventsPlugin</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#razortestplugin">RazorTestPlugin</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#redditauthproviderplugin">RedditAuthProviderPlugin</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#requestbenchmarkplugin">RequestBenchmarkPlugin</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#robotsplugin">RobotsPlugin</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#testplugin">TestPlugin</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#todoplugin">TodoPlugin</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#visualstudioauthproviderplugin">VisualStudioAuthProviderPlugin</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../BitbucketAuthProviderPlugin/">BitbucketAuthProviderPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../DeviceAuthPlugin/">DeviceAuthPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../Example.DotNetCorePlugin/">Example.DotNetCorePlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../FindyJumpyPlugin/">FindyJumpyPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../GitLabAuthProviderPlugin/">GitLabAuthProviderPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../HealthChecksPlugin/">HealthChecksPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../MemoryBenchmarkPlugin/">MemoryBenchmarkPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../MicrosoftAuthProviderPlugin/">MicrosoftAuthProviderPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../MiniProviderPlugin/">MiniProviderPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PogoEventsPlugin/">PogoEventsPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../RazorTestPlugin/">RazorTestPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../RedditAuthProviderPlugin/">RedditAuthProviderPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../RequestBenchmarkPlugin/">RequestBenchmarkPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../RobotsPlugin/">RobotsPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../TestPlugin/">TestPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../TodoPlugin/">TodoPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../VisualStudioAuthProviderPlugin/">VisualStudioAuthProviderPlugin</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Miscellaneous</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../other/3rd-party-auth/">3rd Party Authentication</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../other/custom-settings/">Custom Settings</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">About</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../about/dedication/">Dedication</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../about/credits/">Credits</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../about/todo/">TODO</a>
+                  </li>
+                  <li class="toctree-l1"><a class="" href="https://github.com/versx/ChuckDeviceController">GitHub</a>
+                  </li>
+                  <li class="toctree-l1"><a class="" href="https://github.com/versx">Author</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">ChuckDeviceController</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" alt="Docs"></a> &raquo;</li>
+          <li>Plugins Included &raquo;</li>
+      <li>Overview</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/versx/chuckdevicecontroller/edit/master/docs/plugins/overview.md" class="icon icon-github"> Edit on GitHub</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="plugins-included">Plugins Included<a class="headerlink" href="#plugins-included" title="Permanent link"></a></h1>
+<blockquote>
+<p>Roughly 17 plugins are included and provided by default.   </p>
+</blockquote>
+<hr>
+
+<h4 id="bitbucketauthproviderplugin"><a href="../BitbucketAuthProviderPlugin/">BitbucketAuthProviderPlugin</a><a class="headerlink" href="#bitbucketauthproviderplugin" title="Permanent link"></a></h4>
+<ul>
+<li>Adds <code>Bitbucket.org</code> user authentication support.  </li>
+</ul>
+<h4 id="deviceauthplugin"><a href="../DeviceAuthPlugin/">DeviceAuthPlugin</a><a class="headerlink" href="#deviceauthplugin" title="Permanent link"></a></h4>
+<ul>
+<li>Adds device token and IP based device authentication support.  </li>
+</ul>
+<h4 id="exampledotnetcoreplugin"><a href="../Example.DotNetCorePlugin/">Example.DotNetCorePlugin</a><a class="headerlink" href="#exampledotnetcoreplugin" title="Permanent link"></a></h4>
+<ul>
+<li>Very basic 'Clock' plugin example.  </li>
+</ul>
+<h4 id="findyjumpyplugin"><a href="../FindyJumpyPlugin/">FindyJumpyPlugin</a><a class="headerlink" href="#findyjumpyplugin" title="Permanent link"></a></h4>
+<ul>
+<li>Adds new Pokemon spawnpoint job controllers.  </li>
+</ul>
+<h4 id="gitlabauthproviderplugin"><a href="../GitLabAuthProviderPlugin/">GitLabAuthProviderPlugin</a><a class="headerlink" href="#gitlabauthproviderplugin" title="Permanent link"></a></h4>
+<ul>
+<li>Adds <code>GitLab.com</code> user authentication support.  </li>
+</ul>
+<h4 id="healthchecksplugin"><a href="../HealthChecksPlugin/">HealthChecksPlugin</a><a class="headerlink" href="#healthchecksplugin" title="Permanent link"></a></h4>
+<ul>
+<li>Adds health checks endpoint and UI.  </li>
+</ul>
+<h4 id="memorybenchmarkplugin"><a href="../MemoryBenchmarkPlugin/">MemoryBenchmarkPlugin</a><a class="headerlink" href="#memorybenchmarkplugin" title="Permanent link"></a></h4>
+<ul>
+<li>Displays basic memory usage information and chart.  </li>
+</ul>
+<h4 id="microsoftauthproviderplugin"><a href="../MicrosoftAuthProviderPlugin/">MicrosoftAuthProviderPlugin</a><a class="headerlink" href="#microsoftauthproviderplugin" title="Permanent link"></a></h4>
+<ul>
+<li>Adds <code>Microsoft.com</code> account authentication support.  </li>
+</ul>
+<h4 id="miniprofilerplugin"><a href="../MiniProviderPlugin/">MiniProfilerPlugin</a><a class="headerlink" href="#miniprofilerplugin" title="Permanent link"></a></h4>
+<ul>
+<li>Adds basic profiling options and data.  </li>
+</ul>
+<h4 id="pogoeventsplugin"><a href="../PogoEventsPlugin/">PogoEventsPlugin</a><a class="headerlink" href="#pogoeventsplugin" title="Permanent link"></a></h4>
+<ul>
+<li>Provides current and upcoming Pokemon Go events.  </li>
+</ul>
+<h4 id="razortestplugin"><a href="../RazorTestPlugin/">RazorTestPlugin</a><a class="headerlink" href="#razortestplugin" title="Permanent link"></a></h4>
+<ul>
+<li>Very basic Razor Mvc pages plugin example.  </li>
+</ul>
+<h4 id="redditauthproviderplugin"><a href="../RedditAuthProviderPlugin/">RedditAuthProviderPlugin</a><a class="headerlink" href="#redditauthproviderplugin" title="Permanent link"></a></h4>
+<ul>
+<li>Adds <code>Reddit.com</code> user authentication support.  </li>
+</ul>
+<h4 id="requestbenchmarkplugin"><a href="../RequestBenchmarkPlugin/">RequestBenchmarkPlugin</a><a class="headerlink" href="#requestbenchmarkplugin" title="Permanent link"></a></h4>
+<ul>
+<li>Displays web request benchmark times for routes used.  </li>
+</ul>
+<h4 id="robotsplugin"><a href="../RobotsPlugin/">RobotsPlugin</a><a class="headerlink" href="#robotsplugin" title="Permanent link"></a></h4>
+<ul>
+<li>Adds web crawler robots management based on specified UserAgent strings and routes which creates a dynamic <code>robots.txt</code> file.  </li>
+</ul>
+<h4 id="testplugin"><a href="../TestPlugin/">TestPlugin</a><a class="headerlink" href="#testplugin" title="Permanent link"></a></h4>
+<ul>
+<li>In-depth example plugin demonstrating all, if not most, possible functionality of the plugin system.  </li>
+</ul>
+<h4 id="todoplugin"><a href="../TodoPlugin/">TodoPlugin</a><a class="headerlink" href="#todoplugin" title="Permanent link"></a></h4>
+<ul>
+<li>Basic TODO list plugin that adds support for keeping track of things to do. Tasks are saved in-memory and do not persist.  </li>
+</ul>
+<h4 id="visualstudioauthproviderplugin"><a href="../VisualStudioAuthProviderPlugin/">VisualStudioAuthProviderPlugin</a><a class="headerlink" href="#visualstudioauthproviderplugin" title="Permanent link"></a></h4>
+<ul>
+<li>Adds <code>VisualStudioOnline.com</code> user authentication support.  </li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../../plugin-system/project-templates/" class="btn btn-neutral float-left" title="Visual Studio Templates"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../BitbucketAuthProviderPlugin/" class="btn btn-neutral float-right" title="BitbucketAuthProviderPlugin">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+      <p>Copyright &copy; 2022, Maintained by <a href="https://github.com/versx">versx</a>.</p>
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/versx/chuckdevicecontroller/" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href="../../plugin-system/project-templates/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../BitbucketAuthProviderPlugin/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '../..';</script>
+    <script src="../../js/theme_extra.js" defer></script>
+    <script src="../../js/theme.js" defer></script>
+      <script src="../../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(false);
+        };
+    </script>
+
+</body>
+</html>

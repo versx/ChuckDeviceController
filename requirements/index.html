@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="versx" /><link rel="canonical" href="https://github.com/versx/ChuckDeviceController/requirements/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Install Requirements - ChuckDeviceController</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+        <link href="../css/base.css" rel="stylesheet" />
+        <link href="../css/bootstrap-custom.min.css" rel="stylesheet" />
+        <link href="../css/custom.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Install Requirements";
+        var mkdocs_page_input_path = "requirements.md";
+        var mkdocs_page_url = "/versx/ChuckDeviceController/requirements/";
+      </script>
+    
+    <script src="../js/jquery-3.6.0.min.js" defer></script>
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/languages/csharp.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/languages/json.min.js"></script>
+      <script>hljs.initHighlightingOnLoad();</script> 
+      <script async src="https://www.googletagmanager.com/gtag/js?id=UA-75960523-2"></script>
+      <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'UA-75960523-2');
+      </script>
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="..">
+          <img src="../img/chuck.gif" class="logo" alt="Logo"/>
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">General</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../screenshots/">Screenshots</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Install Requirements</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#install-git">Install Git</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#debian-based">Debian-based</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#windows">Windows</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#macos">macOS</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#other-macos-installations">Other macOS Installations</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#install-net-7-sdk">Install .NET 7 SDK</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#ubuntu">Ubuntu</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#other-linux-distributions">Other Linux Distributions</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#windows_1">Windows</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#macos_1">macOS</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#install-sql-database">Install SQL Database</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#mysql">MySQL</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#mariadb">MariaDB</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../getting-started/">Getting Started</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../docker/">Docker</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Configuration</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../applications/configurator/">ChuckDeviceConfigurator</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../applications/controller/">ChuckDeviceController</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../applications/communicator/">ChuckDeviceCommunicator</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../applications/proxy/">ChuckDeviceProxy</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Plugin System</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../plugin-system/create-a-plugin/">Create a Plugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../plugin-system/api/">API Documentation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../plugin-system/examples/">Examples</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../plugin-system/host-interfaces/">Host Interfaces</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../plugin-system/entity-interfaces/">Entity Interfaces</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../plugin-system/job-controllers/">Job Controllers</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../plugin-system/project-templates/">Visual Studio Templates</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Plugins Included</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../plugins/overview/">Overview</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../plugins/BitbucketAuthProviderPlugin/">BitbucketAuthProviderPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../plugins/DeviceAuthPlugin/">DeviceAuthPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../plugins/Example.DotNetCorePlugin/">Example.DotNetCorePlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../plugins/FindyJumpyPlugin/">FindyJumpyPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../plugins/GitLabAuthProviderPlugin/">GitLabAuthProviderPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../plugins/HealthChecksPlugin/">HealthChecksPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../plugins/MemoryBenchmarkPlugin/">MemoryBenchmarkPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../plugins/MicrosoftAuthProviderPlugin/">MicrosoftAuthProviderPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../plugins/MiniProviderPlugin/">MiniProviderPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../plugins/PogoEventsPlugin/">PogoEventsPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../plugins/RazorTestPlugin/">RazorTestPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../plugins/RedditAuthProviderPlugin/">RedditAuthProviderPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../plugins/RequestBenchmarkPlugin/">RequestBenchmarkPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../plugins/RobotsPlugin/">RobotsPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../plugins/TestPlugin/">TestPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../plugins/TodoPlugin/">TodoPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../plugins/VisualStudioAuthProviderPlugin/">VisualStudioAuthProviderPlugin</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Miscellaneous</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../other/3rd-party-auth/">3rd Party Authentication</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../other/custom-settings/">Custom Settings</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">About</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../about/dedication/">Dedication</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../about/credits/">Credits</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../about/todo/">TODO</a>
+                  </li>
+                  <li class="toctree-l1"><a class="" href="https://github.com/versx/ChuckDeviceController">GitHub</a>
+                  </li>
+                  <li class="toctree-l1"><a class="" href="https://github.com/versx">Author</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">ChuckDeviceController</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" alt="Docs"></a> &raquo;</li>
+          <li>General &raquo;</li>
+      <li>Install Requirements</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/versx/chuckdevicecontroller/edit/master/docs/requirements.md" class="icon icon-github"> Edit on GitHub</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="requirements">Requirements<a class="headerlink" href="#requirements" title="Permanent link"></a></h1>
+<ul>
+<li><a href="https://git-scm.com/book/en/v2/Getting-Started-Installing-Git">Git</a>  </li>
+<li><a href="https://dotnet.microsoft.com/download/dotnet/7.0">.NET 7 SDK</a>  </li>
+<li><a href="https://dev.mysql.com/downloads/mysql/">MySQL</a> or <a href="https://mariadb.org/download/?t=mariadb&amp;p=mariadb">MariaDB</a>  </li>
+</ul>
+<h2 id="install-git"><u>Install Git</u><a class="headerlink" href="#install-git" title="Permanent link"></a></h2>
+<h3 id="debian-based">Debian-based<a class="headerlink" href="#debian-based" title="Permanent link"></a></h3>
+<p><code>sudo apt install git-all</code>  </p>
+<h3 id="windows">Windows<a class="headerlink" href="#windows" title="Permanent link"></a></h3>
+<p><a href="https://git-scm.com/download/win">https://git-scm.com/download/win</a>  </p>
+<h3 id="macos">macOS<a class="headerlink" href="#macos" title="Permanent link"></a></h3>
+<p>Homebrew:</p>
+<pre><code>brew install git
+</code></pre>
+<h3 id="other-macos-installations"><a href="https://git-scm.com/download/mac">Other macOS Installations</a><a class="headerlink" href="#other-macos-installations" title="Permanent link"></a></h3>
+<hr>
+
+<h2 id="install-net-7-sdk"><u>Install .NET 7 SDK</u><a class="headerlink" href="#install-net-7-sdk" title="Permanent link"></a></h2>
+<h3 id="ubuntu">Ubuntu<a class="headerlink" href="#ubuntu" title="Permanent link"></a></h3>
+<p>Replace <code>{22,20,18}</code> with your respective major OS version  </p>
+<pre><code>wget https://packages.microsoft.com/config/ubuntu/{22,20,18}.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+sudo dpkg -i packages-microsoft-prod.deb
+rm packages-microsoft-prod.deb
+sudo apt-get update
+sudo apt-get install -y apt-transport-https
+sudo apt-get update
+sudo apt-get install -y dotnet-sdk-7.0
+</code></pre>
+<h3 id="other-linux-distributions"><a href="https://learn.microsoft.com/en-us/dotnet/core/install/linux">Other Linux Distributions</a><a class="headerlink" href="#other-linux-distributions" title="Permanent link"></a></h3>
+<h3 id="windows_1">Windows<a class="headerlink" href="#windows_1" title="Permanent link"></a></h3>
+<p>x86:<br />
+<code>https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/sdk-7.0.101-windows-x86-installer</code>  </p>
+<p>x64:<br />
+<code>https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/sdk-7.0.101-windows-x64-installer</code> </p>
+<p>ARM64:<br />
+<code>https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/sdk-7.0.101-windows-arm64-installer</code></p>
+<h3 id="macos_1">macOS<a class="headerlink" href="#macos_1" title="Permanent link"></a></h3>
+<p>Intel:<br />
+<code>https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/sdk-7.0.101-macos-x64-installer</code></p>
+<p>Apple Silicon:
+<code>https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/sdk-7.0.101-macos-arm64-installer</code></p>
+<hr>
+
+<h2 id="install-sql-database"><u>Install SQL Database</u><a class="headerlink" href="#install-sql-database" title="Permanent link"></a></h2>
+<h3 id="mysql">MySQL<a class="headerlink" href="#mysql" title="Permanent link"></a></h3>
+<p><a href="https://dev.mysql.com/downloads/installer">https://dev.mysql.com/downloads/installer</a>  </p>
+<p>or</p>
+<h3 id="mariadb">MariaDB<a class="headerlink" href="#mariadb" title="Permanent link"></a></h3>
+<p><a href="https://mariadb.org/download/?t=mariadb">https://mariadb.org/download/?t=mariadb</a></p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../screenshots/" class="btn btn-neutral float-left" title="Screenshots"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../getting-started/" class="btn btn-neutral float-right" title="Getting Started">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+      <p>Copyright &copy; 2022, Maintained by <a href="https://github.com/versx">versx</a>.</p>
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/versx/chuckdevicecontroller/" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href="../screenshots/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../getting-started/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme_extra.js" defer></script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(false);
+        };
+    </script>
+
+</body>
+</html>

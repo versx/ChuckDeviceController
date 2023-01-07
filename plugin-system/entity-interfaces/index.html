@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="versx" /><link rel="canonical" href="https://github.com/versx/ChuckDeviceController/plugin-system/entity-interfaces/" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Entity Interfaces - ChuckDeviceController</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+        <link href="../../css/base.css" rel="stylesheet" />
+        <link href="../../css/bootstrap-custom.min.css" rel="stylesheet" />
+        <link href="../../css/custom.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Entity Interfaces";
+        var mkdocs_page_input_path = "plugin-system/entity-interfaces.md";
+        var mkdocs_page_url = "/versx/ChuckDeviceController/plugin-system/entity-interfaces/";
+      </script>
+    
+    <script src="../../js/jquery-3.6.0.min.js" defer></script>
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/languages/csharp.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/languages/json.min.js"></script>
+      <script>hljs.initHighlightingOnLoad();</script> 
+      <script async src="https://www.googletagmanager.com/gtag/js?id=UA-75960523-2"></script>
+      <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'UA-75960523-2');
+      </script>
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../..">
+          <img src="../../img/chuck.gif" class="logo" alt="Logo"/>
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">General</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../screenshots/">Screenshots</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../requirements/">Install Requirements</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/">Getting Started</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../docker/">Docker</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Configuration</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../applications/configurator/">ChuckDeviceConfigurator</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../applications/controller/">ChuckDeviceController</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../applications/communicator/">ChuckDeviceCommunicator</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../applications/proxy/">ChuckDeviceProxy</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Plugin System</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../create-a-plugin/">Create a Plugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../api/">API Documentation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../examples/">Examples</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../host-interfaces/">Host Interfaces</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Entity Interfaces</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#controller-entity-types">Controller Entity Types</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#iaccount">IAccount</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#iassignment">IAssignment</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#iassignmentgroup">IAssignmentGroup</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#idevice">IDevice</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#idevicegroup">IDeviceGroup</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#igeofence">IGeofence</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#iinstance">IInstance</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#iivlist">IIvList</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#iwebhook">IWebhook</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#map-entity-types">Map Entity Types</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#icell">ICell</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#igym">IGym</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#igymdefender">IGymDefender</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#igymtrainer">IGymTrainer</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#iincident">IIncident</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#ipokemon">IPokemon</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#ipokestop">IPokestop</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#ispawnpoint">ISpawnpoint</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#iweather">IWeather</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../job-controllers/">Job Controllers</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../project-templates/">Visual Studio Templates</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Plugins Included</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/overview/">Overview</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/BitbucketAuthProviderPlugin/">BitbucketAuthProviderPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/DeviceAuthPlugin/">DeviceAuthPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/Example.DotNetCorePlugin/">Example.DotNetCorePlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/FindyJumpyPlugin/">FindyJumpyPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/GitLabAuthProviderPlugin/">GitLabAuthProviderPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/HealthChecksPlugin/">HealthChecksPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/MemoryBenchmarkPlugin/">MemoryBenchmarkPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/MicrosoftAuthProviderPlugin/">MicrosoftAuthProviderPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/MiniProviderPlugin/">MiniProviderPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/PogoEventsPlugin/">PogoEventsPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/RazorTestPlugin/">RazorTestPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/RedditAuthProviderPlugin/">RedditAuthProviderPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/RequestBenchmarkPlugin/">RequestBenchmarkPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/RobotsPlugin/">RobotsPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/TestPlugin/">TestPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/TodoPlugin/">TodoPlugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../plugins/VisualStudioAuthProviderPlugin/">VisualStudioAuthProviderPlugin</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Miscellaneous</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../other/3rd-party-auth/">3rd Party Authentication</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../other/custom-settings/">Custom Settings</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">About</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../about/dedication/">Dedication</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../about/credits/">Credits</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../about/todo/">TODO</a>
+                  </li>
+                  <li class="toctree-l1"><a class="" href="https://github.com/versx/ChuckDeviceController">GitHub</a>
+                  </li>
+                  <li class="toctree-l1"><a class="" href="https://github.com/versx">Author</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">ChuckDeviceController</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" alt="Docs"></a> &raquo;</li>
+          <li>Plugin System &raquo;</li>
+      <li>Entity Interfaces</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/versx/chuckdevicecontroller/edit/master/docs/plugin-system/entity-interfaces.md" class="icon icon-github"> Edit on GitHub</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="plugin-entity-interface-contracts-idatabasehost">Plugin Entity Interface Contracts (IDatabaseHost)<a class="headerlink" href="#plugin-entity-interface-contracts-idatabasehost" title="Permanent link"></a></h1>
+<p>All available database entity model interface contracts.  </p>
+<h2 id="controller-entity-types">Controller Entity Types<a class="headerlink" href="#controller-entity-types" title="Permanent link"></a></h2>
+<ul>
+<li><a href="#iaccount">IAccount</a></li>
+<li><a href="#iassignment">IAssignment</a></li>
+<li><a href="#iassignmentgroup">IAssignmentGroup</a></li>
+<li><a href="#idevice">IDevice</a></li>
+<li><a href="#idevicegroup">IDeviceGroup</a></li>
+<li><a href="#igeofence">IGeofence</a></li>
+<li><a href="#iinstance">IInstance</a></li>
+<li><a href="#iivlist">IIvList</a></li>
+<li><a href="#iwebhook">IWebhook</a></li>
+</ul>
+<h3 id="iaccount">IAccount<a class="headerlink" href="#iaccount" title="Permanent link"></a></h3>
+<p>Properties:  </p>
+<pre><code class="language-cs">string Username;
+string Password;
+ushort Level;
+ulong? FirstWarningTimestamp;
+ulong? FailedTimestamp;
+string? Failed;
+ulong? LastEncounterTime;
+double? LastEncounterLatitude;
+double? LastEncounterLongitude;
+uint Spins;
+ushort Tutorial;
+ulong? CreationTimestamp;
+bool? HasWarn;
+ulong? WarnExpireTimestamp;
+bool? WarnMessageAcknowledged;
+bool? SuspendedMessageAcknowledged;
+bool? WasSuspended;
+bool? IsBanned;
+ulong? LastUsedTimestamp;
+string? GroupName;
+</code></pre>
+<h3 id="iassignment">IAssignment<a class="headerlink" href="#iassignment" title="Permanent link"></a></h3>
+<p>Properties:  </p>
+<pre><code class="language-cs">uint Id
+string InstanceName
+string? SourceInstanceName
+string? DeviceUuid
+uint Time
+DateTime? Date
+string? DeviceGroupName
+bool Enabled
+</code></pre>
+<h3 id="iassignmentgroup">IAssignmentGroup<a class="headerlink" href="#iassignmentgroup" title="Permanent link"></a></h3>
+<p>Properties:  </p>
+<pre><code class="language-cs">string Name
+List&lt;uint&gt; AssignmentIds
+</code></pre>
+<h3 id="idevice">IDevice<a class="headerlink" href="#idevice" title="Permanent link"></a></h3>
+<p>Properties:  </p>
+<pre><code class="language-cs">string Uuid
+string? InstanceName
+string? AccountUsername
+string? LastHost
+double? LastLatitude
+double? LastLongitude
+ulong? LastSeen // Last job request requested
+bool IsPendingAccountSwitch // Used internally
+</code></pre>
+<h3 id="idevicegroup">IDeviceGroup<a class="headerlink" href="#idevicegroup" title="Permanent link"></a></h3>
+<p>Properties:  </p>
+<pre><code class="language-cs">string Name
+List&lt;string&gt; DeviceUuids
+</code></pre>
+<h3 id="igeofence">IGeofence<a class="headerlink" href="#igeofence" title="Permanent link"></a></h3>
+<p>Properties:  </p>
+<pre><code class="language-cs">string Name
+GeofenceType Type
+GeofenceData? Data
+</code></pre>
+<h3 id="iinstance">IInstance<a class="headerlink" href="#iinstance" title="Permanent link"></a></h3>
+<p>Properties:  </p>
+<pre><code class="language-cs">string Name
+InstanceType Type
+ushort MinimumLevel
+ushort MaximumLevel
+List&lt;string&gt; Geofences
+InstanceData? Data
+</code></pre>
+<h3 id="iivlist">IIvList<a class="headerlink" href="#iivlist" title="Permanent link"></a></h3>
+<p>Properties:  </p>
+<pre><code class="language-cs">string Name
+List&lt;string&gt; PokemonIds
+</code></pre>
+<h3 id="iwebhook">IWebhook<a class="headerlink" href="#iwebhook" title="Permanent link"></a></h3>
+<p>Properties:  </p>
+<pre><code class="language-cs">string Name
+List&lt;WebhookType&gt; Types
+double Delay
+string Url
+bool Enabled
+List&lt;string&gt; Geofences
+WebhookData? Data
+</code></pre>
+<hr>
+
+<h2 id="map-entity-types">Map Entity Types<a class="headerlink" href="#map-entity-types" title="Permanent link"></a></h2>
+<ul>
+<li><a href="#icell">ICell</a></li>
+<li><a href="#igym">IGym</a></li>
+<li><a href="#igymdefender">IGymDefender</a></li>
+<li><a href="#igymtrainer">IGymTrainer</a></li>
+<li><a href="#iincident">IIncident</a></li>
+<li><a href="#ipokemon">IPokemon</a></li>
+<li><a href="#ipokestop">IPokestop</a></li>
+<li><a href="#ispawnpoint">ISpawnpoint</a></li>
+<li><a href="#iweather">IWeather</a></li>
+</ul>
+<h3 id="icell">ICell<a class="headerlink" href="#icell" title="Permanent link"></a></h3>
+<p>Properties:  </p>
+<pre><code class="language-cs">ulong Id
+ushort Level
+double Latitude
+double Longitude
+ulong Updated
+</code></pre>
+<h3 id="igym">IGym<a class="headerlink" href="#igym" title="Permanent link"></a></h3>
+<p>Properties:  </p>
+<pre><code class="language-cs">string Id
+string? Name
+string? Url
+double Latitude
+double Longitude
+ulong LastModifiedTimestamp
+ulong? RaidEndTimestamp
+ulong? RaidSpawnTimestamp
+ulong? RaidBattleTimestamp
+ulong Updated
+uint? RaidPokemonId
+uint GuardingPokemonId
+ushort AvailableSlots
+ushort Team
+ushort? RaidLevel
+bool IsEnabled
+bool IsExRaidEligible
+bool InBattle
+uint? RaidPokemonMove1
+uint? RaidPokemonMove2
+uint? RaidPokemonForm
+uint? RaidPokemonCostume
+uint? RaidPokemonCP
+uint? RaidPokemonEvolution
+ushort? RaidPokemonGender
+bool? RaidIsExclusive
+ulong CellId
+bool IsDeleted
+int TotalCP
+ulong FirstSeenTimestamp
+uint? SponsorId
+bool? IsArScanEligible
+uint? PowerUpPoints
+ushort? PowerUpLevel
+ulong? PowerUpEndTimestamp
+</code></pre>
+<h3 id="igymdefender">IGymDefender<a class="headerlink" href="#igymdefender" title="Permanent link"></a></h3>
+<p>Properties:  </p>
+<pre><code class="language-cs">ulong Id
+string Nickname
+ushort PokemonId
+ushort DisplayPokemonId
+ushort Form
+ushort Costume
+ushort Gender
+uint CpWhenDeployed
+uint CpNow
+uint Cp
+uint BattlesWon
+uint BattlesLost
+double BerryValue
+uint TimesFed
+ulong DeploymentDuration
+string? TrainerName
+string? FortId
+ushort AttackIV
+ushort DefenseIV
+ushort StaminaIV
+ushort Move1
+ushort Move2
+ushort Move3
+uint BattlesAttacked
+uint BattlesDefended
+double BuddyKmWalked
+uint BuddyCandyAwarded
+uint CoinsReturned
+bool FromFort
+bool HatchedFromEgg
+bool IsBad
+bool IsEgg
+bool IsLucky
+bool IsShiny
+uint PvpCombatWon
+uint PvpCombatTotal
+uint NpcCombatWon
+uint NpcCombatTotal
+double HeightM
+double WeightKg
+ulong Updated
+</code></pre>
+<h3 id="igymtrainer">IGymTrainer<a class="headerlink" href="#igymtrainer" title="Permanent link"></a></h3>
+<p>Properties:  </p>
+<pre><code class="language-cs">string Name
+ushort Level
+ushort TeamId
+uint BattlesWon
+double KmWalked
+ulong PokemonCaught
+ulong Experience
+ulong CombatRank
+ulong CombatRating
+bool HasSharedExPass
+ushort GymBadgeType
+ulong Updated
+</code></pre>
+<h3 id="iincident">IIncident<a class="headerlink" href="#iincident" title="Permanent link"></a></h3>
+<p>Properties:  </p>
+<pre><code class="language-cs">string Id
+string? PokestopId
+ulong Start
+ulong Expiration
+uint DisplayType
+uint Style
+ushort Character
+ulong Updated
+</code></pre>
+<h3 id="ipokemon">IPokemon<a class="headerlink" href="#ipokemon" title="Permanent link"></a></h3>
+<p>Properties:  </p>
+<pre><code class="language-cs">string Id
+uint PokemonId
+double Latitude
+double Longitude
+ulong? SpawnId
+ulong ExpireTimestamp
+ushort? AttackIV
+ushort? DefenseIV
+ushort? StaminaIV
+double? IV
+ushort? Move1
+ushort? Move2
+ushort? Gender
+ushort? Form
+ushort? Costume
+ushort? CP
+ushort? Level
+double? Weight
+double? Size
+ushort? Weather
+bool? IsShiny
+string? Username
+string? PokestopId
+ulong? FirstSeenTimestamp
+ulong Updated
+ulong Changed
+ulong CellId
+bool IsExpireTimestampVerified
+double? Capture1
+double? Capture2
+double? Capture3
+bool IsDitto
+uint? DisplayPokemonId
+Dictionary&lt;string, dynamic&gt;? PvpRankings
+double BaseHeight
+double BaseWeight
+bool IsEvent
+SeenType SeenType
+</code></pre>
+<h3 id="ipokestop">IPokestop<a class="headerlink" href="#ipokestop" title="Permanent link"></a></h3>
+<p>Properties:  </p>
+<pre><code class="language-cs">string Id
+double Latitude
+double Longitude
+string? Name
+string? Url
+ushort LureId
+ulong? LureExpireTimestamp
+ulong LastModifiedTimestamp
+ulong Updated
+bool IsEnabled
+ulong CellId
+bool IsDeleted
+ulong FirstSeenTimestamp
+uint? SponsorId
+bool IsArScanEligible
+uint? PowerUpPoints
+ushort? PowerUpLevel
+ulong? PowerUpEndTimestamp
+
+#region Quests
+uint? QuestType
+string? QuestTemplate
+string? QuestTitle
+ushort? QuestTarget
+ulong? QuestTimestamp
+
+#region Virtual Columns (Automatically Generated)
+ushort? QuestRewardType
+ushort? QuestItemId
+ushort? QuestRewardAmount
+uint? QuestPokemonId
+#endregion
+
+List&lt;Dictionary&lt;string, dynamic&gt;&gt;? QuestConditions
+List&lt;Dictionary&lt;string, dynamic&gt;&gt;? QuestRewards
+uint? AlternativeQuestType
+string? AlternativeQuestTemplate
+string? AlternativeQuestTitle
+ushort? AlternativeQuestTarget
+ulong? AlternativeQuestTimestamp
+
+#region Virtual Columns (Automatically Generated)
+ushort? AlternativeQuestRewardType
+ushort? AlternativeQuestItemId
+ushort? AlternativeQuestRewardAmount
+uint? AlternativeQuestPokemonId
+#endregion
+
+List&lt;Dictionary&lt;string, dynamic&gt;&gt;? AlternativeQuestConditions
+List&lt;Dictionary&lt;string, dynamic&gt;&gt;? AlternativeQuestRewards
+#endregion
+</code></pre>
+<h3 id="ispawnpoint">ISpawnpoint<a class="headerlink" href="#ispawnpoint" title="Permanent link"></a></h3>
+<p>Properties:  </p>
+<pre><code class="language-cs">ulong Id
+double Latitude
+double Longitude
+uint? DespawnSecond
+ulong Updated
+ulong? LastSeen
+</code></pre>
+<h3 id="iweather">IWeather<a class="headerlink" href="#iweather" title="Permanent link"></a></h3>
+<p>Properties:  </p>
+<pre><code class="language-cs">long Id
+ushort Level
+double Latitude
+double Longitude
+ushort GameplayCondition
+ushort WindDirection
+ushort CloudLevel
+ushort RainLevel
+ushort WindLevel
+ushort SnowLevel
+ushort FogLevel
+ushort SpecialEffectLevel
+ushort? Severity
+bool? WarnWeather
+ulong Updated
+</code></pre>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../host-interfaces/" class="btn btn-neutral float-left" title="Host Interfaces"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../job-controllers/" class="btn btn-neutral float-right" title="Job Controllers">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+      <p>Copyright &copy; 2022, Maintained by <a href="https://github.com/versx">versx</a>.</p>
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/versx/chuckdevicecontroller/" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href="../host-interfaces/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../job-controllers/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '../..';</script>
+    <script src="../../js/theme_extra.js" defer></script>
+    <script src="../../js/theme.js" defer></script>
+      <script src="../../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(false);
+        };
+    </script>
+
+</body>
+</html>
