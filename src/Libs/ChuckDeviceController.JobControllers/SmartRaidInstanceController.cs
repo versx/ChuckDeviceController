@@ -3,14 +3,13 @@
 using System.Collections.Concurrent;
 
 using Google.Common.Geometry;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 using ChuckDeviceController.Common;
 using ChuckDeviceController.Common.Jobs;
 using ChuckDeviceController.Common.Tasks;
-using ChuckDeviceController.Data.Contexts;
 using ChuckDeviceController.Data.Entities;
+using ChuckDeviceController.Data.Repositories.Dapper;
 using ChuckDeviceController.Extensions;
 using ChuckDeviceController.Geometry.Extensions;
 using ChuckDeviceController.Geometry.Models.Abstractions;
@@ -36,7 +35,7 @@ public class SmartRaidInstanceController : IJobController
     #region Variables
 
     private readonly ILogger<SmartRaidInstanceController> _logger;
-    private readonly IDbContextFactory<MapDbContext> _factory;
+    private readonly IDapperUnitOfWork _uow;
     private readonly System.Timers.Timer _timer;
 
     //private readonly object _smartRaidLock = new();
@@ -71,7 +70,7 @@ public class SmartRaidInstanceController : IJobController
     #region Constructor
 
     public SmartRaidInstanceController(
-        IDbContextFactory<MapDbContext> factory,
+        IDapperUnitOfWork uow,
         Instance instance,
         IReadOnlyList<IMultiPolygon> multiPolygons)
     {
@@ -82,7 +81,7 @@ public class SmartRaidInstanceController : IJobController
         GroupName = instance.Data?.AccountGroup ?? Strings.DefaultAccountGroup;
         IsEvent = instance.Data?.IsEvent ?? Strings.DefaultIsEvent;
 
-        _factory = factory;
+        _uow = uow;
         _logger = new Logger<SmartRaidInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
         _smartRaidGyms = new ConcurrentDictionary<string, Gym>(DefaultConcurrencyLevel, DefaultCapacity);
         _smartRaidGymsInPoint = new ConcurrentDictionary<ICoordinate, List<string>>(DefaultConcurrencyLevel, DefaultCapacity);
@@ -402,17 +401,15 @@ public class SmartRaidInstanceController : IJobController
 
     #region Database Helpers
 
-    private async Task<List<Gym>> GetGymsAsync(List<string>? ids = null)
+    private async Task<IEnumerable<Gym>> GetGymsAsync(List<string>? ids = null)
     {
-        using var context = _factory.CreateDbContext();
+        var allGyms = await _uow.Gyms.FindAllAsync();
         if (!(ids?.Any() ?? false))
         {
-            var allGyms = context.Gyms.ToList();
-            return await Task.FromResult(allGyms);
+            return allGyms;
         }
 
-        var gyms = context.Gyms.Where(gym => ids!.Contains(gym.Id))
-                               .ToList();
+        var gyms = allGyms.Where(gym => ids.Contains(gym.Id));
         return gyms;
     }
 

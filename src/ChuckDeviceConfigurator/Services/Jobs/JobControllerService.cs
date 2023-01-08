@@ -20,6 +20,7 @@ using ChuckDeviceController.Data.Contexts;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Extensions;
 using ChuckDeviceController.Data.Repositories;
+using ChuckDeviceController.Data.Repositories.Dapper;
 using ChuckDeviceController.Extensions;
 using ChuckDeviceController.Geometry.Models.Abstractions;
 using ChuckDeviceController.JobControllers;
@@ -39,6 +40,7 @@ public class JobControllerService : IJobControllerService
 
     private static readonly ILogger<IJobControllerService> _logger =
         GenericLoggerFactory.CreateLogger<IJobControllerService>();
+    private readonly IDapperUnitOfWork _uow;
     private readonly IDbContextFactory<ControllerDbContext> _deviceFactory;
     private readonly IDbContextFactory<MapDbContext> _mapFactory;
     private readonly ITimeZoneService _timeZoneService;
@@ -81,6 +83,7 @@ public class JobControllerService : IJobControllerService
     #region Constructor
 
     public JobControllerService(
+        IDapperUnitOfWork uow,
         IDbContextFactory<ControllerDbContext> deviceFactory,
         IDbContextFactory<MapDbContext> mapFactory,
         ITimeZoneService timeZoneService,
@@ -91,6 +94,7 @@ public class JobControllerService : IJobControllerService
         IAssignmentControllerService assignmentService,
         IServiceProvider services)
     {
+        _uow = uow;
         _deviceFactory = deviceFactory;
         _mapFactory = mapFactory;
         _timeZoneService = timeZoneService;
@@ -332,7 +336,7 @@ public class JobControllerService : IJobControllerService
             }
             else if (instance.Type == InstanceType.SmartRaid)
             {
-                jobController = CreateSmartRaidJobController(_mapFactory, instance, multiPolygons);
+                jobController = CreateSmartRaidJobController(_uow, instance, multiPolygons);
             }
         }
 
@@ -677,11 +681,12 @@ public class JobControllerService : IJobControllerService
 
     public void AddDevice(Device device)
     {
-        if (!_devices.TryAdd(device.Uuid, device))
-        {
-            // Failed to add device, might already exist
-            _logger.LogError($"[{device.Uuid}] Failed to add device, might already exist");
-        }
+        _devices.AddOrUpdate(device.Uuid, device, (key, oldValue) => device);
+        //if (!_devices.TryAdd(device.Uuid, device))
+        //{
+        //    // Failed to add device, might already exist
+        //    _logger.LogError($"[{device.Uuid}] Failed to add device, might already exist");
+        //}
 
         _assignmentService.Reload();
     }
@@ -833,7 +838,7 @@ public class JobControllerService : IJobControllerService
         return jobController;
     }
 
-    private static IJobController CreateSmartRaidJobController(IDbContextFactory<MapDbContext> factory, Instance instance, IReadOnlyList<IMultiPolygon> multiPolygons)
+    private static IJobController CreateSmartRaidJobController(IDapperUnitOfWork factory, Instance instance, IReadOnlyList<IMultiPolygon> multiPolygons)
     {
         var jobController = new SmartRaidInstanceController(
             factory,
