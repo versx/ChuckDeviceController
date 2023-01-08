@@ -29,7 +29,7 @@ internal class RepositoryTests
         //EntityDataRepository.SetTypeMap<Geofence>();
         //EntityDataRepository.SetTypeMap<Instance>();
         //EntityDataRepository.SetTypeMap<IvList>();
-        EntityDataRepository.SetTypeMap<Webhook>();
+        //EntityDataRepository.SetTypeMap<Webhook>();
 
         EntityDataRepository.SetTypeMap<Cell>();
         EntityDataRepository.SetTypeMap<Pokestop>();
@@ -45,28 +45,8 @@ internal class RepositoryTests
         SqlMapper.AddTypeHandler(new JsonTypeHandler<WebhookData>());
     }
 
-    //[Test]
-    //public async Task DapperExtensionsTests()
-    //{
-    //    var mapper = new AutoClassMapper<Device>();
-    //    var identifiers = mapper.GetIdentifiers();
-    //    var properties = mapper.Properties.ToList();
-    //    var references = mapper.References.ToList();
-    //    var tableName = mapper.TableName;
-
-    //    using var connection = new MySqlConnection(ConnectionString);
-    //    await connection.OpenAsync();
-
-    //    //var device = await connection.GetAsync<Device>("atv08");
-    //    var devices = await connection.GetListAutoMapAsync<Device>();
-
-    //    var instance = await connection.GetAsync<Instance>("0Findy");
-
-    //    Assert.Pass();
-    //}
-
     [Test]
-    public async Task DapperRepositoriesTests()
+    public async Task DapperExtensionsRepositoryTests()
     {
         MicroOrmConfig.SqlProvider = SqlProvider.MySQL;
         MicroOrmConfig.AllowKeyAsIdentity = true;
@@ -74,19 +54,61 @@ internal class RepositoryTests
 
         var factory = new MySqlConnectionFactory(ConnectionString);
 
-        //var deviceRepository = new BaseEntityRepository<Device>(factory);
-        //var device = await deviceRepository.FindByIdAsync("atv08");
-        //var devices = await deviceRepository.FindAllAsync();
+        var deviceRepository = new BaseEntityRepository<Device>(factory);
+        var device = await deviceRepository.FindByIdAsync("atv08");
+        var devices = await deviceRepository.FindAllAsync();
 
-        //var instanceRepository = new BaseEntityRepository<Instance>(factory);
-        //var instance = await instanceRepository.FindByIdAsync("0Findy");
+        var instanceRepository = new BaseEntityRepository<Instance>(factory);
+        var instance = await instanceRepository.FindByIdAsync("0Findy");
 
         var webhookRepository = new BaseEntityRepository<Webhook>(factory);
         //var webhook = await webhookRepository.FindAsync(x => x.Data != null);
         var webhook = await webhookRepository.FindByIdAsync("TestTest");
 
         var ivListRepository = new BaseEntityRepository<IvList>(factory);
-        var ivList = await ivListRepository.FindAsync(x => x.PokemonIds.Any());
+        //var ivList = await ivListRepository.FindAsync(x => x.PokemonIds.Count > 0);
+        var ivList = await ivListRepository.FindAsync(x => x.PokemonIds != null);
+
+        Assert.Pass();
+    }
+
+    [Test]
+    public async Task GenericDapperRepositoryTests()
+    {
+        EntityDataRepository.SetTypeMap<Account>();
+        EntityDataRepository.SetTypeMap<ApiKey>();
+        EntityDataRepository.SetTypeMap<Assignment>();
+        EntityDataRepository.SetTypeMap<AssignmentGroup>();
+        EntityDataRepository.SetTypeMap<Device>();
+        EntityDataRepository.SetTypeMap<DeviceGroup>();
+        EntityDataRepository.SetTypeMap<Geofence>();
+        EntityDataRepository.SetTypeMap<Instance>();
+        EntityDataRepository.SetTypeMap<IvList>();
+        EntityDataRepository.SetTypeMap<Webhook>();
+
+        var factory = new MySqlConnectionFactory(ConnectionString);
+
+        var deviceRepository = new DeviceRepository(factory);
+        var device = await deviceRepository.FindAsync("atv08");
+        var devices = await deviceRepository.FindAllAsync();
+
+        var instanceRepository = new InstanceRepository(factory);
+        var instance = await instanceRepository.FindAsync("0Findy");
+
+        var webhookRepository = new WebhookRepository(factory);
+        //var webhook = await webhookRepository.FindAsync(x => x.Data != null);
+        var webhook = await webhookRepository.FindAsync("TestTest");
+
+        var ivListRepository = new IvListRepository(factory);
+        var ivList = await ivListRepository.FindAsync(x => x.PokemonIds.Count > 0);
+        var anyIvList = await ivListRepository.FindAsync(x => x.PokemonIds.Any());
+        var notAnyIvList = await ivListRepository.FindAsync(x => !x.PokemonIds.Any());
+        var hasCountIvList = await ivListRepository.FindAsync(x => x.PokemonIds.Count() > 0);
+        var noCountIvList = await ivListRepository.FindAsync(x => x.PokemonIds.Count() == 0);
+
+        var accountRepository = new AccountRepository(factory);
+        var cleanAccounts = await accountRepository.FindAsync(x => string.IsNullOrEmpty(x.Failed));
+        var failedAccounts = await accountRepository.FindAsync(x => !string.IsNullOrEmpty(x.Failed));
 
         Assert.Pass();
     }
@@ -97,7 +119,7 @@ internal class RepositoryTests
     public async Task TestSelectAccounts()
     {
         var factory = new MySqlConnectionFactory(ConnectionString);
-        var uow = new DapperUnitOfWork(factory, ConnectionString);
+        var uow = new DapperUnitOfWork(factory);
         var accounts = await uow.Accounts.FindAsync(x => x.Failed == null && x.FirstWarningTimestamp == null && x.Level > 30);
 
         Assert.Pass();
@@ -107,7 +129,7 @@ internal class RepositoryTests
     public async Task TestSelectApiKeys()
     {
         var factory = new MySqlConnectionFactory(ConnectionString);
-        var uow = new DapperUnitOfWork(factory, ConnectionString);
+        var uow = new DapperUnitOfWork(factory);
         var apiKeys = await uow.ApiKeys.FindAsync(x => x.Scope > 0);
 
         Assert.Pass();
@@ -117,7 +139,7 @@ internal class RepositoryTests
     public async Task TestSelectAssignments()
     {
         var factory = new MySqlConnectionFactory(ConnectionString);
-        var uow = new DapperUnitOfWork(factory, ConnectionString);
+        var uow = new DapperUnitOfWork(factory);
         var assignments = await uow.Assignments.FindAsync(x => x.Time > 0);
 
         Assert.Pass();
@@ -127,7 +149,7 @@ internal class RepositoryTests
     public async Task TestSelectAssignmentGroups()
     {
         var factory = new MySqlConnectionFactory(ConnectionString);
-        var uow = new DapperUnitOfWork(factory, ConnectionString);
+        var uow = new DapperUnitOfWork(factory);
         var assignmentGroups = await uow.AssignmentGroups.FindAsync(x => x.Enabled);
 
         Assert.Pass();
@@ -137,7 +159,7 @@ internal class RepositoryTests
     public async Task TestSelectDevices()
     {
         var factory = new MySqlConnectionFactory(ConnectionString);
-        var uow = new DapperUnitOfWork(factory, ConnectionString);
+        var uow = new DapperUnitOfWork(factory);
         var devices = await uow.Devices.FindAsync(x => x.InstanceName != null);
 
         Assert.Pass();
@@ -147,7 +169,7 @@ internal class RepositoryTests
     public async Task TestSelectDeviceGroups()
     {
         var factory = new MySqlConnectionFactory(ConnectionString);
-        var uow = new DapperUnitOfWork(factory, ConnectionString);
+        var uow = new DapperUnitOfWork(factory);
         var deviceGroups = await uow.DeviceGroups.FindAsync(x => x.DeviceUuids.Count > 0);
 
         Assert.Pass();
@@ -157,7 +179,7 @@ internal class RepositoryTests
     public async Task TestSelectGeofences()
     {
         var factory = new MySqlConnectionFactory(ConnectionString);
-        var uow = new DapperUnitOfWork(factory, ConnectionString);
+        var uow = new DapperUnitOfWork(factory);
         var geofences = await uow.Geofences.FindAsync(x => x.Type == GeofenceType.Circle);
 
         Assert.Pass();
@@ -167,7 +189,7 @@ internal class RepositoryTests
     public async Task TestSelectInstances()
     {
         var factory = new MySqlConnectionFactory(ConnectionString);
-        var uow = new DapperUnitOfWork(factory, ConnectionString);
+        var uow = new DapperUnitOfWork(factory);
         var instances = await uow.Instances.FindAsync(x => x.Type == InstanceType.AutoQuest);
 
         Assert.Pass();
@@ -177,7 +199,7 @@ internal class RepositoryTests
     public async Task TestSelectIvLists()
     {
         var factory = new MySqlConnectionFactory(ConnectionString);
-        var uow = new DapperUnitOfWork(factory, ConnectionString);
+        var uow = new DapperUnitOfWork(factory);
         var ivLists = await uow.IvLists.FindAsync(x => x.PokemonIds.Count > 0);
 
         Assert.Pass();
@@ -187,7 +209,7 @@ internal class RepositoryTests
     public async Task TestSelectWebhooks()
     {
         var factory = new MySqlConnectionFactory(ConnectionString);
-        var uow = new DapperUnitOfWork(factory, ConnectionString);
+        var uow = new DapperUnitOfWork(factory);
         //var webhooks = await uow.Webhooks.FindAsync(x => x.Data.PokemonIds.Count > 0);
         var webhooks = await uow.Webhooks.FindAsync(x => x.Data != null);
 
@@ -201,7 +223,8 @@ internal class RepositoryTests
     [Test]
     public async Task TestSelectCell()
     {
-        var cellRepo = new CellRepository("s2cell", ConnectionString);
+        var factory = new MySqlConnectionFactory(ConnectionString);
+        var cellRepo = new CellRepository(factory);
         var cell = await cellRepo.FindAsync(123);
 
         Assert.That(cell, Is.Not.Null);
@@ -210,11 +233,12 @@ internal class RepositoryTests
     [Test]
     public async Task TestInsertCell()
     {
+        var factory = new MySqlConnectionFactory(ConnectionString);
         var now = DateTime.UtcNow.ToTotalSeconds();
         var sw = new Stopwatch();
 
         sw.Start();
-        var repo = new CellRepository("s2cell", ConnectionString);
+        var repo = new CellRepository(factory);
         var affectedRows = await repo.InsertAsync(new Cell
         {
             Id = 123,
@@ -233,8 +257,9 @@ internal class RepositoryTests
     [Test]
     public async Task TestInsertRangeCells()
     {
+        var factory = new MySqlConnectionFactory(ConnectionString);
         var now = DateTime.UtcNow.ToTotalSeconds();
-        var repo = new CellRepository("s2cell", ConnectionString);
+        var repo = new CellRepository(factory);
         var cells = new List<Cell>
         {
             new Cell
@@ -278,11 +303,12 @@ internal class RepositoryTests
     [Test]
     public async Task TestInsertPokestop()
     {
+        var factory = new MySqlConnectionFactory(ConnectionString);
         var now = DateTime.UtcNow.ToTotalSeconds();
         var sw = new Stopwatch();
 
         sw.Start();
-        var stopRepo = new PokestopRepository("pokestop", ConnectionString);
+        var stopRepo = new PokestopRepository(factory);
         var affectedRows = await stopRepo.InsertAsync(new Pokestop
         {
             Id = "123_test",
@@ -310,7 +336,8 @@ internal class RepositoryTests
     [Test]
     public async Task TestUpdateCell()
     {
-        var repo = new CellRepository("s2cell", ConnectionString);
+        var factory = new MySqlConnectionFactory(ConnectionString);
+        var repo = new CellRepository(factory);
         var cell = await repo.FindAsync(123);
         cell.Latitude = 34.04;
         cell.Longitude = -117.04;
@@ -323,10 +350,11 @@ internal class RepositoryTests
     [Test]
     public async Task TestUpdatePokestopWithMappings()
     {
+        var factory = new MySqlConnectionFactory(ConnectionString);
         var now = DateTime.UtcNow.ToTotalSeconds();
         var timeTaken = BenchmarkAction(async () =>
         {
-            var stopRepo = new PokestopRepository("pokestop", ConnectionString);
+            var stopRepo = new PokestopRepository(factory);
             var pokestop = await stopRepo.FindAsync("123_test");
 
             var affectedRows = await stopRepo.UpdateAsync(pokestop, new Dictionary<string, Func<Pokestop, object>>()
@@ -353,10 +381,11 @@ internal class RepositoryTests
     [Test]
     public void TestUpdatePokestopWithAllProperties()
     {
+        var factory = new MySqlConnectionFactory(ConnectionString);
         var now = DateTime.UtcNow.ToTotalSeconds();
         var timeTaken = BenchmarkAction(async () =>
         {
-            var stopRepo = new PokestopRepository("pokestop", ConnectionString);
+            var stopRepo = new PokestopRepository(factory);
             var pokestop = await stopRepo.FindAsync("123_test");
             pokestop.PowerUpLevel = 10;
             pokestop.PowerUpEndTimestamp = now;
@@ -379,7 +408,8 @@ internal class RepositoryTests
     [Test]
     public async Task TestDeletePokestop()
     {
-        var stopRepo = new PokestopRepository("pokestop", ConnectionString);
+        var factory = new MySqlConnectionFactory(ConnectionString);
+        var stopRepo = new PokestopRepository(factory);
         var result = await stopRepo.DeleteAsync("123_test");
 
         Assert.That(result, Is.True);
@@ -388,8 +418,9 @@ internal class RepositoryTests
     [Test]
     public async Task TestDeleteRangeCells()
     {
+        var factory = new MySqlConnectionFactory(ConnectionString);
         var cellIds = new List<ulong> { 123, 1234, 12345, 123456 };
-        var repo = new CellRepository("s2cell", ConnectionString);
+        var repo = new CellRepository(factory);
         var result = await repo.DeleteRangeAsync(cellIds);
         Assert.That(result, Is.True);
     }
@@ -406,21 +437,5 @@ internal class RepositoryTests
         var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, precision);
         Console.WriteLine($"Benchmark took {totalSeconds}s for {action.Method.Name} (Target: {action.Target})");
         return totalSeconds;
-    }
-}
-
-public class CellRepository : DapperGenericRepository<ulong, Cell>
-{
-    public CellRepository(string tableName, string connectionString)
-        : base(tableName, connectionString)
-    {
-    }
-}
-
-public class PokestopRepository : DapperGenericRepository<string, Pokestop>
-{
-    public PokestopRepository(string tableName, string connectionString)
-        : base(tableName, connectionString)
-    {
     }
 }
