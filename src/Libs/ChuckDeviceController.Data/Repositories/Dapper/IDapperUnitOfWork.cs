@@ -28,7 +28,24 @@ public interface IDapperUnitOfWork : IBaseUnitOfWork<MySqlTransaction>
 
     IDapperGenericRepository<string, Webhook> Webhooks { get; }
 
-    // TODO: Map data entities
+
+    IDapperGenericRepository<ulong, Cell> Cells { get; }
+
+    IDapperGenericRepository<string, Gym> Gyms { get; }
+
+    IDapperGenericRepository<ulong, GymDefender> GymDefenders { get; }
+
+    IDapperGenericRepository<string, GymTrainer> GymTrainers { get; }
+
+    IDapperGenericRepository<string, Incident> Incidents { get; }
+
+    IDapperGenericRepository<string, Pokemon> Pokemon { get; }
+
+    IDapperGenericRepository<string, Pokestop> Pokestops { get; }
+
+    IDapperGenericRepository<ulong, Spawnpoint> Spawnpoints { get; }
+
+    IDapperGenericRepository<long, Weather> Weather { get; }
 
     #endregion
 }

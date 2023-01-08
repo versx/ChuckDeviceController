@@ -62,7 +62,6 @@ public class AssignmentControllerService : IAssignmentControllerService
         _assignments = new SafeCollection<Assignment>();
         _timer = new System.Timers.Timer(CheckAssignmentsIntervalS * 1000);
         _timer.Elapsed += async (sender, e) => await CheckAssignmentsAsync();
-        _mapFactory = mapFactory;
         _geofenceService = geofenceService;
     }
 
