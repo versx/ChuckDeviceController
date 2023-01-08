@@ -122,6 +122,7 @@ public class AutoInstanceController : IJobController
         _deviceFactory = deviceFactory;
 
         var (localTime, timeLeft) = GetSecondsUntilMidnight();
+        timeLeft = timeLeft <= 0 ? 1 : timeLeft;
         _timer = new System.Timers.Timer(timeLeft * 1000);
         _timer.Elapsed += async (sender, e) => await ClearQuestsAsync();
         _timer.Start();
@@ -378,7 +379,7 @@ public class AutoInstanceController : IJobController
         var now = localTime.ToTotalSeconds();
         // Timer interval cannot be set to 0, calculate one full day
         // in seconds to use for the next quest clearing interval.
-        _timer.Interval = (timeLeft == 0 ? Strings.OneDayS : timeLeft) * 1000;
+        _timer.Interval = (timeLeft <= 0 ? Strings.OneDayS : timeLeft) * 1000;
         _timer.Start();
 
         if (_allStops.Count == 0)

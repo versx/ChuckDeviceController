@@ -12,7 +12,7 @@
       "commandName": "Project",
       "launchBrowser": true,
       "applicationUrl": "http://localhost:24472",
-      "hotReloadEnabled": true,
+      "hotReloadEnabled": false,
       "hotReloadProfile": "ChuckDeviceConfigurator",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
