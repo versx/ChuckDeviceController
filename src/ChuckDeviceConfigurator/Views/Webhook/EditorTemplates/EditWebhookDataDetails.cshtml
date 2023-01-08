@@ -72,3 +72,49 @@
         </div>
     </div>
 </div>
+
+<script>
+    const types = [
+        'Pokemon',
+        'Pokestops',
+        'Lures',
+        'Invasions',
+        'Quests',
+        'AlternativeQuests',
+        'Gyms',
+        'GymInfo',
+        'GymDefenders',
+        'GymTrainers',
+        'Eggs',
+        'Raids',
+        'Weather',
+        'Accounts',
+    ];
+
+    const typesEl = document.getElementById('Types');
+    typesEl.addEventListener('change', toggleElements);
+
+    const typesSelected = '@Model?.Types.ToString()'.split(', ');
+    for (let i = 0; i < typesEl.options.length; i++) {
+        const selectedValue = typesSelected.indexOf(typesEl.options[i].text);
+        const isSelected = selectedValue >= 0;
+        typesEl.options[i].selected = isSelected;
+    }
+
+    toggleElements();
+
+    function toggleElements() {
+        const selected = Object.values(typesEl.selectedOptions).map(x => x.text);
+        for (const type of types) {
+            const show = selected.length > 0 && selected.includes(type);
+            hideElements(type, show);
+        }
+    }
+
+    function hideElements(className, show) {
+        const elements = document.getElementsByClassName(className);
+        for (const element of elements) {
+            element.style.display = show ? 'block' : 'none';
+        }
+    }
+</script>

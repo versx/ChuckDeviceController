@@ -294,7 +294,9 @@ public class WebhookController : Controller
     /// An <see cref="IEnumerable{SelectListItem}"/> containing the select list for the given
     /// <paramref name="type"/>.
     /// </returns>
-    public static IEnumerable<SelectListItem> GetEnumSelectList(WebhookType? webhookType = null)
+    //public static MultiSelectList GetEnumSelectList(WebhookType? webhookType = null)
+    //public static List<SelectListItem> GetEnumSelectList(WebhookType? webhookType = null)
+    public static MultiSelectList GetEnumSelectList(WebhookType? webhookType = null)
     {
         var webhookTypes = new List<WebhookType>
         {
@@ -343,6 +345,8 @@ public class WebhookController : Controller
             selectList.Add(selectListItem);
         }
 
-        return selectList;
+        var selected = selectList.Where(x => x.Selected).ToList();
+        var multiSelectList = new MultiSelectList(selectList, "Value", "Text", selected);
+        return multiSelectList;
     }
 }
