@@ -114,6 +114,13 @@ public class MySqlQueryTranslator : ExpressionVisitor
                 }
                 break;
 
+            case "Contains":
+                if (ParseContainsExpression(node))
+                {
+                    return node;
+                }
+                break;
+
             case "Count":
                 if (ParseAnyExpression(node, includeOper: false))
                 {
@@ -333,6 +340,22 @@ public class MySqlQueryTranslator : ExpressionVisitor
             {
                 _sb.Append($"JSON_LENGTH({colAttr.Name})");
             }
+            return true;
+        }
+        return false;
+    }
+
+    private bool ParseContainsExpression(MethodCallExpression expression)
+    {
+        var constantExpression = (ConstantExpression)expression.Arguments[0];
+        var memberExpression = (MemberExpression)expression.Object!;
+        var attr = memberExpression.Member.GetCustomAttribute<ColumnAttribute>();
+        if (attr?.Name != null)
+        {
+            var value = constantExpression.Value;
+            //_sb.Append($"{value} IN ({attr.Name})");
+            //_sb.Append($"JSON_CONTAINS(JSON_UNQUOTE({attr.Name}), '\"{value}\"', '$')");
+            _sb.Append($"JSON_CONTAINS({attr.Name}, '\"{value}\"', '$')");
             return true;
         }
         return false;

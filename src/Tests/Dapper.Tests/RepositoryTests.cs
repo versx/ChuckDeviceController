@@ -100,6 +100,7 @@ internal class RepositoryTests
         var webhook = await webhookRepository.FindAsync("TestTest");
 
         var ivListRepository = new IvListRepository(factory);
+        var containsIvList = await ivListRepository.FindAsync(x => x.PokemonIds.Contains("25"));
         var ivList = await ivListRepository.FindAsync(x => x.PokemonIds.Count > 0);
         var anyIvList = await ivListRepository.FindAsync(x => x.PokemonIds.Any());
         var notAnyIvList = await ivListRepository.FindAsync(x => !x.PokemonIds.Any());
