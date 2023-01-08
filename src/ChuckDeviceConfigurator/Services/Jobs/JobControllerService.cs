@@ -303,7 +303,7 @@ public class JobControllerService : IJobControllerService
             {
                 var timeZone = instance.Data?.TimeZone;
                 var timeZoneOffset = ConvertTimeZoneToOffset(timeZone, instance.Data?.EnableDst ?? Strings.DefaultEnableDst);
-                jobController = CreateAutoQuestJobController(_mapFactory, _deviceFactory, instance, multiPolygons, timeZoneOffset);
+                jobController = CreateAutoQuestJobController(_uow, _mapFactory, _deviceFactory, instance, multiPolygons, timeZoneOffset);
                 ((AutoInstanceController)jobController).InstanceComplete += OnAutoInstanceComplete;
             }
             else if (instance.Type == InstanceType.Bootstrap)
@@ -317,7 +317,7 @@ public class JobControllerService : IJobControllerService
             }
             else if (instance.Type == InstanceType.FindTth)
             {
-                jobController = CreateSpawnpointJobController(_mapFactory, instance, multiPolygons, _routeCalculator);
+                jobController = CreateSpawnpointJobController(_uow, instance, multiPolygons, _routeCalculator);
             }
             else if (instance.Type == InstanceType.Leveling)
             {
@@ -332,7 +332,7 @@ public class JobControllerService : IJobControllerService
                     _logger.LogError($"[{instance.Name}] Failed to fetch IV list, skipping controller instantiation...");
                     return;
                 }
-                jobController = CreateIvJobController(_mapFactory, instance, multiPolygons, ivList);
+                jobController = CreateIvJobController(_uow, instance, multiPolygons, ivList);
             }
             else if (instance.Type == InstanceType.SmartRaid)
             {
@@ -903,10 +903,10 @@ public class JobControllerService : IJobControllerService
         return jobController;
     }
 
-    private static IJobController CreateSpawnpointJobController(IDbContextFactory<MapDbContext> mapFactory, Instance instance, IReadOnlyList<IMultiPolygon> multiPolygons, IRouteCalculator routeCalculator)
+    private static IJobController CreateSpawnpointJobController(IDapperUnitOfWork uow, Instance instance, IReadOnlyList<IMultiPolygon> multiPolygons, IRouteCalculator routeCalculator)
     {
         var jobController = new TthFinderInstanceController(
-            mapFactory,
+            uow,
             instance,
             multiPolygons,
             routeCalculator

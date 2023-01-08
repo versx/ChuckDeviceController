@@ -377,6 +377,8 @@ public class InstanceController : Controller
 
             await _jobControllerService.RemoveInstanceAsync(id);
 
+            // TODO: Update devices assigned to instance. Double check constaint is valid
+
             return RedirectToAction(nameof(Index));
         }
         catch

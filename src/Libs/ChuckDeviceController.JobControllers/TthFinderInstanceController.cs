@@ -9,9 +9,9 @@ using Microsoft.Extensions.Logging;
 using ChuckDeviceController.Common;
 using ChuckDeviceController.Common.Jobs;
 using ChuckDeviceController.Common.Tasks;
-using ChuckDeviceController.Data.Contexts;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Extensions;
+using ChuckDeviceController.Data.Repositories.Dapper;
 using ChuckDeviceController.Extensions;
 using ChuckDeviceController.Geometry;
 using ChuckDeviceController.Geometry.Models;
@@ -40,7 +40,7 @@ public class TthFinderInstanceController : IJobController
     #region Variables
 
     private readonly ILogger<TthFinderInstanceController> _logger;
-    private readonly IDbContextFactory<MapDbContext> _factory;
+    private readonly IDapperUnitOfWork _uow;
     private readonly IRouteCalculator _routeCalculator;
     private int _lastIndex = 0;
     private ulong _startTime = 0;
@@ -74,7 +74,7 @@ public class TthFinderInstanceController : IJobController
     #region Constructor
 
     public TthFinderInstanceController(
-        IDbContextFactory<MapDbContext> factory,
+        IDapperUnitOfWork uow,
         Instance instance,
         IReadOnlyList<IMultiPolygon> multiPolygons,
         IRouteCalculator routeCalculator)
@@ -89,11 +89,11 @@ public class TthFinderInstanceController : IJobController
         OptimizeRoute = instance.Data?.OptimizeSpawnpointsRoute ?? Strings.DefaultOptimizeSpawnpointRoute;
 
         _logger = new Logger<TthFinderInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
-        _factory = factory;
+        _uow = uow;
         _routeCalculator = routeCalculator;
         _spawnpoints = new ConcurrentDictionary<ulong, uint?>(DefaultConcurrencyLevel, DefaultCapacity);
 
-        SpawnpointCoordinates = GenerateSpawnpointCoordinates();
+        SpawnpointCoordinates = GenerateSpawnpointCoordinates().Result;
     }
 
     #endregion
@@ -155,15 +155,14 @@ public class TthFinderInstanceController : IJobController
         return await Task.FromResult(status);
     }
 
-    public Task ReloadAsync()
+    public async Task ReloadAsync()
     {
         _logger.LogDebug($"[{Name}] Reloading instance");
 
         _lastIndex = 0;
 
         // Generate spawnpoint coordinates route again
-        SpawnpointCoordinates = GenerateSpawnpointCoordinates();
-        return Task.CompletedTask;
+        SpawnpointCoordinates = await GenerateSpawnpointCoordinates().ConfigureAwait(false);
     }
 
     public Task StopAsync()
@@ -188,13 +187,13 @@ public class TthFinderInstanceController : IJobController
         });
     }
 
-    private IReadOnlyList<ICoordinate> GenerateSpawnpointCoordinates()
+    private async Task<IReadOnlyList<ICoordinate>> GenerateSpawnpointCoordinates()
     {
         var coordinates = new List<ICoordinate>();
         foreach (var multiPolygon in MultiPolygons)
         {
             var bbox = multiPolygon.GetBoundingBox();
-            var spawnpointCoords = GetSpawnpointCoordinates(bbox, OnlyUnknownSpawnpoints);
+            var spawnpointCoords = await GetSpawnpointCoordinates(bbox, OnlyUnknownSpawnpoints).ConfigureAwait(false);
             var polygon = multiPolygon.ToCoordinates();
             // Filter spawnpoint coordinates that are within the geofence
             var coordsInArea = spawnpointCoords
@@ -218,13 +217,13 @@ public class TthFinderInstanceController : IJobController
         return coordinates;
     }
 
-    private List<Coordinate> GetSpawnpointCoordinates(IBoundingBox bbox, bool onlyUnknown)
+    private async Task<List<Coordinate>> GetSpawnpointCoordinates(IBoundingBox bbox, bool onlyUnknown)
     {
-        using var context = _factory.CreateDbContext();
         // Get all spawnpoints within area's bounding box
-        var spawnpoints = context.Spawnpoints
-            .AsEnumerable()
-            .Where(spawn => bbox.IsInBoundingBox(spawn.Latitude, spawn.Longitude));
+        var spawnpoints = await _uow.Spawnpoints.FindAsync(x =>
+            x.Latitude >= bbox.MinimumLatitude && x.Longitude >= bbox.MinimumLongitude &&
+            x.Latitude <= bbox.MaximumLatitude && x.Longitude <= bbox.MaximumLongitude
+        );
         // Get all spawnpoints or only spawnpoints with unknown despawn times if specified
         var list =
         (
