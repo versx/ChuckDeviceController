@@ -321,7 +321,7 @@ public class JobControllerService : IJobControllerService
             }
             else if (instance.Type == InstanceType.Leveling)
             {
-                jobController = CreateLevelingJobController(_deviceFactory, instance, multiPolygons);
+                jobController = CreateLevelingJobController(_uow, instance, multiPolygons);
                 ((LevelingInstanceController)jobController).AccountLevelUp += OnAccountLevelUp;
             }
             else if (instance.Type == InstanceType.PokemonIV)
@@ -893,10 +893,10 @@ public class JobControllerService : IJobControllerService
         return jobController;
     }
 
-    private static IJobController CreateLevelingJobController(IDbContextFactory<ControllerDbContext> deviceFactory, Instance instance, IReadOnlyList<IMultiPolygon> multiPolygons)
+    private static IJobController CreateLevelingJobController(IDapperUnitOfWork factory, Instance instance, IReadOnlyList<IMultiPolygon> multiPolygons)
     {
         var jobController = new LevelingInstanceController(
-            deviceFactory,
+            factory,
             instance,
             multiPolygons
         );

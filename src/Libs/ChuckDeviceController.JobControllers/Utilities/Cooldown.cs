@@ -1,10 +1,8 @@
 ﻿namespace ChuckDeviceController.JobControllers.Utilities;
 
-using Microsoft.EntityFrameworkCore;
-
 using ChuckDeviceController.Data.Abstractions;
-using ChuckDeviceController.Data.Contexts;
 using ChuckDeviceController.Data.Entities;
+using ChuckDeviceController.Data.Repositories.Dapper;
 using ChuckDeviceController.Extensions;
 using ChuckDeviceController.Geometry.Extensions;
 using ChuckDeviceController.Geometry.Models;
@@ -68,9 +66,9 @@ public static class Cooldown
         return new CooldownResult(delay, encounterTime);
     }
 
-    public static async Task SetEncounterAsync(IDbContextFactory<ControllerDbContext> factory, Account? account, ICoordinate location, ulong encounterTime)
+    public static async Task SetEncounterAsync(IDapperUnitOfWork uow, Account? account, ICoordinate location, ulong encounterTime)
     {
-        if (factory == null)
+        if (uow == null)
         {
             Console.WriteLine($"Failed to set account last encounter info, provided database factory was null!");
             return;
@@ -82,19 +80,22 @@ public static class Cooldown
             return;
         }
 
-        using var context = factory.CreateDbContext();
-        context.Attach(account);
-        account.LastEncounterLatitude = location.Latitude;
-        account.LastEncounterLongitude = location.Longitude;
-        account.LastEncounterTime = encounterTime;
-        context.Entry(account).Property(p => p.LastEncounterLatitude).IsModified = true;
-        context.Entry(account).Property(p => p.LastEncounterLongitude).IsModified = true;
-        context.Entry(account).Property(p => p.LastEncounterTime).IsModified = true;
+        var result = await uow.Accounts.UpdateAsync(account, new Dictionary<string, Func<Account, object>>
+        {
+            ["username"] = x => account.Username,
+            ["last_encounter_lat"] = x => location.Latitude,
+            ["last_encounter_lon"] = x => location.Longitude,
+            ["last_encounter_time"] = x => encounterTime,
+        });
 
-        await context.SaveChangesAsync();
+        if (result == 0)
+        {
+            // Failed
+            Console.WriteLine($"Failed to update last encounter information for account '{account.Username}'.");
+        }
     }
 
-    public static async Task SetSpinCountAsync(IDbContextFactory<ControllerDbContext> factory, string accountUsername)
+    public static async Task SetSpinCountAsync(IDapperUnitOfWork uow, string accountUsername)
     {
         if (string.IsNullOrEmpty(accountUsername))
         {
@@ -102,18 +103,23 @@ public static class Cooldown
             return;
         }
 
-        using var context = factory.CreateDbContext();
-        var account = await context.Accounts.FindAsync(accountUsername);
+        var account = await uow.Accounts.FindAsync(accountUsername);
         if (account == null)
         {
             Console.WriteLine($"Failed to increase account spin count, unable to retrieve account");
             return;
         }
 
-        context.Attach(account);
-        account.Spins++;
-        context.Entry(account).Property(p => p.Spins).IsModified = true;
-        await context.SaveChangesAsync();
+        var result = await uow.Accounts.UpdateAsync(account, new Dictionary<string, Func<Account, object>>
+        {
+            ["username"] = x => account.Username,
+            ["spins"] = x => ++account.Spins,
+        });
+
+        if (result == 0)
+        {
+            Console.WriteLine($"Failed to increment spin count for account '{account.Username}'.");
+        }
     }
 }
 

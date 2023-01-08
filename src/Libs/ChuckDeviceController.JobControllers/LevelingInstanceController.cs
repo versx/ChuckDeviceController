@@ -3,7 +3,6 @@
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using POGOProtos.Rpc;
 
@@ -11,8 +10,8 @@ using ChuckDeviceController.Common;
 using ChuckDeviceController.Common.Jobs;
 using ChuckDeviceController.Common.Tasks;
 using ChuckDeviceController.Data.Abstractions;
-using ChuckDeviceController.Data.Contexts;
 using ChuckDeviceController.Data.Entities;
+using ChuckDeviceController.Data.Repositories.Dapper;
 using ChuckDeviceController.Extensions;
 using ChuckDeviceController.Geometry.Extensions;
 using ChuckDeviceController.Geometry.Models;
@@ -92,7 +91,7 @@ public class LevelingInstanceController : IJobController
     };
 
     private readonly ILogger<LevelingInstanceController> _logger;
-    private readonly IDbContextFactory<ControllerDbContext> _deviceFactory;
+    private readonly IDapperUnitOfWork _uow;
     private readonly ConcurrentDictionary<string, PlayerLevelingData> _players = new();
 
     #endregion
@@ -132,7 +131,7 @@ public class LevelingInstanceController : IJobController
     #region Constructor
 
     public LevelingInstanceController(
-        IDbContextFactory<ControllerDbContext> deviceFactory,
+        IDapperUnitOfWork uow,
         Instance instance,
         IReadOnlyList<IMultiPolygon> multiPolygons)
     {
@@ -146,7 +145,7 @@ public class LevelingInstanceController : IJobController
         Radius = instance.Data?.LevelingRadius ?? Strings.DefaultLevelingRadius;
 
         _logger = new Logger<LevelingInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
-        _deviceFactory = deviceFactory;
+        _uow = uow;
         _players = new ConcurrentDictionary<string, PlayerLevelingData>(DefaultConcurrencyLevel, DefaultCapacity);
 
         var startingCoordData = instance.Data?.StartingCoordinate ?? Strings.DefaultStartingCoordinate;
@@ -507,7 +506,7 @@ public class LevelingInstanceController : IJobController
         try
         {
             // TODO: Call SetEncounter event instead of passing around IDbContextFactories
-            await Cooldown.SetEncounterAsync(_deviceFactory, (Account?)account, currentCoord, encounterTime);
+            await Cooldown.SetEncounterAsync(_uow, (Account?)account, currentCoord, encounterTime);
         }
         catch (Exception ex)
         {
