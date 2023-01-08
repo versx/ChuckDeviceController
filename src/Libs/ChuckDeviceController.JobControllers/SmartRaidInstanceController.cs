@@ -205,6 +205,7 @@ public class SmartRaidInstanceController : IJobController
         var allGyms = await GetGymsAsync();
         var options = new RouteGeneratorOptions
         {
+            // TODO: Custom smart raid radius
             RadiusM = 500,
             MaximumPoints = 500,
             MultiPolygons = (List<IMultiPolygon>)MultiPolygons,
@@ -217,7 +218,8 @@ public class SmartRaidInstanceController : IJobController
         var routeCalculator = new RouteCalculator(new List<ICoordinate>(route));
         var optimizedRoute = routeCalculator.CalculateShortestRoute();
 
-        foreach (var coord in route)
+        //foreach (var coord in route)
+        foreach (var coord in optimizedRoute)
         {
             var latlng = S2LatLng.FromDegrees(coord.Latitude, coord.Longitude);
             var cellIds = latlng
