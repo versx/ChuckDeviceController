@@ -272,20 +272,38 @@ public class EntityDataRepository : IEntityDataRepository
     public static void AddTypeMappers()
     {
         SetTypeMap<Account>();
+        SetTypeMap<ApiKey>();
+        SetTypeMap<Assignment>();
+        SetTypeMap<AssignmentGroup>();
         SetTypeMap<Device>();
-        SetTypeMap<Pokestop>();
-        SetTypeMap<Pokemon>();
+        SetTypeMap<DeviceGroup>();
+        SetTypeMap<Geofence>();
+        SetTypeMap<Instance>();
+        SetTypeMap<IvList>();
+        SetTypeMap<Webhook>();
+
+        SetTypeMap<Cell>();
         SetTypeMap<Gym>();
         SetTypeMap<GymDefender>();
         SetTypeMap<GymTrainer>();
         SetTypeMap<Incident>();
-        SetTypeMap<Cell>();
-        SetTypeMap<Weather>();
+        SetTypeMap<Pokestop>();
+        SetTypeMap<Pokemon>();        
         SetTypeMap<Spawnpoint>();
+        SetTypeMap<Weather>();
 
-        SqlMapper.AddTypeHandler(new JsonTypeHandler<List<Dictionary<string, dynamic>>>());
-        SqlMapper.AddTypeHandler(new JsonTypeHandler<Dictionary<string, dynamic>>());
+        SqlMapper.AddTypeHandler(new JsonTypeHandler<List<Dictionary<string, dynamic>>>()); // Quest.Rewards / Quest.Conditions
+        SqlMapper.AddTypeHandler(new JsonTypeHandler<Dictionary<string, dynamic>>()); // Pokemon.Pvp
+
+        SqlMapper.AddTypeHandler(typeof(InstanceType), InstanceTypeTypeHandler.Default);
         SqlMapper.AddTypeHandler(typeof(SeenType), SeenTypeTypeHandler.Default);
+        //SqlMapper.AddTypeHandler(typeof(WebhookTypeTypeHandler), WebhookTypeTypeHandler.Default);
+        SqlMapper.AddTypeHandler(new JsonTypeHandler<List<string>>()); // Instance.Geofences / Webhook.Geofences / IvList.PokemonIds
+        SqlMapper.AddTypeHandler(new JsonTypeHandler<List<uint>>()); // AssignmentGroup.AssignmentIds
+        SqlMapper.AddTypeHandler(new JsonTypeHandler<List<WebhookType>>()); // Webhook.Types
+        SqlMapper.AddTypeHandler(new JsonTypeHandler<GeofenceData>());
+        SqlMapper.AddTypeHandler(new JsonTypeHandler<InstanceData>());
+        SqlMapper.AddTypeHandler(new JsonTypeHandler<WebhookData>());
     }
 
     public static void SetTypeMap<TEntity>() => SetTypeMap(typeof(TEntity));

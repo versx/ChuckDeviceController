@@ -11,7 +11,6 @@ using MicroOrm.Dapper.Repositories.SqlGenerator;
 using MicroOrm.Dapper.Repositories.SqlGenerator.Filters;
 using MySqlConnector;
 
-using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Factories;
 using ChuckDeviceController.Data.Translators;
 
@@ -31,11 +30,6 @@ public abstract class DapperGenericRepository<TKey, TEntity> : IDapperGenericRep
     private const string DeleteQuery = "DELETE FROM {0} WHERE {1}=@{2}";
     private const string DeleteRangeQuery = "DELETE FROM {0} WHERE {1} IN @{2}";
     private const string WhereQuery = " WHERE {0}=@{1}";
-    private static readonly IEnumerable<string> _reservedKeywords = new[]
-    {
-        "group",
-        "key",
-    };
 
     #endregion
 
@@ -43,38 +37,34 @@ public abstract class DapperGenericRepository<TKey, TEntity> : IDapperGenericRep
 
     private static IEnumerable<PropertyInfo> GetProperties => typeof(TEntity).GetProperties();
     private static readonly Func<string, string> ParamTemplateFunc = new(property => $"@{property}");
+    private static readonly IEnumerable<string> _reservedKeywords = new[]
+    {
+        "group",
+        "key",
+    };
 
     private readonly IMySqlConnectionFactory _factory = null!;
     private readonly SqlGenerator<TEntity> _sqlGenerator;
     private readonly MySqlQueryTranslator _translator;
     private readonly string _tableName;
-    private readonly string _connectionString;
 
     #endregion
 
-    #region Constructor
+    #region Constructors
+
+    // TODO: Get table name from entity table attribute
 
     protected DapperGenericRepository(IMySqlConnectionFactory factory)
-        : this(factory.ConnectionString)
-    {
-        _factory = factory;
-    }
-
-    protected DapperGenericRepository(string connectionString)
-        : this(typeof(TEntity).Name.ToLower(), connectionString)
+        : this(nameof(TEntity).ToLower(), factory)
     {
     }
 
-    protected DapperGenericRepository(string tableName, string connectionString)
+    protected DapperGenericRepository(string tableName, IMySqlConnectionFactory factory)
     {
-        //EntityDataRepository.AddTypeMappers();
-        EntityDataRepository.SetTypeMap<Account>();
-        EntityDataRepository.SetTypeMap<Device>();
-        EntityDataRepository.SetTypeMap<Geofence>();
-        EntityDataRepository.SetTypeMap<Instance>();
+        EntityDataRepository.AddTypeMappers();
 
         _tableName = tableName;
-        _connectionString = connectionString;
+        _factory = factory;
         _sqlGenerator = new SqlGenerator<TEntity>(SqlProvider.MySQL, useQuotationMarks: true);
         _translator = new MySqlQueryTranslator(_reservedKeywords);
     }
