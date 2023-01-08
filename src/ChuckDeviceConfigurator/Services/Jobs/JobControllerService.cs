@@ -882,10 +882,10 @@ public class JobControllerService : IJobControllerService
         return jobController;
     }
 
-    private static IJobController CreateIvJobController(IDbContextFactory<MapDbContext> mapFactory, Instance instance, IReadOnlyList<IMultiPolygon> multiPolygons, IvList ivList)
+    private static IJobController CreateIvJobController(IDapperUnitOfWork factory, Instance instance, IReadOnlyList<IMultiPolygon> multiPolygons, IvList ivList)
     {
         var jobController = new IvInstanceController(
-            mapFactory,
+            factory,
             instance,
             multiPolygons,
             ivList.PokemonIds

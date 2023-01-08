@@ -2,16 +2,15 @@
 
 using System.Threading.Tasks;
 
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 using ChuckDeviceController.Collections.Queues;
 using ChuckDeviceController.Common;
 using ChuckDeviceController.Common.Jobs;
 using ChuckDeviceController.Common.Tasks;
-using ChuckDeviceController.Data.Contexts;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Extensions;
+using ChuckDeviceController.Data.Repositories.Dapper;
 using ChuckDeviceController.Extensions;
 using ChuckDeviceController.Geometry;
 using ChuckDeviceController.Geometry.Models.Abstractions;
@@ -19,6 +18,7 @@ using ChuckDeviceController.JobControllers.Models;
 using ChuckDeviceController.JobControllers.Tasks;
 using ChuckDeviceController.JobControllers.Utilities;
 
+// TODO: Refactor PokemonIV job controller logic
 public class IvInstanceController : IJobController, ILureInstanceController, IScanNextInstanceController
 {
     #region Constants
@@ -32,7 +32,7 @@ public class IvInstanceController : IJobController, ILureInstanceController, ISc
     #region Variables
 
     private readonly ILogger<IvInstanceController> _logger;
-    private readonly IDbContextFactory<MapDbContext> _mapFactory;
+    private readonly IDapperUnitOfWork _uow;
     //private readonly PokemonPriorityQueue<Pokemon> _pokemonQueue;
     private readonly SortedPriorityQueue<Pokemon> _pokemonQueue;
     private readonly PokemonPriorityQueue<ScannedPokemon> _scannedPokemon;
@@ -77,7 +77,7 @@ public class IvInstanceController : IJobController, ILureInstanceController, ISc
     #region Constructor
 
     public IvInstanceController(
-        IDbContextFactory<MapDbContext> mapFactory,
+        IDapperUnitOfWork uow,
         Instance instance,
         IReadOnlyList<IMultiPolygon> multiPolygons,
         List<string> pokemonIds)
@@ -93,7 +93,7 @@ public class IvInstanceController : IJobController, ILureInstanceController, ISc
         EnableLureEncounters = instance.Data?.EnableLureEncounters ?? Strings.DefaultEnableLureEncounters;
 
         _logger = new Logger<IvInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
-        _mapFactory = mapFactory;
+        _uow = uow;
         _pokemonQueue = new SortedPriorityQueue<Pokemon>(QueueLimit, new PokemonComparer(PokemonIds));
         _scannedPokemon = new PokemonPriorityQueue<ScannedPokemon>();
         _startDate = DateTime.UtcNow.ToTotalSeconds();
@@ -402,7 +402,8 @@ public class IvInstanceController : IJobController, ILureInstanceController, ISc
             {
                 if (_scannedPokemon.Count == 0)
                 {
-                    Thread.Sleep(5 * 1000);
+                    //Thread.Sleep(5 * 1000);
+                    Task.Delay(TimeSpan.FromSeconds(5)).ConfigureAwait(false);
                     continue;
                 }
 
@@ -423,34 +424,33 @@ public class IvInstanceController : IJobController, ILureInstanceController, ISc
             var success = false;
             var retryCount = 0;
             Pokemon? pokemonReal = null;
-            using (var context = _mapFactory.CreateDbContext())
+            while (!success)
             {
-                while (!success)
+                if (retryCount >= MaximumRetryCount)
                 {
-                    if (retryCount >= MaximumRetryCount)
-                    {
-                        // Max retry count exceeded, skip
-                        break;
-                    }
-                    retryCount++;
-
-                    try
-                    {
-                        if (scannedPokemon != null)
-                        {
-                            pokemonReal = await context.Pokemon.FindAsync(scannedPokemon.Pokemon.Id);
-                            success = true;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError($"Error: {ex}");
-                        Thread.Sleep(1000);
-                        continue;
-                    }
-
-                    Thread.Sleep(1000);
+                    // Max retry count exceeded, skip
+                    break;
                 }
+                retryCount++;
+
+                try
+                {
+                    if (scannedPokemon != null)
+                    {
+                        pokemonReal = await _uow.Pokemon.FindAsync(scannedPokemon.Pokemon.Id);
+                        success = true;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Error: {ex}");
+                    //Thread.Sleep(1000);
+                    await Task.Delay(TimeSpan.FromSeconds(15));
+                    continue;
+                }
+
+                //Thread.Sleep(1000);
+                await Task.Delay(TimeSpan.FromSeconds(15));
             }
 
             if (pokemonReal != null)
@@ -465,7 +465,8 @@ public class IvInstanceController : IJobController, ILureInstanceController, ISc
                 }
             }
 
-            Thread.Sleep(100);
+            //Thread.Sleep(100);
+            await Task.Delay(TimeSpan.FromSeconds(1));
         }
     }
 
