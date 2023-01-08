@@ -3,11 +3,6 @@
 using System.ComponentModel;
 using System.Text.Json.Serialization;
 
-/* TODO: Possibly use the same `OptimizeRoute` property between Dynamic/Bootstrap/Spawnpoint
- * job controllers for ease. Can't think of any conflicts/issues unless someone edits an
- * existing instance the UI will display the previous value instead of using the default,
- * which is fine. :) Perhaps clearing previous InstanceData properties would resolve that.
-*/
 public class InstanceData : Dictionary<string, object?>
 {
     #region Pokemon Circle Instance

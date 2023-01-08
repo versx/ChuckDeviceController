@@ -286,9 +286,6 @@ public class EntityDataRepository : IEntityDataRepository
         SqlMapper.AddTypeHandler(new JsonTypeHandler<List<Dictionary<string, dynamic>>>());
         SqlMapper.AddTypeHandler(new JsonTypeHandler<Dictionary<string, dynamic>>());
         SqlMapper.AddTypeHandler(typeof(SeenType), SeenTypeTypeHandler.Default);
-        //GymDefender.Gender
-        //GymTrainer.Team
-        //Weather.WeatherCondition
     }
 
     public static void SetTypeMap<TEntity>() => SetTypeMap(typeof(TEntity));

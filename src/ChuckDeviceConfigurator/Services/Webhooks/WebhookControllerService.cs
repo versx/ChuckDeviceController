@@ -77,7 +77,7 @@ public class WebhookControllerService : IWebhookControllerService
 	public IReadOnlyList<Webhook> GetByNames(IReadOnlyList<string> names)
 	{
 		var webhooks = names
-			.Select(name => GetByName(name))
+			.Select(GetByName)
 			.ToList();
 		return webhooks;
 	}

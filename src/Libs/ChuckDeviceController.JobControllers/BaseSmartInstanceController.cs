@@ -178,7 +178,7 @@ public abstract class BaseSmartInstanceController : IJobController, ILureInstanc
             if (numLiveDevices == 0 && distanceToNextDevice == 0)
             {
                 // Failed to calculate device spacing, probably no devices
-                _logger.LogError($"[{Name}] [{uuid}] Failed to calculate spacing between devices in order to get next location, skipping device...");
+                _logger.LogError("[{Name}] [{Uuid}] Failed to calculate spacing between devices in order to get next location, skipping device...", Name, uuid);
                 return null!;
             }
 
@@ -245,7 +245,7 @@ public abstract class BaseSmartInstanceController : IJobController, ILureInstanc
             if (numLiveDevices == 0 && distanceToNextDevice == 0)
             {
                 // Failed to calculate device spacing, probably no devices
-                _logger.LogError($"[{Name}] [{uuid}] Failed to calculate spacing between devices in order to get next location, skipping device...");
+                _logger.LogError("[{Name}] [{Uuid}] Failed to calculate spacing between devices in order to get next location, skipping device...", Name, uuid);
                 return null!;
             }
 
@@ -330,7 +330,7 @@ public abstract class BaseSmartInstanceController : IJobController, ILureInstanc
         // Check if device is in live device list, possibly a redunant check, need to confirm.
         if (!liveDevices.Contains(uuid))
         {
-            _logger.LogWarning($"[{Name}] [{uuid}] Device is not in live device list, unable to calculate device spacing for job controller instance.");
+            _logger.LogWarning("[{Name}] [{Uuid}] Device is not in live device list, unable to calculate device spacing for job controller instance.", Name, uuid);
             return (0, 0);
         }
 

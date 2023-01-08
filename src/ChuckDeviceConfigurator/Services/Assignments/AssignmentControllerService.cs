@@ -174,7 +174,7 @@ public class AssignmentControllerService : IAssignmentControllerService
         var assignments = assignmentIds
             .Select(id => _assignments.FirstOrDefault(x => x.Id == id))
             .Where(assignment => assignment != null)
-            .Where(assignment => assignment.Enabled)
+            .Where(assignment => assignment?.Enabled ?? false)
             .ToList();
 
         using var context = _controllerFactory.CreateDbContext();
