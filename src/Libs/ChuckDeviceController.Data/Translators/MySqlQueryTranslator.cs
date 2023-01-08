@@ -55,7 +55,7 @@ public class MySqlQueryTranslator : ExpressionVisitor
 
     #endregion
 
-    #region Overrides
+    #region Override Methods
 
     protected override Expression VisitMethodCall(MethodCallExpression node)
     {
@@ -108,17 +108,31 @@ public class MySqlQueryTranslator : ExpressionVisitor
                 break;
 
             case "Any":
-                //if (ParseAnyExpression(node))
-                //{
-                //    return Visit(node.Arguments[0]);
-                //}
+                if (ParseAnyExpression(node, includeOper: true))
+                {
+                    return node;
+                }
                 break;
 
-            case "IsNullOrEmpty" or "IsNullOrWhitespace":
-                //if (ParseEmptyStringExpression(node))
-                //{
-                //    return Visit(node.Arguments[0]);
-                //}
+            case "Count":
+                if (ParseAnyExpression(node, includeOper: false))
+                {
+                    return node;
+                }
+                break;
+
+            case "IsNullOrEmpty":
+                if (ParseNullOrEmptyStringExpression(node))
+                {
+                    return node;
+                }
+                break;
+
+            case "IsNullOrWhitespace":
+                if (ParseNullOrWhitespaceStringExpression(node))
+                {
+                    return node;
+                }
                 break;
         }
 
@@ -260,12 +274,13 @@ public class MySqlQueryTranslator : ExpressionVisitor
     {
         if (node.Expression != null)
         {
-            var attr = node.Member.GetCustomAttribute<ColumnAttribute>();
-            if (attr?.Name != null)
+            switch (node.Expression.NodeType)
+            //switch (node.NodeType)
             {
-                switch (node.Expression.NodeType)
-                {
-                    case ExpressionType.Parameter:
+                case ExpressionType.Parameter:
+                    var attr = node.Member.GetCustomAttribute<ColumnAttribute>();
+                    if (attr?.Name != null)
+                    {
                         // Wrap column name in backticks if it is a reserved MySQL keyword
                         if (_reservedKeywords?.Contains(attr.Name) ?? false)
                         {
@@ -275,14 +290,25 @@ public class MySqlQueryTranslator : ExpressionVisitor
                         {
                             _sb.Append(attr.Name);
                         }
-                        return node;
+                    }
+                    return node;
 
-                    case ExpressionType.MemberAccess:
-                        //var expression = (MemberExpression)node.Expression;
-                        //_sb.Append($"JSON_LENGTH(JSON_EXTRACT({attr.Name}, \"$\"))");
-                        _sb.Append($"JSON_LENGTH({attr.Name})");
-                        return node;
-                }
+                case ExpressionType.MemberAccess:
+                    switch (node.Member.Name)
+                    {
+                        case "Count":
+                        case "Length":
+                            // Inner expression (node.Member = Count, node.Expression.Memeber = pokemonIds)
+                            var expression = (MemberExpression)node.Expression;
+                            var colAttr = expression.Member.GetCustomAttribute<ColumnAttribute>();
+                            if (colAttr?.Name != null)
+                            {
+                                //_sb.Append($"JSON_LENGTH(JSON_EXTRACT({attr.Name}, \"$\"))");
+                                _sb.Append($"JSON_LENGTH({colAttr.Name})");
+                            }
+                            break;
+                    }
+                    return node;
             }
         }
 
@@ -293,26 +319,48 @@ public class MySqlQueryTranslator : ExpressionVisitor
 
     #region Private Methods
 
-    //private bool ParseAnyExpression(MethodCallExpression expression)
-    //{
-    //    var propertyExpression = (MemberExpression)expression.Arguments[0];
-    //    var lambdaExpression = (ParameterExpression)propertyExpression.Expression;
-    //    lambdaExpression = (ParameterExpression)Evaluator.PartialEval(lambdaExpression);
+    private bool ParseAnyExpression(MethodCallExpression expression, bool includeOper = true)
+    {
+        var memberExpression = (MemberExpression)expression.Arguments[0];
+        var colAttr = memberExpression.Member.GetCustomAttribute<ColumnAttribute>();
+        if (colAttr?.Name != null)
+        {
+            if (includeOper)
+            {
+                _sb.Append($"JSON_LENGTH({colAttr.Name}) > 0");
+            }
+            else
+            {
+                _sb.Append($"JSON_LENGTH({colAttr.Name})");
+            }
+            return true;
+        }
+        return false;
+    }
 
-    //    //if (lambdaExpression.Body is MemberExpression body)
-    //    //{
-    //    //    return true;
-    //    //}
+    private bool ParseNullOrEmptyStringExpression(MethodCallExpression expression)
+    {
+        var memberExpression = (MemberExpression)expression.Arguments[0];
+        var colAttr = memberExpression.Member.GetCustomAttribute<ColumnAttribute>();
+        if (colAttr?.Name != null)
+        {
+            _sb.Append($"{colAttr.Name} IS NULL OR {colAttr.Name} = ''");
+            return true;
+        }
+        return false;
+    }
 
-    //    //return false;
-    //    return true;
-
-    //    var type = expression.Arguments[0].GetType();
-    //    var p0 = Expression.Parameter(type);
-    //    var result = Expression.Lambda(Expression.Call(expression.Method, p0),
-    //          new ParameterExpression[] { p0 });
-    //    return result;
-    //}
+    private bool ParseNullOrWhitespaceStringExpression(MethodCallExpression expression)
+    {
+        var memberExpression = (MemberExpression)expression.Arguments[0];
+        var colAttr = memberExpression.Member.GetCustomAttribute<ColumnAttribute>();
+        if (colAttr?.Name != null)
+        {
+            _sb.Append($"{colAttr.Name} IS NULL OR {colAttr.Name} = '' OR {colAttr.Name} = ' '");
+            return true;
+        }
+        return false;
+    }
 
     private bool ParseOrderByExpression(MethodCallExpression expression, string order)
     {
@@ -426,31 +474,31 @@ public static class Evaluator
             return Visit(exp);
         }
 
-        public override Expression Visit(Expression? exp)
+        public override Expression Visit(Expression? node)
         {
-            if (exp == null)
+            if (node == null)
             {
                 return null!;
             }
 
-            if (_candidates.Contains(exp))
+            if (_candidates.Contains(node))
             {
-                return Evaluate(exp);
+                return Evaluate(node);
             }
 
-            return base.Visit(exp);
+            return base.Visit(node);
         }
 
-        private static Expression Evaluate(Expression e)
+        private static Expression Evaluate(Expression node)
         {
-            if (e.NodeType == ExpressionType.Constant)
+            if (node.NodeType == ExpressionType.Constant)
             {
-                return e;
+                return node;
             }
 
-            var lambda = Expression.Lambda(e);
+            var lambda = Expression.Lambda(node);
             var fn = lambda.Compile();
-            return Expression.Constant(fn.DynamicInvoke(null), e.Type);
+            return Expression.Constant(fn.DynamicInvoke(null), node.Type);
         }
     }
 
@@ -480,26 +528,29 @@ public static class Evaluator
 
         public override Expression Visit(Expression? expression)
         {
-            if (expression != null)
+            if (expression == null)
             {
-                var saveCannotBeEvaluated = _cannotBeEvaluated;
-                _cannotBeEvaluated = false;
-
-                base.Visit(expression);
-
-                if (!_cannotBeEvaluated)
-                {
-                    if (_fnCanBeEvaluated(expression))
-                    {
-                        _candidates.Add(expression);
-                    }
-                    else
-                    {
-                        _cannotBeEvaluated = true;
-                    }
-                }
-                _cannotBeEvaluated |= saveCannotBeEvaluated;
+                return expression!;
             }
+
+            var saveCannotBeEvaluated = _cannotBeEvaluated;
+            _cannotBeEvaluated = false;
+
+            base.Visit(expression);
+
+            if (!_cannotBeEvaluated)
+            {
+                if (_fnCanBeEvaluated(expression))
+                {
+                    _candidates.Add(expression);
+                }
+                else
+                {
+                    _cannotBeEvaluated = true;
+                }
+            }
+            _cannotBeEvaluated |= saveCannotBeEvaluated;
+
             return expression!;
         }
     }
