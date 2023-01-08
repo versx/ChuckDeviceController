@@ -2,9 +2,15 @@
 
 using System.Diagnostics;
 
+using MicroOrm.Dapper.Repositories.Config;
+using MicroOrm.Dapper.Repositories.SqlGenerator;
+
+using ChuckDeviceController.Data.Common;
 using ChuckDeviceController.Data.Entities;
+using ChuckDeviceController.Data.Factories;
 using ChuckDeviceController.Data.Repositories;
 using ChuckDeviceController.Data.Repositories.Dapper;
+using ChuckDeviceController.Data.TypeHandlers;
 using ChuckDeviceController.Extensions;
 
 internal class RepositoryTests
@@ -14,9 +20,183 @@ internal class RepositoryTests
     [SetUp]
     public void Setup()
     {
+        //EntityDataRepository.SetTypeMap<Account>();
+        //EntityDataRepository.SetTypeMap<ApiKey>();
+        //EntityDataRepository.SetTypeMap<Assignment>();
+        //EntityDataRepository.SetTypeMap<AssignmentGroup>();
+        //EntityDataRepository.SetTypeMap<Device>();
+        //EntityDataRepository.SetTypeMap<DeviceGroup>();
+        //EntityDataRepository.SetTypeMap<Geofence>();
+        //EntityDataRepository.SetTypeMap<Instance>();
+        //EntityDataRepository.SetTypeMap<IvList>();
+        EntityDataRepository.SetTypeMap<Webhook>();
+
         EntityDataRepository.SetTypeMap<Cell>();
         EntityDataRepository.SetTypeMap<Pokestop>();
+
+        ////EntityDataRepository.AddTypeMappers();
+        SqlMapper.AddTypeHandler(typeof(InstanceTypeTypeHandler), InstanceTypeTypeHandler.Default);
+        //SqlMapper.AddTypeHandler(typeof(WebhookTypeTypeHandler), WebhookTypeTypeHandler.Default);
+        SqlMapper.AddTypeHandler(new JsonTypeHandler<List<string>>()); // Instance.Geofences / Webhook.Geofences / IvList.PokemonIds
+        SqlMapper.AddTypeHandler(new JsonTypeHandler<List<uint>>()); // AssignmentGroup.AssignmentIds
+        SqlMapper.AddTypeHandler(new JsonTypeHandler<List<WebhookType>>()); // Webhook.Types
+        SqlMapper.AddTypeHandler(new JsonTypeHandler<GeofenceData>());
+        SqlMapper.AddTypeHandler(new JsonTypeHandler<InstanceData>());
+        SqlMapper.AddTypeHandler(new JsonTypeHandler<WebhookData>());
     }
+
+    //[Test]
+    //public async Task DapperExtensionsTests()
+    //{
+    //    var mapper = new AutoClassMapper<Device>();
+    //    var identifiers = mapper.GetIdentifiers();
+    //    var properties = mapper.Properties.ToList();
+    //    var references = mapper.References.ToList();
+    //    var tableName = mapper.TableName;
+
+    //    using var connection = new MySqlConnection(ConnectionString);
+    //    await connection.OpenAsync();
+
+    //    //var device = await connection.GetAsync<Device>("atv08");
+    //    var devices = await connection.GetListAutoMapAsync<Device>();
+
+    //    var instance = await connection.GetAsync<Instance>("0Findy");
+
+    //    Assert.Pass();
+    //}
+
+    [Test]
+    public async Task DapperRepositoriesTests()
+    {
+        MicroOrmConfig.SqlProvider = SqlProvider.MySQL;
+        MicroOrmConfig.AllowKeyAsIdentity = true;
+        MicroOrmConfig.UseQuotationMarks = true;
+
+        var factory = new MySqlConnectionFactory(ConnectionString);
+
+        //var deviceRepository = new BaseEntityRepository<Device>(factory);
+        //var device = await deviceRepository.FindByIdAsync("atv08");
+        //var devices = await deviceRepository.FindAllAsync();
+
+        //var instanceRepository = new BaseEntityRepository<Instance>(factory);
+        //var instance = await instanceRepository.FindByIdAsync("0Findy");
+
+        var webhookRepository = new BaseEntityRepository<Webhook>(factory);
+        //var webhook = await webhookRepository.FindAsync(x => x.Data != null);
+        var webhook = await webhookRepository.FindByIdAsync("TestTest");
+
+        var ivListRepository = new BaseEntityRepository<IvList>(factory);
+        var ivList = await ivListRepository.FindAsync(x => x.PokemonIds.Any());
+
+        Assert.Pass();
+    }
+
+    #region Controller Entity Tests
+
+    [Test]
+    public async Task TestSelectAccounts()
+    {
+        var factory = new MySqlConnectionFactory(ConnectionString);
+        var uow = new DapperUnitOfWork(factory, ConnectionString);
+        var accounts = await uow.Accounts.FindAsync(x => x.Failed == null && x.FirstWarningTimestamp == null && x.Level > 30);
+
+        Assert.Pass();
+    }
+
+    [Test]
+    public async Task TestSelectApiKeys()
+    {
+        var factory = new MySqlConnectionFactory(ConnectionString);
+        var uow = new DapperUnitOfWork(factory, ConnectionString);
+        var apiKeys = await uow.ApiKeys.FindAsync(x => x.Scope > 0);
+
+        Assert.Pass();
+    }
+
+    [Test]
+    public async Task TestSelectAssignments()
+    {
+        var factory = new MySqlConnectionFactory(ConnectionString);
+        var uow = new DapperUnitOfWork(factory, ConnectionString);
+        var assignments = await uow.Assignments.FindAsync(x => x.Time > 0);
+
+        Assert.Pass();
+    }
+
+    [Test]
+    public async Task TestSelectAssignmentGroups()
+    {
+        var factory = new MySqlConnectionFactory(ConnectionString);
+        var uow = new DapperUnitOfWork(factory, ConnectionString);
+        var assignmentGroups = await uow.AssignmentGroups.FindAsync(x => x.Enabled);
+
+        Assert.Pass();
+    }
+
+    [Test]
+    public async Task TestSelectDevices()
+    {
+        var factory = new MySqlConnectionFactory(ConnectionString);
+        var uow = new DapperUnitOfWork(factory, ConnectionString);
+        var devices = await uow.Devices.FindAsync(x => x.InstanceName != null);
+
+        Assert.Pass();
+    }
+
+    [Test]
+    public async Task TestSelectDeviceGroups()
+    {
+        var factory = new MySqlConnectionFactory(ConnectionString);
+        var uow = new DapperUnitOfWork(factory, ConnectionString);
+        var deviceGroups = await uow.DeviceGroups.FindAsync(x => x.DeviceUuids.Count > 0);
+
+        Assert.Pass();
+    }
+
+    [Test]
+    public async Task TestSelectGeofences()
+    {
+        var factory = new MySqlConnectionFactory(ConnectionString);
+        var uow = new DapperUnitOfWork(factory, ConnectionString);
+        var geofences = await uow.Geofences.FindAsync(x => x.Type == GeofenceType.Circle);
+
+        Assert.Pass();
+    }
+
+    [Test]
+    public async Task TestSelectInstances()
+    {
+        var factory = new MySqlConnectionFactory(ConnectionString);
+        var uow = new DapperUnitOfWork(factory, ConnectionString);
+        var instances = await uow.Instances.FindAsync(x => x.Type == InstanceType.AutoQuest);
+
+        Assert.Pass();
+    }
+
+    [Test]
+    public async Task TestSelectIvLists()
+    {
+        var factory = new MySqlConnectionFactory(ConnectionString);
+        var uow = new DapperUnitOfWork(factory, ConnectionString);
+        var ivLists = await uow.IvLists.FindAsync(x => x.PokemonIds.Count > 0);
+
+        Assert.Pass();
+    }
+
+    [Test]
+    public async Task TestSelectWebhooks()
+    {
+        var factory = new MySqlConnectionFactory(ConnectionString);
+        var uow = new DapperUnitOfWork(factory, ConnectionString);
+        //var webhooks = await uow.Webhooks.FindAsync(x => x.Data.PokemonIds.Count > 0);
+        var webhooks = await uow.Webhooks.FindAsync(x => x.Data != null);
+
+        Assert.Pass();
+    }
+
+    #endregion
+
+    #region Map Entity Tests
 
     [Test]
     public async Task TestSelectCell()
@@ -213,6 +393,8 @@ internal class RepositoryTests
         var result = await repo.DeleteRangeAsync(cellIds);
         Assert.That(result, Is.True);
     }
+
+    #endregion
 
     private static double BenchmarkAction(Action action, ushort precision = 4)
     {

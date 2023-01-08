@@ -13,7 +13,7 @@
   <ItemGroup>
     <PackageReference Include="Dapper" Version="2.0.123" />
     <PackageReference Include="EntityFrameworkCore.Triggered" Version="3.2.2" />
-    <PackageReference Include="MicroOrm.Dapper.Repositories" Version="1.24.0" />
+    <PackageReference Include="MicroOrm.Dapper.Repositories" Version="1.24.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.1">
       <PrivateAssets>all</PrivateAssets>
