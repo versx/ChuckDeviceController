@@ -25,7 +25,7 @@ public struct JumpyCoord
     public ushort SpawnSeconds { get; set; }
 }
 
-[GeofenceType(GeofenceType.Geofence)]
+[GeofenceType(nameof(GeofenceType.Geofence))]
 public class JumpyJobController : IJobController, IJobControllerCoordinates, IScanNextInstanceController
 {
     private const ushort SleepTimeAutoPokemon = 10;
@@ -112,7 +112,7 @@ public string Name { get; }
         {
             var coord = ScanNextCoordinates.Dequeue();
             var scanNextTask = CreateTask(coord);
-            _logger.LogDebug($"[{Name}] [{options.Uuid}] Executing ScanNext API job at '{coord}'");
+            _logger.LogDebug("[{Name}] [{Uuid}] Executing ScanNext API job at '{Coord}'", Name, options.Uuid, coord);
             return await Task.FromResult(scanNextTask);
         }
 
@@ -232,8 +232,8 @@ public string Name { get; }
                 count++;
             }
 
-            _logger.LogDebug($"Got {count:N0} spawnpoints in min/max rectangle");
-            _logger.LogDebug($"Got {tmpCoords.Count:N0} spawnpoints in geofence(s)");
+            _logger.LogDebug("Got {Count:N0} spawnpoints in min/max rectangle", count);
+            _logger.LogDebug("Got {Count:N0} spawnpoints in geofence(s)", tmpCoords.Count);
 
             // Sort the array, so 0-3600 sec in order
             _pokemonCoords = tmpCoords;
@@ -303,7 +303,7 @@ public string Name { get; }
 
         var spawnSeconds = nextCoord.SpawnSeconds;
         var (minTime, maxTime) = spawnSeconds.GetOffsetsForSpawnTimer();
-        _logger.LogDebug($"minTime={minTime} & curTime={curTime} & maxTime={maxTime}");
+        _logger.LogDebug("minTime={MinTime} & curTime={CurTime} & maxTime={MaxTime}", minTime, curTime, maxTime);
 
         var topOfHour = minTime < 0;
         if (topOfHour)
@@ -329,7 +329,7 @@ public string Name { get; }
         else if (curTime < minTime)
         {
             // Spawn is past time to visit, need to find a good one to jump to
-            _logger.LogDebug($"b1: curTime={curTime} > maxTime, iterate");
+            _logger.LogDebug("b1: curTime={CurTime} > maxTime, iterate", curTime);
 
             var found = false;
             var start = loc;
@@ -348,7 +348,7 @@ public string Name { get; }
                     var (mnTime, mxTime) = spawnSeconds.GetOffsetsForSpawnTimer();
                     if (curTime >= mnTime && curTime <= mnTime + 120ul)
                     {
-                        _logger.LogDebug($"b2: mnTime={mnTime} & curTime={curTime} & & mxTime={mxTime}");
+                        _logger.LogDebug("b2: mnTime={MnTime} & curTime={CurTime} & & mxTime={MxTime}", mnTime, curTime, mxTime);
                         found = true;
                         loc = i;
                         break;
@@ -375,8 +375,8 @@ public string Name { get; }
                     var (mnTime, mxTime) = spawnSeconds.GetOffsetsForSpawnTimer();
                     if (curTime >= mnTime + 30ul && curTime < mnTime + 120ul)
                     {
-                        _logger.LogDebug($"b3: iterate backwards solution={found}");
-                        _logger.LogDebug($"b4: mnTime={mnTime} & curTime={curTime} & mxTime={mxTime}");
+                        _logger.LogDebug("b3: iterate backwards solution={Found}", found);
+                        _logger.LogDebug("b4: mnTime={MnTime} & curTime={CurTime} & mxTime={MxTime}", mnTime, curTime, mxTime);
                         found = true;
                         loc = i;
                         break;
@@ -394,7 +394,7 @@ public string Name { get; }
         else if (curTime > maxTime)
         {
             // Spawn is past time to visit, need to find a good one to jump to
-            _logger.LogDebug($"d1: curTime={curTime} > maxTime={maxTime}, iterate");
+            _logger.LogDebug("d1: curTime={CurTime} > maxTime={MaxTime}, iterate", curTime, maxTime);
 
             var found = false;
             var start = loc;
@@ -411,8 +411,8 @@ public string Name { get; }
                 var (mnTime, mxTime) = spawnSeconds.GetOffsetsForSpawnTimer();
                 if (curTime >= mnTime + 30ul && curTime <= mnTime + 120ul)
                 {
-                    _logger.LogDebug($"d2: iterate forward solution={found}");
-                    _logger.LogDebug($"d3: mnTime={mnTime} & curTime={curTime} & mxTime={mxTime}");
+                    _logger.LogDebug("d2: iterate forward solution={Found}", found);
+                    _logger.LogDebug("d3: mnTime={MnTime} & curTime={CurTime} & mxTime={MxTime}", mnTime, curTime, mxTime);
                     found = true;
                     loc = i;
                     break;
@@ -434,8 +434,8 @@ public string Name { get; }
 
                     if (curTime >= mnTime + 30ul && curTime <= mnTime + 120ul)
                     {
-                        _logger.LogDebug($"d4: iterate backwards solution={found}");
-                        _logger.LogDebug($"d5: mnTime={mnTime} & curTime={curTime} & mxTime={mxTime}");
+                        _logger.LogDebug("d4: iterate backwards solution={Found}", found);
+                        _logger.LogDebug("d5: mnTime={MnTime} & curTime={CurTime} & mxTime={MxTime}", mnTime, curTime, mxTime);
                         found = true;
                         loc = i;
                         break;
@@ -445,7 +445,7 @@ public string Name { get; }
         }
         else
         {
-            _logger.LogDebug($"e1: Criteria fail with curTime={curTime} & curLocation={currentLocation} & despawn={spawnSeconds}");
+            _logger.LogDebug("e1: Criteria fail with curTime={CurTime} & curLocation={CurrentLocation} & despawn={SpawnSeconds}", curTime, currentLocation, spawnSeconds);
             // Go back to zero and iterate somewhere useful
             loc = 0;
         }

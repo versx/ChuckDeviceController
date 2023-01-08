@@ -14,7 +14,7 @@ using ChuckDeviceController.Plugin;
 
 using Tasks;
 
-[GeofenceType(GeofenceType.Geofence)]
+[GeofenceType(nameof(GeofenceType.Geofence))]
 public class FindyJobController : IJobController, IJobControllerCoordinates, IScanNextInstanceController
 {
     private const int DefaultMaxBatchSpawnpoints = 5000;
@@ -99,7 +99,7 @@ public class FindyJobController : IJobController, IJobControllerCoordinates, ISc
         {
             var coord = ScanNextCoordinates.Dequeue();
             var scanNextTask = CreateTask(coord);
-            _logger.LogDebug($"[{Name}] [{options.Uuid}] Executing ScanNext API job at '{coord}'");
+            _logger.LogDebug("[{Name}] [{Uuid}] Executing ScanNext API job at '{Coord}'", Name, options.Uuid, coord);
             return await Task.FromResult(scanNextTask);
         }
 
@@ -123,7 +123,7 @@ public class FindyJobController : IJobController, IJobControllerCoordinates, ISc
             newLoc = 0;
         }
 
-        _logger.LogDebug($"[{Name}] [{options.Uuid}] TTH - oldLoc={loc:N0} & newLoc={newLoc:N0}/{_tthCoords.Count:N0}");
+        _logger.LogDebug("[{Name}] [{Uuid}] TTH - oldLoc={loc:N0} & newLoc={newLoc:N0}/{Count:N0}", Name, options.Uuid, loc, newLoc, _tthCoords.Count);
 
         _currentDevicesMaxLocation = newLoc;
 
@@ -208,17 +208,17 @@ public class FindyJobController : IJobController, IJobControllerCoordinates, ISc
                 count++;
             }
 
-            _logger.LogDebug("Got {count:N0} points in min/max rectangle with null tth", count);
+            _logger.LogDebug("Got {Count:N0} points in min/max rectangle with null tth", count);
             _logger.LogDebug("Got {Count:N0} points in geofence(s) with null tth", tmpCoords.Count);
 
             if (count == 0)
             {
-                _logger.LogDebug($"Got {count:N0} points in min/max rectangle with null tth");
+                _logger.LogDebug("Got {Count:N0} points in min/max rectangle with null tth", count);
             }
 
             if (!tmpCoords.Any())
             {
-                _logger.LogDebug($"Got {tmpCoords.Count:N0} points in geofence(s) with null tth");
+                _logger.LogDebug("Got {Count:N0} points in geofence(s) with null tth", tmpCoords.Count);
             }
 
             // Sort the array, so 0-3600 sec in order

@@ -272,71 +272,135 @@ public class JobControllerService : IJobControllerService
         }
 
         IJobController? jobController = null;
-        switch (instance.Type)
+        if (instance.Type == InstanceType.CirclePokemon ||
+            instance.Type == InstanceType.CircleRaid)
         {
-            case InstanceType.CirclePokemon:
-            case InstanceType.CircleRaid:
-                var coords = geofences.ConvertToCoordinates();
-                var circleInstanceType = instance.Type == InstanceType.CirclePokemon
-                    ? CircleInstanceType.Pokemon
-                    : CircleInstanceType.Raid;
-                jobController = CreateCircleJobController(instance, circleInstanceType, coords);
-                break;
-            case InstanceType.AutoQuest:
-            case InstanceType.Bootstrap:
-            case InstanceType.DynamicRoute:
-            case InstanceType.FindTth:
-            case InstanceType.Leveling:
-            case InstanceType.PokemonIV:
-            case InstanceType.SmartRaid:
-                var (multiPolygons, coordinates) = geofences.ConvertToMultiPolygons();
-                switch (instance.Type)
+            var coords = geofences.ConvertToCoordinates();
+            var circleInstanceType = instance.Type == InstanceType.CirclePokemon
+                ? CircleInstanceType.Pokemon
+                : CircleInstanceType.Raid;
+            jobController = CreateCircleJobController(instance, circleInstanceType, coords);
+        }
+        else if (instance.Type == InstanceType.Custom)
+        {
+            //var customInstanceType = Convert.ToString(instance.Data?["custom_instance_type"]);
+            var customInstanceType = instance.Data?.CustomInstanceType;
+            if (string.IsNullOrEmpty(customInstanceType))
+            {
+                _logger.LogError($"[{instance.Name}] Plugin job controller instance type is not set, unable to initialize job controller instance");
+                return;
+            }
+            jobController = CreatePluginJobController(customInstanceType, instance, geofences, _serviceProvider);
+        }
+        else
+        {
+            var (multiPolygons, coordinates) = geofences.ConvertToMultiPolygons();
+            if (instance.Type == InstanceType.AutoQuest)
+            {
+                var timeZone = instance.Data?.TimeZone;
+                var timeZoneOffset = ConvertTimeZoneToOffset(timeZone, instance.Data?.EnableDst ?? Strings.DefaultEnableDst);
+                jobController = CreateAutoQuestJobController(_mapFactory, _deviceFactory, instance, multiPolygons, timeZoneOffset);
+                ((AutoInstanceController)jobController).InstanceComplete += OnAutoInstanceComplete;
+            }
+            else if (instance.Type == InstanceType.Bootstrap)
+            {
+                jobController = CreateBootstrapJobController(instance, multiPolygons, _routeGenerator, _routeCalculator);
+                ((BootstrapInstanceController)jobController).InstanceComplete += OnBootstrapInstanceComplete;
+            }
+            else if (instance.Type == InstanceType.DynamicRoute)
+            {
+                jobController = CreateDynamicJobController(instance, multiPolygons, _routeGenerator, _routeCalculator);
+            }
+            else if (instance.Type == InstanceType.FindTth)
+            {
+                jobController = CreateSpawnpointJobController(_mapFactory, instance, multiPolygons, _routeCalculator);
+            }
+            else if (instance.Type == InstanceType.Leveling)
+            {
+                jobController = CreateLevelingJobController(_deviceFactory, instance, multiPolygons);
+                ((LevelingInstanceController)jobController).AccountLevelUp += OnAccountLevelUp;
+            }
+            else if (instance.Type == InstanceType.PokemonIV)
+            {
+                var ivList = _ivListService.GetByName(instance.Data?.IvList ?? Strings.DefaultIvList);
+                if (ivList == null)
                 {
-                    case InstanceType.AutoQuest:
-                        var timeZone = instance.Data?.TimeZone;
-                        var timeZoneOffset = ConvertTimeZoneToOffset(timeZone, instance.Data?.EnableDst ?? Strings.DefaultEnableDst);
-                        jobController = CreateAutoQuestJobController(_mapFactory, _deviceFactory, instance, multiPolygons, timeZoneOffset);
-                        ((AutoInstanceController)jobController).InstanceComplete += OnAutoInstanceComplete;
-                        break;
-                    case InstanceType.Bootstrap:
-                        jobController = CreateBootstrapJobController(instance, multiPolygons, _routeGenerator, _routeCalculator);
-                        ((BootstrapInstanceController)jobController).InstanceComplete += OnBootstrapInstanceComplete;
-                        break;
-                    case InstanceType.DynamicRoute:
-                        jobController = CreateDynamicJobController(instance, multiPolygons, _routeGenerator, _routeCalculator);
-                        break;
-                    case InstanceType.FindTth:
-                        jobController = CreateSpawnpointJobController(_mapFactory, instance, multiPolygons, _routeCalculator);
-                        break;
-                    case InstanceType.Leveling:
-                        jobController = CreateLevelingJobController(_deviceFactory, instance, multiPolygons);
-                        ((LevelingInstanceController)jobController).AccountLevelUp += OnAccountLevelUp;
-                        break;
-                    case InstanceType.PokemonIV:
-                        var ivList = _ivListService.GetByName(instance.Data?.IvList ?? Strings.DefaultIvList);
-                        if (ivList == null)
-                        {
-                            _logger.LogError($"[{instance.Name}] Failed to fetch IV list, skipping controller instantiation...");
-                            return;
-                        }
-                        jobController = CreateIvJobController(_mapFactory, instance, multiPolygons, ivList);
-                        break;
-                    case InstanceType.SmartRaid:
-                        jobController = CreateSmartRaidJobController(_mapFactory, instance, multiPolygons);
-                        break;
-                }
-                break;
-            case InstanceType.Custom:
-                //var customInstanceType = Convert.ToString(instance.Data?["custom_instance_type"]);
-                var customInstanceType = instance.Data?.CustomInstanceType;
-                if (string.IsNullOrEmpty(customInstanceType))
-                {
-                    _logger.LogError($"[{instance.Name}] Plugin job controller instance type is not set, unable to initialize job controller instance");
+                    _logger.LogError($"[{instance.Name}] Failed to fetch IV list, skipping controller instantiation...");
                     return;
                 }
-                jobController = CreatePluginJobController(customInstanceType, instance, geofences, _serviceProvider);
-                break;
+                jobController = CreateIvJobController(_mapFactory, instance, multiPolygons, ivList);
+            }
+            else if (instance.Type == InstanceType.SmartRaid)
+            {
+                jobController = CreateSmartRaidJobController(_mapFactory, instance, multiPolygons);
+            }
         }
+
+        //switch (instance.Type)
+        //{
+        //    case InstanceType.CirclePokemon:
+        //    case InstanceType.CircleRaid:
+        //        var coords = geofences.ConvertToCoordinates();
+        //        var circleInstanceType = instance.Type == InstanceType.CirclePokemon
+        //            ? CircleInstanceType.Pokemon
+        //            : CircleInstanceType.Raid;
+        //        jobController = CreateCircleJobController(instance, circleInstanceType, coords);
+        //        break;
+        //    case InstanceType.AutoQuest:
+        //    case InstanceType.Bootstrap:
+        //    case InstanceType.DynamicRoute:
+        //    case InstanceType.FindTth:
+        //    case InstanceType.Leveling:
+        //    case InstanceType.PokemonIV:
+        //    case InstanceType.SmartRaid:
+        //        var (multiPolygons, coordinates) = geofences.ConvertToMultiPolygons();
+        //        switch (instance.Type)
+        //        {
+        //            case InstanceType.AutoQuest:
+        //                var timeZone = instance.Data?.TimeZone;
+        //                var timeZoneOffset = ConvertTimeZoneToOffset(timeZone, instance.Data?.EnableDst ?? Strings.DefaultEnableDst);
+        //                jobController = CreateAutoQuestJobController(_factory, _mapFactory, _deviceFactory, instance, multiPolygons, timeZoneOffset);
+        //                ((AutoInstanceController)jobController).InstanceComplete += OnAutoInstanceComplete;
+        //                break;
+        //            case InstanceType.Bootstrap:
+        //                jobController = CreateBootstrapJobController(instance, multiPolygons, _routeGenerator, _routeCalculator);
+        //                ((BootstrapInstanceController)jobController).InstanceComplete += OnBootstrapInstanceComplete;
+        //                break;
+        //            case InstanceType.DynamicRoute:
+        //                jobController = CreateDynamicJobController(instance, multiPolygons, _routeGenerator, _routeCalculator);
+        //                break;
+        //            case InstanceType.FindTth:
+        //                jobController = CreateSpawnpointJobController(_mapFactory, instance, multiPolygons, _routeCalculator);
+        //                break;
+        //            case InstanceType.Leveling:
+        //                jobController = CreateLevelingJobController(_deviceFactory, instance, multiPolygons);
+        //                ((LevelingInstanceController)jobController).AccountLevelUp += OnAccountLevelUp;
+        //                break;
+        //            case InstanceType.PokemonIV:
+        //                var ivList = _ivListService.GetByName(instance.Data?.IvList ?? Strings.DefaultIvList);
+        //                if (ivList == null)
+        //                {
+        //                    _logger.LogError($"[{instance.Name}] Failed to fetch IV list, skipping controller instantiation...");
+        //                    return;
+        //                }
+        //                jobController = CreateIvJobController(_mapFactory, instance, multiPolygons, ivList);
+        //                break;
+        //            case InstanceType.SmartRaid:
+        //                jobController = CreateSmartRaidJobController(_mapFactory, instance, multiPolygons);
+        //                break;
+        //        }
+        //        break;
+        //    case InstanceType.Custom:
+        //        //var customInstanceType = Convert.ToString(instance.Data?["custom_instance_type"]);
+        //        var customInstanceType = instance.Data?.CustomInstanceType;
+        //        if (string.IsNullOrEmpty(customInstanceType))
+        //        {
+        //            _logger.LogError($"[{instance.Name}] Plugin job controller instance type is not set, unable to initialize job controller instance");
+        //            return;
+        //        }
+        //        jobController = CreatePluginJobController(customInstanceType, instance, geofences, _serviceProvider);
+        //        break;
+        //}
 
         if (jobController == null)
         {

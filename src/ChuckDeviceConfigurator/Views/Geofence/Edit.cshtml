@@ -37,7 +37,7 @@
         </div>
         <div class="col col-md-6 col-sm-12">
             <div class="form-floating mb-3">
-                <select asp-for="Type" class="form-control" asp-items="Html.GetEnumSelectList<GeofenceType>()" placeholder="Geofence type">
+                <select asp-for="Type" class="form-control" asp-items="@(new SelectList(GeofenceType.Values))" placeholder="Geofence type">
                 </select>
                 <label asp-for="Type"></label>
                 <span asp-validation-for="Type" class="text-danger"></span>
@@ -56,10 +56,11 @@
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script>
+        // TODO: Use ajax call to get geofences
         $('#Type').on('change', setGeofence);
         let type = "@Model?.Type";
         let area = ("@Model?.Data?.Area" || '').replace(/&#xD;/g, '').replace(/&#xA;/g, '\n'); // <- TODO: Fix
-        if (type === 'Circle') {
+        if (type === '@(GeofenceType.Circle)') {
             // Circles
             if (!(area.includes('[') && area.includes(']'))) {
                 area = `[@Model?.Name]\n${area}`;

@@ -19,7 +19,7 @@ using ChuckDeviceController.Plugin;
 
 // GeofenceType attribute determines what type of geofence to provide.
 // (i.e. plotted circle coordinates or geofence coordinates)
-[GeofenceType(GeofenceType.Circle)]
+[GeofenceType(nameof(GeofenceType.Circle))]
 public class TestInstanceController : IJobController, IJobControllerCoordinates, IScanNextInstanceController
 {
     #region Variables

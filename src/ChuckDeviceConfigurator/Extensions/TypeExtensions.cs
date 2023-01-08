@@ -72,23 +72,40 @@ public static class TypeExtensions
             return dict;
         }
 
-        switch (attr?.Type)
+        if (attr?.Type == GeofenceType.Circle)
         {
-            case GeofenceType.Circle:
-                // Add list of coordinates to available parameters list
-                var circles = geofences.ConvertToCoordinates();
-                dict.Add(typeof(List<ICoordinate>), circles);
-                break;
-            case GeofenceType.Geofence:
-                // Add list of geofence coordinates to available parameters list
-                var (multiPolygons, polyCoords) = geofences.ConvertToMultiPolygons();
-                var coords = polyCoords
-                    .Select(c => c.Select(coord => (ICoordinate)coord).ToList())
-                    .ToList();
-                dict.Add(typeof(List<List<ICoordinate>>), coords);
-                dict.Add(typeof(List<IMultiPolygon>), multiPolygons);
-                break;
+            // Add list of coordinates to available parameters list
+            var circles = geofences.ConvertToCoordinates();
+            dict.Add(typeof(List<ICoordinate>), circles);
         }
+        else if (attr?.Type == GeofenceType.Geofence)
+        {
+            // Add list of geofence coordinates to available parameters list
+            var (multiPolygons, polyCoords) = geofences.ConvertToMultiPolygons();
+            var coords = polyCoords
+                .Select(c => c.Select(coord => (ICoordinate)coord).ToList())
+                .ToList();
+            dict.Add(typeof(List<List<ICoordinate>>), coords);
+            dict.Add(typeof(List<IMultiPolygon>), multiPolygons);
+        }
+
+        //switch (attr?.Type)
+        //{
+        //    case GeofenceType.Circle:
+        //        // Add list of coordinates to available parameters list
+        //        var circles = geofences.ConvertToCoordinates();
+        //        dict.Add(typeof(List<ICoordinate>), circles);
+        //        break;
+        //    case GeofenceType.Geofence:
+        //        // Add list of geofence coordinates to available parameters list
+        //        var (multiPolygons, polyCoords) = geofences.ConvertToMultiPolygons();
+        //        var coords = polyCoords
+        //            .Select(c => c.Select(coord => (ICoordinate)coord).ToList())
+        //            .ToList();
+        //        dict.Add(typeof(List<List<ICoordinate>>), coords);
+        //        dict.Add(typeof(List<IMultiPolygon>), multiPolygons);
+        //        break;
+        //}
 
         return dict;
     }

@@ -18,38 +18,66 @@ public static class GeofenceExtensions
     public static string? ConvertToIni(this IGeofence geofence)
     {
         var sb = new System.Text.StringBuilder();
-        switch (geofence.Type)
+        if (geofence.Type == GeofenceType.Circle)
         {
-            case GeofenceType.Circle:
-                {
-                    var coords = geofence.ConvertToCoordinates();
-                    if (coords == null)
-                    {
-                        _logger.LogError($"Error: Unable to convert coordinates to INI format");
-                        return null;
-                    }
+            var coords = geofence.ConvertToCoordinates();
+            if (coords == null)
+            {
+                _logger.LogError($"Error: Unable to convert coordinates to INI format");
+                return null;
+            }
 
-                    sb.AppendLine($"[{geofence.Name}]");
-                    foreach (var coord in coords)
-                    {
-                        sb.AppendLine($"{coord.Latitude},{coord.Longitude}");
-                    }
-                    break;
-                }
-            case GeofenceType.Geofence:
-                {
-                    var (_, coordinates) = geofence.ConvertToMultiPolygons();
-                    foreach (var coords in coordinates)
-                    {
-                        sb.AppendLine($"[{geofence.Name}]");
-                        foreach (var coord in coords)
-                        {
-                            sb.AppendLine($"{coord.Latitude},{coord.Longitude}");
-                        }
-                    }
-                    break;
-                }
+            sb.AppendLine($"[{geofence.Name}]");
+            foreach (var coord in coords)
+            {
+                sb.AppendLine($"{coord.Latitude},{coord.Longitude}");
+            }
         }
+        else if (geofence.Type == GeofenceType.Geofence)
+        {
+            var (_, coordinates) = geofence.ConvertToMultiPolygons();
+            foreach (var coords in coordinates)
+            {
+                sb.AppendLine($"[{geofence.Name}]");
+                foreach (var coord in coords)
+                {
+                    sb.AppendLine($"{coord.Latitude},{coord.Longitude}");
+                }
+            }
+        }
+
+        //switch (geofence.Type)
+        //{
+        //    case GeofenceType.Circle:
+        //        {
+        //            var coords = geofence.ConvertToCoordinates();
+        //            if (coords == null)
+        //            {
+        //                _logger.LogError($"Error: Unable to convert coordinates to INI format");
+        //                return null;
+        //            }
+
+        //            sb.AppendLine($"[{geofence.Name}]");
+        //            foreach (var coord in coords)
+        //            {
+        //                sb.AppendLine($"{coord.Latitude},{coord.Longitude}");
+        //            }
+        //            break;
+        //        }
+        //    case GeofenceType.Geofence:
+        //        {
+        //            var (_, coordinates) = geofence.ConvertToMultiPolygons();
+        //            foreach (var coords in coordinates)
+        //            {
+        //                sb.AppendLine($"[{geofence.Name}]");
+        //                foreach (var coord in coords)
+        //                {
+        //                    sb.AppendLine($"{coord.Latitude},{coord.Longitude}");
+        //                }
+        //            }
+        //            break;
+        //        }
+        //}
         return sb.ToString();
     }
 
@@ -154,11 +182,11 @@ public static class GeofenceExtensions
         {
             if (area is null)
             {
-                _logger.LogError($"Failed to parse coordinates for geofence '{geofenceName}'");
+                _logger.LogError("Failed to parse coordinates for geofence '{GeofenceName}'", geofenceName);
                 return default;
             }
             //string areaJson = JsonExtensions.ToJson(area);
-            //string areaJson = Convert.ToString(area.ToJson());
+            //string areaJson = Convert.ToString(area);
             string areaJson = area;
             var coordsArray = (T?)
             (

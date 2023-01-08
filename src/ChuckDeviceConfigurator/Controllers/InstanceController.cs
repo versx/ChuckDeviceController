@@ -69,7 +69,7 @@ public class InstanceController : Controller
     }
 
     // GET: InstanceController/GetGeofences/5?customInstanceType=test
-    public async Task<ActionResult> GetGeofences(int id, string? customInstanceType = null)
+    public async Task<ActionResult> GetGeofences(string id, string? customInstanceType = null)
     {
         var instanceType = (InstanceType)id;
         var geofenceType = instanceType == InstanceType.Custom && !string.IsNullOrEmpty(customInstanceType)

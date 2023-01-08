@@ -184,7 +184,7 @@ public abstract class DapperGenericRepository<TKey, TEntity> : IDapperGenericRep
         FilterData? filterData,
         params Expression<Func<TEntity, object>>[] includes)
     {
-        var whereExpression = _translator.Translate(predicate);
+        var whereExpression = _translator.Translate(predicate!);
         var query = _sqlGenerator.GetSelectAll(null, filterData, includes);
         query.SqlBuilder.Append(" WHERE ");
         query.SqlBuilder.Append(whereExpression);

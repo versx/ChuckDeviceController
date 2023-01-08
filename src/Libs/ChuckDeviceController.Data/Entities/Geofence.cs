@@ -68,17 +68,18 @@ public class Geofence : BaseEntity, IGeofence
 
     public static string GeofenceTypeToString(GeofenceType type)
     {
-        return type switch
-        {
-            GeofenceType.Circle => "circle",
-            GeofenceType.Geofence => "geofence",
-            _ => type.ToString(),
-        };
+        return type;
+        //return type switch
+        //{
+        //    GeofenceType.Circle => "circle",
+        //    GeofenceType.Geofence => "geofence",
+        //    _ => type.ToString(),
+        //};
     }
 
     public static GeofenceType StringToGeofenceType(string geofenceType)
     {
-        return (geofenceType.ToLower()) switch
+        return geofenceType.ToLower() switch
         {
             "circle" => GeofenceType.Circle,
             "geofence" => GeofenceType.Geofence,

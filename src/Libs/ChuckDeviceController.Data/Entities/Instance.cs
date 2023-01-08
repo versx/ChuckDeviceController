@@ -85,38 +85,54 @@ public class Instance : BaseEntity, IInstance
 
     public static string InstanceTypeToString(InstanceType type)
     {
-        return type switch
-        {
-            InstanceType.AutoQuest => "auto_quest",
-            InstanceType.CirclePokemon => "circle_pokemon",
-            InstanceType.DynamicRoute => "dynamic_route",
-            InstanceType.CircleRaid => "circle_raid",
-            InstanceType.SmartRaid => "smart_raid",
-            InstanceType.PokemonIV => "pokemon_iv",
-            InstanceType.Bootstrap => "bootstrap",
-            InstanceType.FindTth => "find_tth",
-            InstanceType.Leveling => "leveling",
-            InstanceType.Custom => "custom",
-            _ => type.ToString(),
-        };
+        return type;
+        //return type switch
+        //{
+        //    InstanceType.AutoQuest => "auto_quest",
+        //    InstanceType.CirclePokemon => "circle_pokemon",
+        //    InstanceType.DynamicRoute => "dynamic_route",
+        //    InstanceType.CircleRaid => "circle_raid",
+        //    InstanceType.SmartRaid => "smart_raid",
+        //    InstanceType.PokemonIV => "pokemon_iv",
+        //    InstanceType.Bootstrap => "bootstrap",
+        //    InstanceType.FindTth => "find_tth",
+        //    InstanceType.Leveling => "leveling",
+        //    InstanceType.Custom => "custom",
+        //    _ => type.ToString(),
+        //};
     }
 
     public static InstanceType StringToInstanceType(string instanceType)
     {
-        return (instanceType.ToLower()) switch
+        return (instanceType) switch
         {
-            "auto_quest" => InstanceType.AutoQuest,
-            "circle_pokemon" => InstanceType.CirclePokemon,
-            "dynamic_route" => InstanceType.DynamicRoute,
-            "circle_raid" => InstanceType.CircleRaid,
-            "smart_raid" => InstanceType.SmartRaid,
-            "pokemon_iv" => InstanceType.PokemonIV,
-            "bootstrap" => InstanceType.Bootstrap,
-            "find_tth" => InstanceType.FindTth,
-            "leveling" => InstanceType.Leveling,
-            "custom" => InstanceType.Custom,
+            "AutoQuest" => InstanceType.AutoQuest,
+            "CirclePokemon" => InstanceType.CirclePokemon,
+            "DynamicRoute" => InstanceType.DynamicRoute,
+            "CircleRaid" => InstanceType.CircleRaid,
+            "SmartRaid" => InstanceType.SmartRaid,
+            "PokemonIV" => InstanceType.PokemonIV,
+            "Bootstrap" => InstanceType.Bootstrap,
+            "FindTth" => InstanceType.FindTth,
+            "Leveling" => InstanceType.Leveling,
+            "Custom" => InstanceType.Custom,
             _ => InstanceType.CirclePokemon,
         };
+
+        //return (instanceType.ToLower()) switch
+        //{
+        //    "auto_quest" => InstanceType.AutoQuest,
+        //    "circle_pokemon" => InstanceType.CirclePokemon,
+        //    "dynamic_route" => InstanceType.DynamicRoute,
+        //    "circle_raid" => InstanceType.CircleRaid,
+        //    "smart_raid" => InstanceType.SmartRaid,
+        //    "pokemon_iv" => InstanceType.PokemonIV,
+        //    "bootstrap" => InstanceType.Bootstrap,
+        //    "find_tth" => InstanceType.FindTth,
+        //    "leveling" => InstanceType.Leveling,
+        //    "custom" => InstanceType.Custom,
+        //    _ => InstanceType.CirclePokemon,
+        //};
     }
 
     #endregion

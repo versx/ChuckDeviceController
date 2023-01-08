@@ -84,7 +84,8 @@ public class GeofenceController : Controller
         try
         {
             var name = Convert.ToString(collection["Name"]);
-            var type = (GeofenceType)Convert.ToUInt16(collection["Type"]);
+            //var type = (GeofenceType)Convert.ToUInt16(collection["Type"]);
+            var type = Geofence.StringToGeofenceType(collection["Type"].ToString());
             var data = Convert.ToString(collection["Data.Area"]);
             var lines = data.Replace("<br>", "\r\n").Replace("\r\n", "\n");
 
@@ -168,7 +169,8 @@ public class GeofenceController : Controller
         try
         {
             var name = Convert.ToString(collection["Name"]);
-            var type = (GeofenceType)Convert.ToUInt16(collection["Type"]);
+            //var type = (GeofenceType)Convert.ToUInt16(collection["Type"]);
+            var type = Geofence.StringToGeofenceType(collection["Type"].ToString());
             var data = Convert.ToString(collection["Data.Area"]);
             var lines = data.Replace("<br>", "\r\n").Replace("\r\n", "\n");
 

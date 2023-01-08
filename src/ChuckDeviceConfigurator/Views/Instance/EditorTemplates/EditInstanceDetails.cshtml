@@ -1,7 +1,7 @@
 ﻿@model ManageInstanceViewModel
 
 <div class="form-floating mb-3">
-    <select asp-for="Type" class="form-control" asp-items="Html.GetEnumSelectList<InstanceType>()" placeholder="Instance type">
+    <select asp-for="Type" class="form-control" asp-items="@(new SelectList(InstanceType.Values))" placeholder="Instance type">
         <option value="" disabled selected>@localizer["Please select one"]</option>
     </select>
     <label asp-for="Type"></label>

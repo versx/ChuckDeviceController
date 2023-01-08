@@ -76,20 +76,26 @@ public static partial class Utils
 
     public static string FormatInstanceType(InstanceType instanceType, InstanceData? data)
     {
-        return instanceType switch
+        if (instanceType == InstanceType.Custom)
         {
-            InstanceType.AutoQuest => "Auto Quest",
-            InstanceType.Bootstrap => "Bootstrap",
-            InstanceType.CirclePokemon => "Circle Pokemon",
-            InstanceType.CircleRaid => "Circle Raid",
-            InstanceType.Custom => "Custom" + (data == null ? "" : $" ({data.CustomInstanceType})"),
-            InstanceType.DynamicRoute => "Dynamic Route",
-            InstanceType.FindTth => "Find TTH",
-            InstanceType.Leveling => "Leveling",
-            InstanceType.PokemonIV => "Pokemon IV",
-            InstanceType.SmartRaid => "Smart Raid",
-            _ => "Unknown",
-        };
+            return "Custom" + (data == null ? "" : $" ({data.CustomInstanceType})");
+        }
+
+        return instanceType;
+        //return instanceType switch
+        //{
+        //    InstanceType.AutoQuest => "Auto Quest",
+        //    InstanceType.Bootstrap => "Bootstrap",
+        //    InstanceType.CirclePokemon => "Circle Pokemon",
+        //    InstanceType.CircleRaid => "Circle Raid",
+        //    InstanceType.Custom => "Custom" + (data == null ? "" : $" ({data.CustomInstanceType})"),
+        //    InstanceType.DynamicRoute => "Dynamic Route",
+        //    InstanceType.FindTth => "Find TTH",
+        //    InstanceType.Leveling => "Leveling",
+        //    InstanceType.PokemonIV => "Pokemon IV",
+        //    InstanceType.SmartRaid => "Smart Raid",
+        //    _ => "Unknown",
+        //};
     }
 
     public static string GetDeviceStatus(ulong lastSeen)
