@@ -179,7 +179,7 @@ public class InstanceController : Controller
     // POST: InstanceController/Create
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<ActionResult> Create(ManageInstanceViewModel model)
+    public async Task<ActionResult> Create(ManageInstanceViewModel model, IFormCollection collection)
     {
         try
         {
@@ -190,10 +190,11 @@ public class InstanceController : Controller
                 return View();
             }
 
+            var instanceType = collection["Type"].ToString();
             var instance = new Instance
             {
                 Name = model.Name,
-                Type = model.Type ?? InstanceType.CirclePokemon,
+                Type = instanceType ?? InstanceType.CirclePokemon,
                 MinimumLevel = model.MinimumLevel,
                 MaximumLevel = model.MaximumLevel,
                 Geofences = model.Geofences,
@@ -267,7 +268,7 @@ public class InstanceController : Controller
     // POST: InstanceController/Edit/5
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<ActionResult> Edit(string id, ManageInstanceViewModel model)
+    public async Task<ActionResult> Edit(string id, ManageInstanceViewModel model, IFormCollection collection)
     {
         try
         {
@@ -286,8 +287,9 @@ public class InstanceController : Controller
                 return View(model);
             }
 
+            var instanceType = collection["Type"].ToString();
             instance.Name = model.Name;
-            instance.Type = model.Type ?? InstanceType.CirclePokemon;
+            instance.Type = instanceType ?? InstanceType.CirclePokemon;
             instance.MinimumLevel = model.MinimumLevel;
             instance.MaximumLevel = model.MaximumLevel;
             instance.Geofences = model.Geofences;
