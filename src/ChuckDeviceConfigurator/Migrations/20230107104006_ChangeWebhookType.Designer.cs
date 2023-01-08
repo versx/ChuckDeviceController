@@ -3,6 +3,7 @@ using System;
 using ChuckDeviceController.Data.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ChuckDeviceConfigurator.Migrations
 {
     [DbContext(typeof(ControllerDbContext))]
-    partial class DeviceControllerContextModelSnapshot : ModelSnapshot
+    [Migration("20230107104006_ChangeWebhookType")]
+    partial class ChangeWebhookType
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
