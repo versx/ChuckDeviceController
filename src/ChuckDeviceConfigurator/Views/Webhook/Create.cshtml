@@ -41,22 +41,40 @@
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script>
-        const types = [
-            'pokemon',
-            'pokestops',
-            'lures',
-            'invasions',
-            'quests',
-            'alternative_quests',
-            'gyms',
-            'gyminfo',
-            'gym_defenders',
-            'gym_trainers',
-            'eggs',
-            'raids',
-            'weather',
-            'accounts',
-        ];
+        const types = {
+            '0': 'None',
+            '1': 'Pokemon',
+            '2': 'Pokestops',
+            '4': 'Lures',
+            '8': 'Invasions',
+            '16': 'Quests',
+            '32': 'AlternativeQuests',
+            '64': 'Gyms',
+            '128': 'GymInfo',
+            '256': 'GymDefenders',
+            '512': 'GymTrainers',
+            '1024': 'Eggs',
+            '2048': 'Raids',
+            '4096': 'Weather',
+            '8192': 'Accounts',
+        };
+        //const types = [
+        //    'None',
+        //    'Pokemon',
+        //    'Pokestops',
+        //    'Lures',
+        //    'Invasions',
+        //    'Quests',
+        //    'AlternativeQuests',
+        //    'Gyms',
+        //    'GymInfo',
+        //    'GymDefenders',
+        //    'GymTrainers',
+        //    'Eggs',
+        //    'Raids',
+        //    'Weather',
+        //    'Accounts',
+        //];
         for (const type of types) {
             hideElements(type, false);
         }
@@ -65,9 +83,10 @@
 
         function toggleElements() {
             const selected = $('#Types').val().map(type => types[type]);
-            for (const type of types) {
-                const show = selected.includes(type);
-                hideElements(type, show);
+            for (const type of Object.keys(types)) {
+                const value = types[type];
+                const show = selected.includes(value);
+                hideElements(value, show);
             }
         }
 

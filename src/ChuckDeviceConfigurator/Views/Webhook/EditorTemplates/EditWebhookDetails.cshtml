@@ -12,8 +12,8 @@
 </div>
 <div class="form-group mb-3">
     <label asp-for="Types"></label>
-    <select asp-for="Types" class="form-control" asp-items="Html.GetEnumSelectList<WebhookType>()" placeholder="Webhook type">
-        <option value="" disabled selected>@localizer["Please select one or more"]</option>
+    <select asp-for="Types" class="form-control" asp-items="@ViewBag.WebhookTypes" placeholder="Webhook type" multiple>
+        <option value="" disabled>@localizer["Please select one or more"]</option>
     </select>
     <span asp-validation-for="Types" class="text-danger"></span>
 </div>

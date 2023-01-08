@@ -6,7 +6,7 @@ public interface IWebhook : IBaseEntity
 {
     string Name { get; }
 
-    List<WebhookType> Types { get; }
+    WebhookType Types { get; }
 
     double Delay { get; }
 

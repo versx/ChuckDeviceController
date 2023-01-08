@@ -1,8 +1,11 @@
 ﻿namespace ChuckDeviceConfigurator.Controllers;
 
+using System.ComponentModel.DataAnnotations;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 using ChuckDeviceConfigurator.Services.Webhooks;
 using ChuckDeviceConfigurator.ViewModels;
@@ -10,6 +13,7 @@ using ChuckDeviceController.Common;
 using ChuckDeviceController.Data.Common;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Repositories;
+using ChuckDeviceController.Extensions;
 
 [Authorize(Roles = RoleConsts.WebhooksRole)]
 public class WebhookController : Controller
@@ -57,6 +61,7 @@ public class WebhookController : Controller
     {
         var geofences = await _uow.Geofences.FindAsync(geofence => geofence.Type == GeofenceType.Geofence);
         ViewBag.Geofences = geofences;
+        ViewBag.WebhookTypes = GetEnumSelectList();
         ModelState.Remove(nameof(Webhook.GeofenceMultiPolygons));
         return View();
     }
@@ -64,7 +69,7 @@ public class WebhookController : Controller
     // POST: WebhookController/Create
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<ActionResult> Create(Webhook model)
+    public async Task<ActionResult> Create(Webhook model, IFormCollection collection)
     {
         try
         {
@@ -74,6 +79,15 @@ public class WebhookController : Controller
                 ModelState.AddModelError("Webhook", $"Webhook with name '{model.Name}' already exists.");
                 return View(model);
             }
+
+            var types = collection["Types"]
+                .ToString()
+                .Split(',')
+                .Select(int.Parse)
+                .Select(x => (WebhookType)x)
+                .ToList();
+            var webhookTypes = WebhookType.None;
+            types.ForEach(x => webhookTypes |= x);
 
             var pokemonIds = (model.Data?.PokemonIds ?? new())
                 .FirstOrDefault()?
@@ -100,7 +114,7 @@ public class WebhookController : Controller
             {
                 Name = model.Name,
                 Url = model.Url,
-                Types = model.Types,
+                Types = webhookTypes,
                 Delay = model.Delay,
                 Geofences = new(geofences),
                 Enabled = model.Enabled,
@@ -146,6 +160,7 @@ public class WebhookController : Controller
 
         var geofences = await _uow.Geofences.FindAsync(geofence => geofence.Type == GeofenceType.Geofence);
         ViewBag.Geofences = geofences;
+        ViewBag.WebhookTypes = GetEnumSelectList(webhook.Types);
         ModelState.Remove(nameof(Webhook.GeofenceMultiPolygons));
         return View(webhook);
     }
@@ -153,7 +168,7 @@ public class WebhookController : Controller
     // POST: WebhookController/Edit/5
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<ActionResult> Edit(string id, Webhook model)
+    public async Task<ActionResult> Edit(string id, Webhook model, IFormCollection collection)
     {
         try
         {
@@ -164,6 +179,15 @@ public class WebhookController : Controller
                 ModelState.AddModelError("Webhook", $"Webhook does not exist with id '{id}'.");
                 return View(model);
             }
+
+            var types = collection["Types"]
+                .ToString()
+                .Split(',')
+                .Select(int.Parse)
+                .Select(x => (WebhookType)x)
+                .ToList();
+            var webhookTypes = WebhookType.None;
+            types.ForEach(x => webhookTypes |= x);
 
             var pokemonIds = (model.Data?.PokemonIds ?? new())
                 .FirstOrDefault()?
@@ -188,7 +212,7 @@ public class WebhookController : Controller
             var geofences = model.Geofences.Where(geofence => !string.IsNullOrEmpty(geofence));
             webhook.Name = model.Name;
             webhook.Url = model.Url;
-            webhook.Types = model.Types;
+            webhook.Types = webhookTypes;
             webhook.Delay = model.Delay;
             webhook.Geofences = new(geofences);
             webhook.Enabled = model.Enabled;
@@ -261,5 +285,64 @@ public class WebhookController : Controller
             ModelState.AddModelError("Webhook", $"Unknown error occurred while deleting webhook '{id}'.");
             return View();
         }
+    }
+
+    /// <summary>
+    /// Returns a select list for the given <paramref name="type"/>.
+    /// </summary>
+    /// <returns>
+    /// An <see cref="IEnumerable{SelectListItem}"/> containing the select list for the given
+    /// <paramref name="type"/>.
+    /// </returns>
+    public static IEnumerable<SelectListItem> GetEnumSelectList(WebhookType? webhookType = null)
+    {
+        var webhookTypes = new List<WebhookType>
+        {
+            WebhookType.Pokemon,
+            WebhookType.Pokestops,
+            WebhookType.Lures,
+            WebhookType.Invasions,
+            WebhookType.Quests,
+            WebhookType.AlternativeQuests,
+            WebhookType.Gyms,
+            WebhookType.GymInfo,
+            WebhookType.GymDefenders,
+            WebhookType.GymTrainers,
+            WebhookType.Eggs,
+            WebhookType.Raids,
+            WebhookType.Weather,
+            WebhookType.Accounts,
+        };
+
+        var types = webhookType & (~WebhookType.None);
+        var selectList = new List<SelectListItem>();
+        //var groupList = new Dictionary<string, SelectListGroup>();
+        foreach (var item in webhookTypes)
+        {
+            var attr = item.GetAttribute<DisplayAttribute>();
+            var name = attr?.Name;
+            //var groupName = attr?.GroupName;
+            var isSelected = (types & item) == item;
+            var selectListItem = new SelectListItem
+            {
+                Text = name,
+                Value = Convert.ToString((int)item),
+                Selected = isSelected,
+            };
+
+            //if (!string.IsNullOrEmpty(groupName))
+            //{
+            //    if (!groupList.ContainsKey(groupName))
+            //    {
+            //        groupList[groupName] = new SelectListGroup { Name = groupName };
+            //    }
+
+            //    selectListItem.Group = groupList[groupName];
+            //}
+
+            selectList.Add(selectListItem);
+        }
+
+        return selectList;
     }
 }

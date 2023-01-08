@@ -184,12 +184,12 @@ public class ControllerDbContext : DbContext
 
         modelBuilder.Entity<Webhook>(entity =>
         {
-            entity.Property(p => p.Types)
-                  .HasConversion(
-                       x => Webhook.WebhookTypeToString(x),
-                       x => Webhook.StringToWebhookTypes(x),
-                       DbContextFactory.CreateValueComparer<WebhookType>()
-                   );
+            //entity.Property(p => p.Types)
+            //      .HasConversion(
+            //           x => Webhook.WebhookTypeToString(x),
+            //           x => Webhook.StringToWebhookTypes(x),
+            //           DbContextFactory.CreateValueComparer<WebhookType>()
+            //       );
             entity.Property(p => p.Data)
                   .HasConversion(DbContextFactory.CreateJsonValueConverter<WebhookData?>());
                   //.HasConversion(DbContextFactory.CreateJsonValueConverter<WebhookData?>(new[] { new ObjectDataConverter<WebhookData>() }));
