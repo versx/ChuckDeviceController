@@ -41,6 +41,7 @@ public abstract class DapperGenericRepository<TKey, TEntity> : IDapperGenericRep
     {
         "group",
         "key",
+        "character",
     };
 
     private readonly IMySqlConnectionFactory _factory = null!;

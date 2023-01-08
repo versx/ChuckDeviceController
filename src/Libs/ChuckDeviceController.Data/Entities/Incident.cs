@@ -73,8 +73,8 @@ public class Incident : BaseEntity, IIncident, IWebhookEntity
         Start = Convert.ToUInt64(pokestopDisplay.IncidentStartMs / 1000);
         Expiration = Convert.ToUInt64(pokestopDisplay.IncidentExpirationMs / 1000);
         DisplayType = Convert.ToUInt16(pokestopDisplay.IncidentDisplayType);
-        Style = Convert.ToUInt16(pokestopDisplay.CharacterDisplay.Style);
-        Character = Convert.ToUInt16(pokestopDisplay.CharacterDisplay.Character);
+        Style = Convert.ToUInt16(pokestopDisplay.CharacterDisplay?.Style ?? 0);
+        Character = Convert.ToUInt16(pokestopDisplay.CharacterDisplay?.Character ?? 0);
         Updated = now;
     }
 

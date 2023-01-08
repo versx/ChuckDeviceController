@@ -1044,7 +1044,10 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
             try
             {
                 var data = (GymGetInfoOutProto)gymInfo.data;
-                var fortId = data.GymStatusAndDefenders.PokemonFortProto.FortId;
+                var fortId = data.GymStatusAndDefenders?.PokemonFortProto.FortId;
+                if (string.IsNullOrEmpty(fortId))
+                    continue;
+
                 var gym = await EntityRepository.GetEntityAsync<string, Gym>(connection, fortId, _memCache);
                 if (gym == null)
                     continue;
@@ -1065,7 +1068,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
 
                 if (Options.ProcessGymDefenders || Options.ProcessGymTrainers)
                 {
-                    var gymDefenders = data.GymStatusAndDefenders.GymDefender;
+                    var gymDefenders = data.GymStatusAndDefenders?.GymDefender;
                     if (gymDefenders == null)
                         continue;
 
