@@ -1,4 +1,4 @@
-﻿namespace ChuckDeviceController.Data.Extensions;
+﻿namespace ChuckDeviceController.Extensions;
 
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
