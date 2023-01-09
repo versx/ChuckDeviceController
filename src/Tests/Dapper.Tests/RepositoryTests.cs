@@ -90,28 +90,87 @@ internal class RepositoryTests
 
         var deviceRepository = new DeviceRepository(factory);
         var device = await deviceRepository.FindAsync("atv08");
+        Assert.That(device, Is.Not.Null);
+
         var devices = await deviceRepository.FindAllAsync();
+        Assert.That(devices.Count(), Is.GreaterThan(0));
 
         var instanceRepository = new InstanceRepository(factory);
         var instance = await instanceRepository.FindAsync("0Findy");
+        Assert.That(instance, Is.Not.Null);
 
         var webhookRepository = new WebhookRepository(factory);
         //var webhook = await webhookRepository.FindAsync(x => x.Data != null);
         var webhook = await webhookRepository.FindAsync("TestTest");
+        Assert.That(webhook, Is.Not.Null);
 
         var ivListRepository = new IvListRepository(factory);
         var containsIvList = await ivListRepository.FindAsync(x => x.PokemonIds.Contains("25"));
-        var ivList = await ivListRepository.FindAsync(x => x.PokemonIds.Count > 0);
+        Assert.That(containsIvList.Count(), Is.EqualTo(1));
+        //var test = await ivListRepository.FindAsync(x => x.Name.Length > 0);
+        //var ivList = await ivListRepository.FindAsync(x => x.PokemonIds.Count > 0);
+        //var anyIvList = await ivListRepository.FindAsync(x => x.PokemonIds.Any(y => y.Contains("25")));
         var anyIvList = await ivListRepository.FindAsync(x => x.PokemonIds.Any());
+        Assert.That(anyIvList.Any(), Is.True);
+
         var notAnyIvList = await ivListRepository.FindAsync(x => !x.PokemonIds.Any());
+        Assert.That(notAnyIvList.Count(), Is.EqualTo(1));
+
         var hasCountIvList = await ivListRepository.FindAsync(x => x.PokemonIds.Count() > 0);
+        Assert.That(hasCountIvList.Count(), Is.EqualTo(1));
+
         var noCountIvList = await ivListRepository.FindAsync(x => x.PokemonIds.Count() == 0);
+        Assert.That(noCountIvList.Count(), Is.EqualTo(1));
 
         var accountRepository = new AccountRepository(factory);
         var cleanAccounts = await accountRepository.FindAsync(x => string.IsNullOrEmpty(x.Failed));
+        Assert.That(cleanAccounts.Count(), Is.GreaterThan(0));
+
         var failedAccounts = await accountRepository.FindAsync(x => !string.IsNullOrEmpty(x.Failed));
+        Assert.That(failedAccounts.Count(), Is.GreaterThan(0));
+
+        //Assert.Pass();
+    }
+
+    [Test]
+    public async Task GetNewAccountTests()
+    {
+        var factory = new MySqlConnectionFactory(ConnectionString);
+
+        var accountRepository = new AccountRepository(factory);
+        var accounts = await GetNewAccountAsync(accountRepository);
 
         Assert.Pass();
+    }
+
+    private async Task<Account?> GetNewAccountAsync(AccountRepository accountRepository,
+        ushort minLevel = 0, ushort maxLevel = 35, bool ignoreWarning = false, uint spins = 3500,
+        bool noCooldown = true, string? group = null, ushort cooldownLimitS = 7200,
+        uint suspensionTimeLimitS = 2592000)
+    {
+        var now = DateTime.UtcNow.ToTotalSeconds();
+        var account = await accountRepository.FirstOrDefaultAsync(x =>
+            // Meet level requirements for instance
+            (x.Level >= minLevel && x.Level <= maxLevel) &&
+            // Is under total spins
+            x.Spins < spins &&
+            // Matches event group name
+            (!string.IsNullOrEmpty(group)
+                ? x.GroupName == group
+                : x.GroupName == null) &&
+            // Cooldown
+            (x.LastEncounterTime == null || (noCooldown
+                ? now - x.LastEncounterTime >= cooldownLimitS
+                : x.LastEncounterTime != null)) &&
+            (ignoreWarning
+                // Has warning 
+                ? (x.Failed == null || x.Failed == "GPR_RED_WARNING")
+                // Has no account warnings or are expired already
+                : (x.Failed == null && x.FirstWarningTimestamp == null) ||
+                  (x.Failed == "GPR_RED_WARNING" && x.WarnExpireTimestamp > 0 && x.WarnExpireTimestamp <= now) ||
+                  (x.Failed == "suspended" && x.FailedTimestamp <= now - suspensionTimeLimitS))
+        );
+        return account;
     }
 
     #region Controller Entity Tests
