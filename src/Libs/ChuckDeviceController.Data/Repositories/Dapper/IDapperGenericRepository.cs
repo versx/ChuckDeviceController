@@ -38,6 +38,15 @@ public interface IDapperGenericRepository<TKey, TEntity>
         Dictionary<string, Func<TEntity, object>> mappings,
         CancellationToken stoppingToken = default);
 
+    Task<int> UpdateRangeAsync(
+        IEnumerable<TEntity> entities,
+        CancellationToken stoppingToken = default);
+
+    Task<int> UpdateRangeAsync(
+        IEnumerable<TEntity> entities,
+        Dictionary<string, Func<TEntity, object>> mappings,
+        CancellationToken stoppingToken = default);
+
     Task<bool> DeleteAsync(
         TKey id,
         CancellationToken stoppingToken = default);

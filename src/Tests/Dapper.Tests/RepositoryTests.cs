@@ -133,6 +133,45 @@ internal class RepositoryTests
     }
 
     [Test]
+    public async Task ClearQuestsTests()
+    {
+        var factory = new MySqlConnectionFactory(ConnectionString);
+
+        var pokestopRepository = new PokestopRepository(factory);
+        //var pokestops = await pokestopRepository.FindAllAsync();
+        var pokestops = await pokestopRepository.FindAsync(x => x.QuestType != null || x.AlternativeQuestType != null);
+        var result = await pokestopRepository.UpdateRangeAsync(pokestops, mappings: new Dictionary<string, Func<Pokestop, object>>
+        {
+            ["id"] = x => x.Id,
+            ["quest_conditions"] = x => null!,
+            ["quest_rewards"] = x => null!,
+            ["quest_target"] = x => null!,
+            ["quest_template"] = x => null!,
+            ["quest_timestamp"] = x => null!,
+            ["quest_title"] = x => null!,
+            ["quest_type"] = x => null!,
+            ["alternative_quest_conditions"] = x => null!,
+            ["alternative_quest_rewards"] = x => null!,
+            ["alternative_quest_target"] = x => null!,
+            ["alternative_quest_template"] = x => null!,
+            ["alternative_quest_timestamp"] = x => null!,
+            ["alternative_quest_title"] = x => null!,
+            ["alternative_quest_type"] = x => null!,
+        });
+        Console.WriteLine($"Result: {result}");
+
+        Assert.Pass();
+    }
+
+    //pokestop.QuestConditions = null;
+    //pokestop.QuestRewards = null;
+    //pokestop.QuestTarget = null;
+    //pokestop.QuestTemplate = null;
+    //pokestop.QuestTimestamp = null;
+    //pokestop.QuestTitle = null;
+    //pokestop.QuestType = null;
+
+    [Test]
     public async Task GetNewAccountTests()
     {
         var factory = new MySqlConnectionFactory(ConnectionString);

@@ -7,9 +7,9 @@ using MySqlConnector;
 
 using ChuckDeviceController.Data.Common;
 using ChuckDeviceController.Data.Entities;
-using ChuckDeviceController.Data.Extensions;
 using ChuckDeviceController.Data.Repositories;
 using ChuckDeviceController.Data.TypeHandlers;
+using ChuckDeviceController.Extensions;
 
 internal class PokemonTests
 {

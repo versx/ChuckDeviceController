@@ -167,6 +167,40 @@ public abstract class DapperGenericRepository<TKey, TEntity> : IDapperGenericRep
         return result;
     }
 
+    public async Task<int> UpdateRangeAsync(
+        IEnumerable<TEntity> entities,
+        CancellationToken stoppingToken = default)
+    {
+        var query = _sqlGenerator.GetBulkUpdate(entities);
+        var updateQuery = query.SqlBuilder.ToString();
+        var parameters = query.Param;
+
+        using var connection = await CreateConnectionAsync(stoppingToken);
+        var result = await connection.ExecuteAsync(updateQuery, parameters);
+        return result;
+    }
+
+    public async Task<int> UpdateRangeAsync(
+        IEnumerable<TEntity> entities,
+        Dictionary<string, Func<TEntity, object>> mappings,
+        CancellationToken stoppingToken = default)
+    {
+        var updateQuery = new List<string>();
+        var updateParams = new List<DynamicParameters>();
+
+        foreach (var entity in entities)
+        {
+            var query = GenerateUpdateQuery(entity, mappings, out var parameters);
+            updateQuery.Add(query);
+            updateParams.Add(parameters);
+        }
+
+        var sql = string.Join(";", updateQuery);
+        using var connection = await CreateConnectionAsync(stoppingToken);
+        var result = await connection.ExecuteAsync(sql, updateParams);
+        return result;
+    }
+
     public async Task<bool> DeleteAsync(TKey id, CancellationToken stoppingToken = default)
     {
         var deleteQuery = GenerateDeleteQuery(id, out var parameters);

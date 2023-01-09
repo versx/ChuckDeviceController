@@ -40,8 +40,6 @@ public class JobControllerService : IJobControllerService
     private static readonly ILogger<IJobControllerService> _logger =
         GenericLoggerFactory.CreateLogger<IJobControllerService>();
     private readonly IDapperUnitOfWork _uow;
-    private readonly IDbContextFactory<ControllerDbContext> _deviceFactory;
-    private readonly IDbContextFactory<MapDbContext> _mapFactory;
     private readonly ITimeZoneService _timeZoneService;
     private readonly IGeofenceControllerService _geofenceService;
     private readonly IIvListControllerService _ivListService;
@@ -83,8 +81,6 @@ public class JobControllerService : IJobControllerService
 
     public JobControllerService(
         IDapperUnitOfWork uow,
-        IDbContextFactory<ControllerDbContext> deviceFactory,
-        IDbContextFactory<MapDbContext> mapFactory,
         ITimeZoneService timeZoneService,
         IGeofenceControllerService geofenceService,
         IIvListControllerService ivListService,
@@ -94,8 +90,6 @@ public class JobControllerService : IJobControllerService
         IServiceProvider services)
     {
         _uow = uow;
-        _deviceFactory = deviceFactory;
-        _mapFactory = mapFactory;
         _timeZoneService = timeZoneService;
         _geofenceService = geofenceService;
         _ivListService = ivListService;
@@ -296,7 +290,7 @@ public class JobControllerService : IJobControllerService
             {
                 var timeZone = instance.Data?.TimeZone;
                 var timeZoneOffset = ConvertTimeZoneToOffset(timeZone, instance.Data?.EnableDst ?? Strings.DefaultEnableDst);
-                jobController = CreateAutoQuestJobController(_uow, _mapFactory, instance, multiPolygons, timeZoneOffset);
+                jobController = CreateAutoQuestJobController(_uow, instance, multiPolygons, timeZoneOffset);
                 ((AutoInstanceController)jobController).InstanceComplete += OnAutoInstanceComplete;
             }
             else if (instance.Type == InstanceType.Bootstrap)
@@ -841,11 +835,10 @@ public class JobControllerService : IJobControllerService
         return jobController;
     }
 
-    private static IJobController CreateAutoQuestJobController(IDapperUnitOfWork uow, IDbContextFactory<MapDbContext> mapFactory, Instance instance, IReadOnlyList<IMultiPolygon> multiPolygons, short timeZoneOffset)
+    private static IJobController CreateAutoQuestJobController(IDapperUnitOfWork uow, Instance instance, IReadOnlyList<IMultiPolygon> multiPolygons, short timeZoneOffset)
     {
         var jobController = new AutoInstanceController(
             uow,
-            mapFactory,
             instance,
             multiPolygons,
             timeZoneOffset
