@@ -14,6 +14,7 @@ using ChuckDeviceController.Data.Common;
 using ChuckDeviceController.Data.Contexts;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Extensions;
+using ChuckDeviceController.Data.Repositories.Dapper;
 using ChuckDeviceController.Extensions;
 using ChuckDeviceController.Geometry;
 using ChuckDeviceController.Geometry.Extensions;
@@ -28,8 +29,8 @@ public class AutoInstanceController : IJobController
     #region Variables
 
     private readonly ILogger<AutoInstanceController> _logger;
+    private readonly IDapperUnitOfWork _uow;
     private readonly IDbContextFactory<MapDbContext> _mapFactory;
-    private readonly IDbContextFactory<ControllerDbContext> _deviceFactory;
 
     private readonly SafeCollection<PokestopWithMode> _allStops = new();
     private readonly SafeCollection<PokestopWithMode> _todayStops = new();
@@ -93,8 +94,8 @@ public class AutoInstanceController : IJobController
     #region Constructor
 
     public AutoInstanceController(
+        IDapperUnitOfWork uow,
         IDbContextFactory<MapDbContext> mapFactory,
-        IDbContextFactory<ControllerDbContext> deviceFactory,
         Instance instance,
         IReadOnlyList<IMultiPolygon> multiPolygons,
         short timeZoneOffset = Strings.DefaultTimeZoneOffset)
@@ -118,8 +119,8 @@ public class AutoInstanceController : IJobController
         RequireAccountEnabled = true; // TODO: Make 'RequireAccountEnabled' configurable via Instance.Data
 
         _logger = new Logger<AutoInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
+        _uow = uow;
         _mapFactory = mapFactory;
-        _deviceFactory = deviceFactory;
 
         var (localTime, timeLeft) = GetSecondsUntilMidnight();
         timeLeft = timeLeft <= 0 ? 1 : timeLeft;
@@ -127,7 +128,7 @@ public class AutoInstanceController : IJobController
         _timer.Elapsed += async (sender, e) => await ClearQuestsAsync();
         _timer.Start();
 
-        _logger.LogInformation($"[{Name}] Clearing Quests in {timeLeft:N0}s at 12:00 AM (Currently: {localTime})");
+        _logger.LogInformation("[{Name}] Clearing Quests in {TimeLeft:N0}s at 12:00 AM (Currently: {LocalTime})", Name, timeLeft, localTime);
 
         Task.Run(UpdateAsync).Wait();
 
@@ -154,13 +155,13 @@ public class AutoInstanceController : IJobController
 
                 if (string.IsNullOrEmpty(options.AccountUsername) && RequireAccountEnabled)
                 {
-                    _logger.LogWarning($"[{Name}] No username specified for device '{options.Uuid}', ignoring...");
+                    _logger.LogWarning("[{Name}] No username specified for device '{Uuid}', ignoring...", Name, options.Uuid);
                     return null!;
                 }
 
                 if (options.Account == null && RequireAccountEnabled)
                 {
-                    _logger.LogWarning($"[{Name}] No account specified for device '{options.Uuid}', ignoring...");
+                    _logger.LogWarning("[{Name}] No account specified for device '{Uuid}', ignoring...", Name, options.Uuid);
                     return null!;
                 }
 
@@ -251,7 +252,7 @@ public class AutoInstanceController : IJobController
                         return await HandlePokestopDelayAsync(pokestop, options.Uuid, options.AccountUsername);
                     }
 
-                    _logger.LogWarning($"[{Name}] [{options.Uuid}] Ignoring over logout delay, no account is specified");
+                    _logger.LogWarning("[{Name}] [{Uuid}] Ignoring over logout delay, no account is specified", Name, options.Uuid);
                 }
 
                 try
@@ -259,11 +260,11 @@ public class AutoInstanceController : IJobController
                     if (!string.IsNullOrEmpty(options.AccountUsername))
                     {
                         // Increment account spin count
-                        await Cooldown.SetSpinCountAsync(_deviceFactory, options.AccountUsername);
+                        await Cooldown.SetSpinCountAsync(_uow, options.AccountUsername);
                     }
 
                     await Cooldown.SetEncounterAsync(
-                        _deviceFactory,
+                        _uow,
                         (Account?)options.Account,
                         pokestop.Pokestop.ToCoordinate(),
                         encounterTime
@@ -335,9 +336,10 @@ public class AutoInstanceController : IJobController
                     ? Convert.ToDouble((double)currentCountDb / maxCount) * 100
                     : 0;
 
-                var completedDate = _completionDate.FromSeconds()
-                                                   .ToLocalTime()
-                                                   .ToString("hh:mm:ss tt");
+                var completedDate = _completionDate
+                    .FromSeconds()
+                    .ToLocalTime()
+                    .ToString("hh:mm:ss tt");
                 var ignoredStatus = _ignorePokestopIds.Count > 0
                     ? $", Ign: {_ignorePokestopIds.Count:N0}"
                     : string.Empty;
@@ -355,14 +357,14 @@ public class AutoInstanceController : IJobController
 
     public async Task ReloadAsync()
     {
-        _logger.LogDebug($"[{Name}] Reloading instance");
+        _logger.LogDebug("[{Name}] Reloading instance", Name);
 
         await UpdateAsync();
     }
 
     public async Task StopAsync()
     {
-        _logger.LogDebug($"[{Name}] Stopping instance");
+        _logger.LogDebug("[{Name}] Stopping instance", Name);
 
         _timer.Stop();
 
@@ -384,18 +386,18 @@ public class AutoInstanceController : IJobController
 
         if (_allStops.Count == 0)
         {
-            _logger.LogWarning($"[{Name}] Tried clearing quests but no pokestops with quests.");
+            _logger.LogWarning("[{Name}] Tried clearing quests but no pokestops with quests.", Name);
             return;
         }
 
         // Clear quests
         var pokestopIds = _allStops.Select(stop => stop.Pokestop.Id).ToList();
-        _logger.LogInformation($"[{Name}] Clearing Quests for {pokestopIds.Count:N0} Pokestops...");
+        _logger.LogInformation("[{Name}] Clearing Quests for {Count:N0} Pokestops...", Name, pokestopIds.Count);
 
         using (var context = _mapFactory.CreateDbContext())
         {
             await context.ClearQuestsAsync(pokestopIds);
-            _logger.LogInformation($"[{Name}] {pokestopIds.Count:N0} Pokestop Quests have been cleared");
+            _logger.LogInformation("[{Name}] {Count:N0} Pokestop Quests have been cleared", Name, pokestopIds.Count);
         }
 
         await UpdateAsync();
@@ -458,7 +460,7 @@ public class AutoInstanceController : IJobController
 
     private async Task BootstrapAsync()
     {
-        _logger.LogInformation($"[{Name}] Checking Bootstrap Status...");
+        _logger.LogInformation("[{Name}] Checking Bootstrap Status...", Name);
 
         var stopwatch = new System.Diagnostics.Stopwatch();
         stopwatch.Start();
@@ -495,7 +497,7 @@ public class AutoInstanceController : IJobController
 
         stopwatch.Stop();
         var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);
-        _logger.LogInformation($"[{Name}] Bootstrap Status: {found:N0}/{total:N0} after {totalSeconds} seconds");
+        _logger.LogInformation("[{Name}] Bootstrap Status: {Found:N0}/{Total:N0} after {TotalSeconds} seconds", Name, found, total, totalSeconds);
 
         _bootstrapCellIds.Clear();
         _bootstrapCellIds.AddRange(missingCellIds);
@@ -756,7 +758,7 @@ public class AutoInstanceController : IJobController
             var newAccount = await GetAccountAsync(uuid, pokestopCoord);
             if (newAccount == null)
             {
-                _logger.LogWarning($"[{Name}] [{uuid}] Failed to get new account from database for device to set cache");
+                _logger.LogWarning("[{Name}] [{Uuid}] Failed to get new account from database for device to set cache", Name, uuid);
                 return CreateSwitchAccountTask();
             }
 
@@ -765,7 +767,7 @@ public class AutoInstanceController : IJobController
                 newUsername = newAccount.Username;
                 _accounts.AddOrUpdate(uuid, newAccount.Username, (key, oldValue) => newAccount.Username);
 
-                _logger.LogDebug($"[{Name}] [{uuid}] Over logout delay. Switching account from {accountUsername ?? "?"} to {newUsername ?? "?"}");
+                _logger.LogDebug("[{Name}] [{Uuid}] Over logout delay. Switching account from {AccountUsername} to {NewUsername}", Name, uuid, accountUsername ?? "?", newUsername ?? "?");
             }
             else
             {
@@ -791,12 +793,13 @@ public class AutoInstanceController : IJobController
         if ((mode ?? false) && !(closest?.IsAlternative ?? false))
         {
             var modeName = (mode ?? false) ? "alternative" : "none";
-            _logger.LogDebug($"[{Name}] [{accountUsername ?? "?"}] Switching quest mode from {modeName} to normal.");
+            _logger.LogDebug("[{Name}] [{AccountUsername}] Switching quest mode from {ModeName} to normal.", Name, accountUsername ?? "?", modeName);
 
             PokestopWithMode? closestAr = null;
             double closestArDistance = Strings.DefaultDistance;
-            var arStops = _allStops.Where(stop => stop.Pokestop.IsArScanEligible)
-                                   .ToList();
+            var arStops = _allStops
+                .Where(stop => stop.Pokestop.IsArScanEligible)
+                .ToList();
 
             foreach (var stop in arStops)
             {
@@ -813,11 +816,11 @@ public class AutoInstanceController : IJobController
             {
                 closestAr.IsAlternative = closest?.IsAlternative ?? false;
                 closest = closestAr;
-                _logger.LogDebug($"[{Name}] [{accountUsername ?? "?"}] Scanning AR eligible Pokestop {closest?.Pokestop?.Id}");
+                _logger.LogDebug("[{Name}] [{AccountUsername}] Scanning AR eligible Pokestop {Id}", Name, accountUsername ?? "?", closest?.Pokestop?.Id);
             }
             else
             {
-                _logger.LogDebug($"[{Name}] [{accountUsername ?? "?"}] No AR eligible Pokestop found to scan");
+                _logger.LogDebug("[{Name}] [{AccountUsername}] No AR eligible Pokestop found to scan", Name, accountUsername ?? "?");
             }
         }
 
@@ -826,7 +829,7 @@ public class AutoInstanceController : IJobController
 
     private void HandleOnCompletion(string uuid)
     {
-        _logger.LogInformation($"[{Name}] [{uuid}] Quest instance complete");
+        _logger.LogInformation("[{Name}] [{Uuid}] Quest instance complete", Name, uuid);
 
         if (_completionDate == 0)
         {
@@ -911,7 +914,6 @@ public class AutoInstanceController : IJobController
     private async Task<Account?> GetAccountAsync(string uuid, Coordinate encounterTarget)
     {
         // TODO: Check account against encounterTarget to see if too far
-        using var context = _deviceFactory.CreateDbContext();
         if (_accounts.TryGetValue(uuid, out var value))
         {
             var username = value;
@@ -919,11 +921,13 @@ public class AutoInstanceController : IJobController
             if (!result)
             {
                 // Failed to remove account from cache
+                _logger.LogWarning("[{Name}] [{Uuid}] Failed to remove account '{Username}' from cache, it may already be removed.", Name, uuid, username);
             }
-            return await context.GetAccountAsync(username);
+            var existingAccount = await _uow.Accounts.FindAsync(username);
+            return existingAccount;
         }
 
-        var account = await context.GetNewAccountAsync(
+        var account = await GetNewAccountAsync(
             MinimumLevel,
             MaximumLevel,
             UseWarningAccounts,
@@ -932,6 +936,36 @@ public class AutoInstanceController : IJobController
             GroupName,
             Strings.CooldownLimitS,
             Strings.SuspensionTimeLimitS
+        );
+        return account;
+    }
+
+    public async Task<Account?> GetNewAccountAsync(
+        ushort minLevel = 0, ushort maxLevel = 35, bool ignoreWarning = false, uint spins = 3500,
+        bool noCooldown = true, string? group = null, ushort cooldownLimitS = Strings.CooldownLimitS,
+        uint suspensionTimeLimitS = Strings.SuspensionTimeLimitS)
+    {
+        var now = DateTime.UtcNow.ToTotalSeconds();
+        var account = await _uow.Accounts.FirstOrDefaultAsync(x =>
+            // Meet level requirements for instance
+            (x.Level >= minLevel && x.Level <= maxLevel) &&
+            // Is under total spins
+            x.Spins < spins &&
+            // Matches event group name
+            (!string.IsNullOrEmpty(group)
+                ? x.GroupName == group
+                : x.GroupName == null) &&
+            // Cooldown
+            (x.LastEncounterTime == null || (noCooldown
+                ? now - x.LastEncounterTime >= cooldownLimitS
+                : x.LastEncounterTime != null)) &&
+            (ignoreWarning
+                // Has warning 
+                ? (x.Failed == null || x.Failed == "GPR_RED_WARNING")
+                // Has no account warnings or are expired already
+                : (x.Failed == null && x.FirstWarningTimestamp == null) ||
+                  (x.Failed == "GPR_RED_WARNING" && x.WarnExpireTimestamp > 0 && x.WarnExpireTimestamp <= now) ||
+                  (x.Failed == "suspended" && x.FailedTimestamp <= now - suspensionTimeLimitS))
         );
         return account;
     }

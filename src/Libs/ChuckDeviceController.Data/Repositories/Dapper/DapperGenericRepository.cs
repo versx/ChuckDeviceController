@@ -196,8 +196,25 @@ public abstract class DapperGenericRepository<TKey, TEntity> : IDapperGenericRep
     {
         var whereExpression = _translator.Translate(predicate!);
         var query = _sqlGenerator.GetSelectAll(null, filterData, includes);
-        query.SqlBuilder.Append(" WHERE ");
-        query.SqlBuilder.Append(whereExpression);
+        if (!string.IsNullOrEmpty(_translator.WhereClause))
+        {
+            query.SqlBuilder.Append(" WHERE ");
+            query.SqlBuilder.Append(_translator.WhereClause);
+        }
+        if (!string.IsNullOrEmpty(_translator.OrderBy))
+        {
+            query.SqlBuilder.Append(" ORDER BY ");
+            query.SqlBuilder.Append(_translator.OrderBy);
+        }
+        if (_translator.Skip != null || _translator.Take != null)
+        {
+            query.SqlBuilder.Append(" LIMIT ");
+            var skip = _translator.Skip ?? 0;
+            var take = _translator.Take ?? 0;
+            query.SqlBuilder.Append($"{skip},{take}");
+        }
+        //query.SqlBuilder.Append(" WHERE ");
+        //query.SqlBuilder.Append(whereExpression);
 
         var sql = query.SqlBuilder.ToString();
         var param = query.Param;

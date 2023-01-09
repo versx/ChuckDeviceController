@@ -32,7 +32,6 @@ using ChuckDeviceController.Routing;
 using Type = System.Type;
 
 // TODO: Refactor class into separate smaller classes
-// TODO: Create MySqlConnectionFactory to replace DeviceFactory and MapFactory
 
 public class JobControllerService : IJobControllerService
 {
@@ -120,19 +119,13 @@ public class JobControllerService : IJobControllerService
     {
         _serviceProvider = serviceProvider;
 
-        using var scope = Services.CreateScope();
-        using var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
-
-        var devices = await uow.Devices.FindAllAsync();
+        var devices = await _uow.Devices.FindAllAsync();
         devices.ToList().ForEach(AddDevice);
     }
 
     public async void Start()
     {
-        using var scope = Services.CreateScope();
-        using var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
-
-        var instances = await uow.Instances.FindAllAsync();
+        var instances = await _uow.Instances.FindAllAsync();
         var devices = _devices.Values;
 
         foreach (var instance in instances)
@@ -303,7 +296,7 @@ public class JobControllerService : IJobControllerService
             {
                 var timeZone = instance.Data?.TimeZone;
                 var timeZoneOffset = ConvertTimeZoneToOffset(timeZone, instance.Data?.EnableDst ?? Strings.DefaultEnableDst);
-                jobController = CreateAutoQuestJobController(_uow, _mapFactory, _deviceFactory, instance, multiPolygons, timeZoneOffset);
+                jobController = CreateAutoQuestJobController(_uow, _mapFactory, instance, multiPolygons, timeZoneOffset);
                 ((AutoInstanceController)jobController).InstanceComplete += OnAutoInstanceComplete;
             }
             else if (instance.Type == InstanceType.Bootstrap)
@@ -848,11 +841,11 @@ public class JobControllerService : IJobControllerService
         return jobController;
     }
 
-    private static IJobController CreateAutoQuestJobController(IDbContextFactory<MapDbContext> mapFactory, IDbContextFactory<ControllerDbContext> deviceFactory, Instance instance, IReadOnlyList<IMultiPolygon> multiPolygons, short timeZoneOffset)
+    private static IJobController CreateAutoQuestJobController(IDapperUnitOfWork uow, IDbContextFactory<MapDbContext> mapFactory, Instance instance, IReadOnlyList<IMultiPolygon> multiPolygons, short timeZoneOffset)
     {
         var jobController = new AutoInstanceController(
+            uow,
             mapFactory,
-            deviceFactory,
             instance,
             multiPolygons,
             timeZoneOffset
