@@ -1,10 +1,17 @@
 ﻿namespace ChuckDeviceController.Data.Translators;
 
+using System.Collections;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
+
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
+
+using ChuckDeviceController.Extensions;
 
 // Credits: https://stackoverflow.com/a/7891426
 public class MySqlQueryTranslator : ExpressionVisitor
@@ -59,88 +66,381 @@ public class MySqlQueryTranslator : ExpressionVisitor
 
     protected override Expression VisitMethodCall(MethodCallExpression node)
     {
-        //if (node.Method.DeclaringType == typeof(Queryable) && node.Method.Name == "Where")
-        //{
-        //    Visit(node.Arguments[0]);
-        //    var lambda = (LambdaExpression)StripQuotes(node.Arguments[1]);
-        //    Visit(lambda.Body);
-        //    return node;
-        //}
-
-        switch (node.Method.Name)
+        if (node.Method.DeclaringType == typeof(Math))
         {
-            case "Where":
-                if (node.Method.DeclaringType == typeof(Queryable))
-                {
+            switch (node.Method.Name)
+            {
+                case "Abs":
+                case "Acos":
+                case "Asin":
+                case "Atan":
+                case "Atan2":
+                case "Cos":
+                case "Exp":
+                case "Log10":
+                case "Sin":
+                case "Tan":
+                case "Sqrt":
+                case "Sign":
+                case "Ceiling":
+                case "Floor":
+                    Write(node.Method.Name.ToUpper());
+                    Write("(");
                     Visit(node.Arguments[0]);
-                    var lambda = (LambdaExpression)StripQuotes(node.Arguments[1]);
-                    Visit(lambda.Body);
+                    Write(")");
                     return node;
-                }
-                break;
-
-            case "Take":
-                if (ParseTakeExpression(node))
-                {
-                    return Visit(node.Arguments[0]);
-                }
-                break;
-
-            case "Skip":
-                if (ParseSkipExpression(node))
-                {
-                    return Visit(node.Arguments[0]);
-                }
-                break;
-
-            case "OrderBy":
-                if (ParseOrderByExpression(node, "ASC"))
-                {
-                    return Visit(node.Arguments[0]);
-                }
-                break;
-
-            case "OrderByDescending":
-                if (ParseOrderByExpression(node, "DESC"))
-                {
-                    return Visit(node.Arguments[0]);
-                }
-                break;
-
-            case "Any":
-                if (ParseAnyExpression(node, includeOper: true))
-                {
+                case "Pow":
+                    Write("POWER(");
+                    Visit(node.Arguments[0]);
+                    Write(", ");
+                    Visit(node.Arguments[1]);
+                    Write(")");
                     return node;
-                }
-                break;
-
-            case "Contains":
-                if (ParseContainsExpression(node))
-                {
+                case "Round":
+                    if (node.Arguments.Count == 1)
+                    {
+                        Write("ROUND(");
+                        Visit(node.Arguments[0]);
+                        Write(")");
+                        return node;
+                    }
+                    else if (node.Arguments.Count == 2 && node.Arguments[1].Type == typeof(int))
+                    {
+                        Write("ROUND(");
+                        Visit(node.Arguments[0]);
+                        Write(", ");
+                        Visit(node.Arguments[1]);
+                        Write(")");
+                        return node;
+                    }
+                    break;
+                case "Truncate":
+                    Write("TRUNCATE(");
+                    Visit(node.Arguments[0]);
+                    Write(",0)");
                     return node;
-                }
-                break;
-
-            case "Count":
-                if (ParseAnyExpression(node, includeOper: false))
-                {
+            }
+        }
+        else if (node.Method.DeclaringType == typeof(decimal))
+        {
+            switch (node.Method.Name)
+            {
+                case "Add":
+                case "Subtract":
+                case "Multiply":
+                case "Divide":
+                case "Remainder":
+                    Write("(");
+                    VisitValue(node.Arguments[0]);
+                    Write(" ");
+                    Write(node.Method.Name.GetOperator());
+                    Write(" ");
+                    VisitValue(node.Arguments[1]);
+                    Write(")");
                     return node;
-                }
-                break;
 
-            case "IsNullOrEmpty":
-                if (ParseNullOrEmptyStringExpression(node))
-                {
+                case "Negate":
+                    Write("-");
+                    Visit(node.Arguments[0]);
+                    Write("");
                     return node;
-                }
-                break;
 
-            case "IsNullOrWhitespace":
-                if (ParseNullOrWhitespaceStringExpression(node))
-                {
+                case "Ceiling":
+                case "Floor":
+                    Write(node.Method.Name.ToUpper());
+                    Write("(");
+                    Visit(node.Arguments[0]);
+                    Write(")");
                     return node;
-                }
-                break;
+
+                case "Round":
+                    if (node.Arguments.Count == 1)
+                    {
+                        Write("ROUND(");
+                        Visit(node.Arguments[0]);
+                        Write(")");
+                        return node;
+                    }
+                    else if (node.Arguments.Count == 2 && node.Arguments[1].Type == typeof(int))
+                    {
+                        Write("ROUND(");
+                        Visit(node.Arguments[0]);
+                        Write(", ");
+                        Visit(node.Arguments[1]);
+                        Write(")");
+                        return node;
+                    }
+                    break;
+
+                case "Truncate":
+                    Write("TRUNCATE(");
+                    Visit(node.Arguments[0]);
+                    Write(",0)");
+                    return node;
+            }
+        }
+        else //if (node.Method.DeclaringType == typeof(string))
+        {
+            switch (node.Method.Name)
+            {
+                case "StartsWith":
+                    Write("(");
+                    Visit(node.Object);
+                    Write(" LIKE CONCAT(");
+                    Visit(node.Arguments[0]);
+                    Write(",'%'))");
+                    return node;
+
+                case "EndsWith":
+                    Write("(");
+                    Visit(node.Object);
+                    Write(" LIKE CONCAT('%',");
+                    Visit(node.Arguments[0]);
+                    Write("))");
+                    return node;
+
+                case "Contains":
+                    Write("(");
+                    Visit(node.Object);
+                    Write(" LIKE CONCAT('%',");
+                    Visit(node.Arguments[0]);
+                    Write(",'%'))");
+                    return node;
+
+                case "Concat":
+                    IList<Expression> args = node.Arguments;
+                    if (args.Count == 1 && args[0].NodeType == ExpressionType.NewArrayInit)
+                    {
+                        args = ((NewArrayExpression)args[0]).Expressions;
+                    }
+                    Write("CONCAT(");
+                    for (int i = 0, n = args.Count; i < n; i++)
+                    {
+                        if (i > 0) Write(", ");
+                        Visit(args[i]);
+                    }
+                    Write(")");
+                    return node;
+
+                case "IsNullOrEmpty":
+                    Write("(");
+                    Visit(node.Arguments[0]);
+                    Write(" IS NULL OR ");
+                    Visit(node.Arguments[0]);
+                    Write(" = '')");
+                    return node;
+
+                case "IsNullOrWhitespace":
+                    Write("(");
+                    Visit(node.Arguments[0]);
+                    Write(" IS NULL OR ");
+                    Visit(node.Arguments[0]);
+                    Write(" = ' ')");
+                    return node;
+
+                case "ToUpper":
+                    Write("UPPER(");
+                    Visit(node.Object);
+                    Write(")");
+                    return node;
+
+                case "ToLower":
+                    Write("LOWER(");
+                    Visit(node.Object);
+                    Write(")");
+                    return node;
+
+                case "Replace":
+                    Write("REPLACE(");
+                    Visit(node.Object);
+                    Write(", ");
+                    Visit(node.Arguments[0]);
+                    Write(", ");
+                    Visit(node.Arguments[1]);
+                    Write(")");
+                    return node;
+
+                case "Substring":
+                    Write("SUBSTRING(");
+                    Visit(node.Object);
+                    Write(", ");
+                    Visit(node.Arguments[0]);
+                    Write(" + 1");
+                    if (node.Arguments.Count == 2)
+                    {
+                        Write(", ");
+                        Visit(node.Arguments[1]);
+                    }
+                    Write(")");
+                    return node;
+
+                case "Remove":
+                    if (node.Arguments.Count == 1)
+                    {
+                        Write("LEFT(");
+                        Visit(node.Object);
+                        Write(", ");
+                        Visit(node.Arguments[0]);
+                        Write(")");
+                    }
+                    else
+                    {
+                        Write("CONCAT(");
+                        Write("LEFT(");
+                        Visit(node.Object);
+                        Write(", ");
+                        Visit(node.Arguments[0]);
+                        Write("), SUBSTRING(");
+                        Visit(node.Object);
+                        Write(", ");
+                        Visit(node.Arguments[0]);
+                        Write(" + ");
+                        Visit(node.Arguments[1]);
+                        Write("))");
+                    }
+                    return node;
+
+                case "IndexOf":
+                    Write("(LOCATE(");
+                    Visit(node.Arguments[0]);
+                    Write(", ");
+                    Visit(node.Object);
+                    if (node.Arguments.Count == 2 && node.Arguments[1].Type == typeof(int))
+                    {
+                        Write(", ");
+                        Visit(node.Arguments[1]);
+                        Write(" + 1");
+                    }
+                    Write(") - 1)");
+                    return node;
+
+                case "Trim":
+                    Write("TRIM(");
+                    Visit(node.Object);
+                    Write(")");
+                    return node;
+
+                case "Where":
+                    if (node.Method.DeclaringType == typeof(Queryable))
+                    {
+                        Visit(node.Arguments[0]);
+                        var lambda = (LambdaExpression)StripQuotes(node.Arguments[1]);
+                        Visit(lambda.Body);
+                        return node;
+                    }
+                    break;
+
+                case "Take":
+                    if (ParseTakeExpression(node))
+                    {
+                        return Visit(node.Arguments[0]);
+                    }
+                    break;
+
+                case "Skip":
+                    if (ParseSkipExpression(node))
+                    {
+                        return Visit(node.Arguments[0]);
+                    }
+                    break;
+
+                case "OrderBy":
+                    if (ParseOrderByExpression(node, "ASC"))
+                    {
+                        return Visit(node.Arguments[0]);
+                    }
+                    break;
+
+                case "OrderByDescending":
+                    if (ParseOrderByExpression(node, "DESC"))
+                    {
+                        return Visit(node.Arguments[0]);
+                    }
+                    break;
+
+                case "Any":
+                    //var inExpression = new InExpression(node, node.Arguments);
+                    //VisitIn(inExpression);
+                    //return node;
+                    if (ParseAnyExpression(node, includeOperand: true))
+                    {
+                        return node;
+                    }
+                    break;
+
+                case "Count":
+                    if (ParseAnyExpression(node, includeOperand: false))
+                    {
+                        return node;
+                    }
+                    break;
+
+                case "ToString":
+                    if (node.Object?.Type != typeof(string))
+                    {
+                        Write("CAST(");
+                        Visit(node.Object);
+                        Write(" AS CHAR)");
+                    }
+                    else
+                    {
+                        Visit(node.Object);
+                    }
+                    return node;
+
+                case "Equals":
+                    if (node.Method.IsStatic && node.Method.DeclaringType == typeof(object))
+                    {
+                        Write("(");
+                        Visit(node.Arguments[0]);
+                        Write(" = ");
+                        Visit(node.Arguments[1]);
+                        Write(")");
+                        return node;
+                    }
+                    else if (!node.Method.IsStatic && node.Arguments.Count == 1 && node.Arguments[0].Type == node.Object?.Type)
+                    {
+                        Write("(");
+                        Visit(node.Object);
+                        Write(" = ");
+                        Visit(node.Arguments[0]);
+                        Write(")");
+                        return node;
+                    }
+                    break;
+
+                case "CompareTo":
+                    if (!node.Method.IsStatic && node.Method.ReturnType == typeof(int) && node.Arguments.Count == 1)
+                    {
+                        Write("(CASE WHEN ");
+                        Visit(node.Object);
+                        Write(" = ");
+                        Visit(node.Arguments[0]);
+                        Write(" THEN 0 WHEN ");
+                        Visit(node.Object);
+                        Write(" < ");
+                        Visit(node.Arguments[0]);
+                        Write(" THEN -1 ELSE 1 END)");
+                        return node;
+                    }
+                    break;
+
+                case "Compare":
+                    if (node.Method.IsStatic && node.Method.ReturnType == typeof(int) && node.Arguments.Count == 2)
+                    {
+                        Write("(CASE WHEN ");
+                        Visit(node.Arguments[0]);
+                        Write(" = ");
+                        Visit(node.Arguments[1]);
+                        Write(" THEN 0 WHEN ");
+                        Visit(node.Arguments[0]);
+                        Write(" < ");
+                        Visit(node.Arguments[1]);
+                        Write(" THEN -1 ELSE 1 END)");
+                        return node;
+                    }
+                    break;
+            }
         }
 
         throw new NotSupportedException($"The method '{node.Method.Name}' is not supported");
@@ -151,7 +451,7 @@ public class MySqlQueryTranslator : ExpressionVisitor
         switch (node.NodeType)
         {
             case ExpressionType.Not:
-                _sb.Append(" NOT ");
+                Write(" NOT ");
                 Visit(node.Operand);
                 break;
 
@@ -168,108 +468,137 @@ public class MySqlQueryTranslator : ExpressionVisitor
 
     protected override Expression VisitBinary(BinaryExpression node)
     {
-        _sb.Append('(');
-        Visit(node.Left);
+        var op = node.GetOperator();
+        var left = node.Left;
+        var right = node.Right;
+
+        Write('(');
 
         switch (node.NodeType)
         {
+            case ExpressionType.Power:
+                Write(" POWER(");
+                VisitValue(left);
+                Write(", ");
+                VisitValue(right);
+                Write(")");
+                break;
+
+            case ExpressionType.Coalesce:
+                Write(" COALESCE(");
+                VisitValue(left);
+                Write(", ");
+                while (right.NodeType == ExpressionType.Coalesce)
+                {
+                    var rb = (BinaryExpression)right;
+                    VisitValue(rb.Left);
+                    Write(", ");
+                    right = rb.Right;
+                }
+                VisitValue(right);
+                Write(")");
+                break;
+
             case ExpressionType.And:
-                _sb.Append(" AND ");
-                break;
-
             case ExpressionType.AndAlso:
-                _sb.Append(" AND ");
-                break;
-
             case ExpressionType.Or:
-                _sb.Append(" OR ");
-                break;
-
             case ExpressionType.OrElse:
-                _sb.Append(" OR ");
-                break;
-
             case ExpressionType.Equal:
-                if (IsNullConstant(node.Right))
-                {
-                    _sb.Append(" IS ");
-                }
-                else
-                {
-                    _sb.Append(" = ");
-                }
-                break;
-
             case ExpressionType.NotEqual:
-                if (IsNullConstant(node.Right))
-                {
-                    _sb.Append(" IS NOT ");
-                }
-                else
-                {
-                    _sb.Append(" <> ");
-                }
-                break;
-
+            case ExpressionType.LeftShift:
+            case ExpressionType.RightShift:
+            case ExpressionType.Add:
+            case ExpressionType.AddChecked:
+            case ExpressionType.Subtract:
+            case ExpressionType.SubtractChecked:
+            case ExpressionType.Multiply:
+            case ExpressionType.MultiplyChecked:
+            case ExpressionType.Modulo:
+            case ExpressionType.ExclusiveOr:
             case ExpressionType.LessThan:
-                _sb.Append(" < ");
-                break;
-
             case ExpressionType.LessThanOrEqual:
-                _sb.Append(" <= ");
-                break;
-
             case ExpressionType.GreaterThan:
-                _sb.Append(" > ");
+            case ExpressionType.GreaterThanOrEqual:
+                VisitValue(left);
+                Write(" ");
+                Write(op);
+                Write(" ");
+                VisitValue(right);
                 break;
 
-            case ExpressionType.GreaterThanOrEqual:
-                _sb.Append(" >= ");
+            case ExpressionType.Divide:
+                if (node.Type.IsInteger())
+                {
+                    Write(" TRUNCATE(");
+                    base.VisitBinary(node);
+                    Write(",0)");
+                }
                 break;
 
             default:
-                throw new NotSupportedException($"The binary operator '{node.NodeType}' is not supported");
-
+                VisitValue(left);
+                Write(" ");
+                Write(op);
+                Write(" ");
+                VisitValue(right);
+                //throw new NotSupportedException($"The binary operator '{node.NodeType}' is not supported");
+                break;
         }
 
-        Visit(node.Right);
-        _sb.Append(')');
+        Write(')');
+
         return node;
     }
 
     protected override Expression VisitConstant(ConstantExpression node)
     {
-        var q = node.Value as IQueryable;
-        if (q == null && node.Value == null)
+        var value = node.Value as IQueryable;
+        if (value == null && node.Value == null)
         {
-            _sb.Append("NULL");
+            Write("NULL");
         }
-        else if (q == null)
+        else if (node.Value?.GetType().GetTypeInfo().IsEnum ?? false)
         {
-            var typeCode = Type.GetTypeCode(node.Value?.GetType());
+            Write(Convert.ChangeType(node.Value, Enum.GetUnderlyingType(node.Value.GetType())));
+        }
+        else if (value == null)
+        {
+            var typeCode = node.Value!.GetType().GetTypeCode();
             switch (typeCode)
             {
                 case TypeCode.Boolean:
-                    _sb.Append(((bool?)node.Value ?? false) ? 1 : 0);
+                    Write(((bool?)node.Value ?? false) ? 1 : 0);
                     break;
 
                 case TypeCode.String:
-                    _sb.Append('\'');
-                    _sb.Append(node.Value);
-                    _sb.Append('\'');
+                    Write('\'');
+                    Write(node.Value);
+                    Write('\'');
                     break;
 
                 case TypeCode.DateTime:
-                    _sb.Append('\'');
-                    _sb.Append(node.Value);
-                    _sb.Append('\'');
+                    Write('\'');
+                    Write(node.Value);
+                    Write('\'');
+                    break;
+
+                case TypeCode.Single:
+                case TypeCode.Double:
+                    var result = ((IConvertible)node.Value!).ToString(NumberFormatInfo.InvariantInfo);
+                    if (!result.Contains('.'))
+                    {
+                        result += ".0";
+                    }
+                    Write(result);
                     break;
 
                 case TypeCode.Object:
                     throw new NotSupportedException($"The constant for '{node.Value}' is not supported");
 
                 default:
-                    _sb.Append(node.Value);
+                    var converted = (node.Value as IConvertible)?.ToString(CultureInfo.InvariantCulture) ?? node.Value;
+                    Write(converted);
+                    //Write(node.Value);
                     break;
             }
         }
@@ -282,21 +611,24 @@ public class MySqlQueryTranslator : ExpressionVisitor
         if (node.Expression != null)
         {
             switch (node.Expression.NodeType)
-            //switch (node.NodeType)
             {
+                case ExpressionType.Constant:
+                    // Wrap column name in backticks if it is a reserved MySQL keyword
+                    var constValue = _reservedKeywords?.Contains(node.Member.Name) ?? false
+                        ? $"`{node.Member.Name}`"
+                        : node.Member.Name;
+                    Write(constValue);
+                    return node;
+
                 case ExpressionType.Parameter:
                     var attr = node.Member.GetCustomAttribute<ColumnAttribute>();
                     if (attr?.Name != null)
                     {
                         // Wrap column name in backticks if it is a reserved MySQL keyword
-                        if (_reservedKeywords?.Contains(attr.Name) ?? false)
-                        {
-                            _sb.Append($"`{attr.Name}`");
-                        }
-                        else
-                        {
-                            _sb.Append(attr.Name);
-                        }
+                        var value = _reservedKeywords?.Contains(attr.Name) ?? false
+                            ? $"`{attr.Name}`"
+                            : attr.Name;
+                        Write(value);
                     }
                     return node;
 
@@ -305,13 +637,39 @@ public class MySqlQueryTranslator : ExpressionVisitor
                     {
                         case "Count":
                         case "Length":
-                            // Inner expression (node.Member = Count, node.Expression.Memeber = pokemonIds)
-                            var expression = (MemberExpression)node.Expression;
-                            var colAttr = expression.Member.GetCustomAttribute<ColumnAttribute>();
-                            if (colAttr?.Name != null)
+                        default:
+                            var genericTypes = new[]
                             {
-                                //_sb.Append($"JSON_LENGTH(JSON_EXTRACT({attr.Name}, \"$\"))");
-                                _sb.Append($"JSON_LENGTH({colAttr.Name})");
+                                typeof(IEnumerable<>),
+                                typeof(ICollection),
+                                typeof(IList),
+                                typeof(IList<>),
+                                typeof(List<>),
+                                typeof(Array),
+                                typeof(IDictionary),
+                                typeof(Dictionary<,>),
+                            };
+                            // Check if array/list, if so use json_length
+                            if (node.Expression.Type.IsGenericType &&
+                                genericTypes.Contains(node.Expression.Type.UnderlyingSystemType.GetGenericTypeDefinition()))
+                            {
+                                // Inner expression (node.Member = Count, node.Expression.Memeber = pokemonIds)
+                                var expression = (MemberExpression)node.Expression;
+                                var colAttr = expression.Member.GetCustomAttribute<ColumnAttribute>();
+                                if (colAttr?.Name != null)
+                                {
+                                    var colName = _reservedKeywords?.Contains(colAttr.Name) ?? false
+                                        ? $"`{colAttr.Name}`"
+                                        : colAttr.Name;
+                                    //Write($"JSON_LENGTH(JSON_EXTRACT({attr.Name}, \"$\"))");
+                                    Write($"JSON_LENGTH({colName})");
+                                }
+                            }
+                            else
+                            {
+                                Write("CHAR_LENGTH(");
+                                Visit(node.Expression);
+                                Write(")");
                             }
                             break;
                     }
@@ -322,67 +680,259 @@ public class MySqlQueryTranslator : ExpressionVisitor
         throw new NotSupportedException($"The member '{node.Member.Name}' is not supported");
     }
 
-    #endregion
-
-    #region Private Methods
-
-    private bool ParseAnyExpression(MethodCallExpression expression, bool includeOper = true)
+    protected Expression VisitIn(InExpression @in)
     {
-        var memberExpression = (MemberExpression)expression.Arguments[0];
-        var colAttr = memberExpression.Member.GetCustomAttribute<ColumnAttribute>();
-        if (colAttr?.Name != null)
+        if (@in.Values != null)
         {
-            if (includeOper)
+            if (@in.Values.Count == 0)
             {
-                _sb.Append($"JSON_LENGTH({colAttr.Name}) > 0");
+                Write("0 <> 0");
             }
             else
             {
-                _sb.Append($"JSON_LENGTH({colAttr.Name})");
+                //VisitValue(@in.Expression, skipVisit: true);
+                VisitIn2(@in);
+                Write(" IN (");
+                for (int i = 0, n = @in.Values.Count; i < n; i++)
+                {
+                    if (i > 0) Write(", ");
+                    VisitValue(@in.Values[i]);
+                    //Visit(@in.Values[i]);
+                }
+                Write(")");
             }
-            return true;
         }
-        return false;
-    }
-
-    private bool ParseContainsExpression(MethodCallExpression expression)
-    {
-        var constantExpression = (ConstantExpression)expression.Arguments[0];
-        var memberExpression = (MemberExpression)expression.Object!;
-        var attr = memberExpression.Member.GetCustomAttribute<ColumnAttribute>();
-        if (attr?.Name != null)
+        else
         {
-            var value = constantExpression.Value;
-            //_sb.Append($"{value} IN ({attr.Name})");
-            //_sb.Append($"JSON_CONTAINS(JSON_UNQUOTE({attr.Name}), '\"{value}\"', '$')");
-            _sb.Append($"JSON_CONTAINS({attr.Name}, '\"{value}\"', '$')");
-            return true;
+            VisitValue(@in.Expression);
+            Write(" IN (");
+            WriteLine();
+            Visit(@in.Select);
+            WriteLine();
+            Write(")");
         }
-        return false;
+        return @in;
     }
 
-    private bool ParseNullOrEmptyStringExpression(MethodCallExpression expression)
+    protected Expression VisitIn2(InExpression @in)
+    {
+        //var expr = Visit(@in.Expression);
+        var expr = @in.Expression;
+        var select = (SelectExpression)Visit(@in.Select);
+        var values = VisitExpressionList(@in.Values);
+        return UpdateIn(@in, expr, select, values);
+    }
+
+    protected InExpression UpdateIn(InExpression @in, Expression expression, SelectExpression select, IEnumerable<Expression> values)
+    {
+        if (expression != @in.Expression || select != @in.Select || values != @in.Values)
+        {
+            if (select != null)
+            {
+                return new InExpression(expression, select);
+            }
+            else
+            {
+                return new InExpression(expression, values);
+            }
+        }
+        return @in;
+    }
+
+    protected ReadOnlyCollection<Expression> VisitExpressionList(ReadOnlyCollection<Expression> original)
+    {
+        for (int i = 0, count = original.Count; i < count; i++)
+        {
+            Visit(original[i]);
+            if (i < count - 1)
+            {
+                Write(",");
+                WriteLine();
+            }
+        }
+        return original;
+    }
+
+    protected Expression VisitValue(Expression node, bool skipVisit = false)
+    {
+        if (node.IsPredicate())
+        {
+            Write("CASE WHEN (");
+            Visit(node);
+            Write(") THEN 1 ELSE 0 END");
+            return node;
+        }
+
+        if (skipVisit)
+        {
+            return node;
+        }
+        return Visit(node);
+    }
+
+    //public override Expression Visit(Expression? node)
+    //{
+    //    if (node == null)
+    //    {
+    //        return null!;
+    //    }
+
+    //    // check for supported node types first 
+    //    // non-supported ones should not be visited (as they would produce bad SQL)
+    //    switch (node.NodeType)
+    //    {
+    //        case ExpressionType.Negate:
+    //        case ExpressionType.NegateChecked:
+    //        case ExpressionType.Not:
+    //        case ExpressionType.Convert:
+    //        case ExpressionType.ConvertChecked:
+    //        case ExpressionType.UnaryPlus:
+    //        case ExpressionType.Add:
+    //        case ExpressionType.AddChecked:
+    //        case ExpressionType.Subtract:
+    //        case ExpressionType.SubtractChecked:
+    //        case ExpressionType.Multiply:
+    //        case ExpressionType.MultiplyChecked:
+    //        case ExpressionType.Divide:
+    //        case ExpressionType.Modulo:
+    //        case ExpressionType.And:
+    //        case ExpressionType.AndAlso:
+    //        case ExpressionType.Or:
+    //        case ExpressionType.OrElse:
+    //        case ExpressionType.LessThan:
+    //        case ExpressionType.LessThanOrEqual:
+    //        case ExpressionType.GreaterThan:
+    //        case ExpressionType.GreaterThanOrEqual:
+    //        case ExpressionType.Equal:
+    //        case ExpressionType.NotEqual:
+    //        case ExpressionType.Coalesce:
+    //        case ExpressionType.RightShift:
+    //        case ExpressionType.LeftShift:
+    //        case ExpressionType.ExclusiveOr:
+    //        case ExpressionType.Power:
+    //        case ExpressionType.Conditional:
+    //        case ExpressionType.Constant:
+    //        case ExpressionType.MemberAccess:
+    //        case ExpressionType.Call:
+    //        case ExpressionType.New:
+    //        case (ExpressionType)DbExpressionType.Table:
+    //        case (ExpressionType)DbExpressionType.Column:
+    //        case (ExpressionType)DbExpressionType.Select:
+    //        case (ExpressionType)DbExpressionType.Join:
+    //        case (ExpressionType)DbExpressionType.Aggregate:
+    //        case (ExpressionType)DbExpressionType.Scalar:
+    //        case (ExpressionType)DbExpressionType.Exists:
+    //        case (ExpressionType)DbExpressionType.In:
+    //        case (ExpressionType)DbExpressionType.AggregateSubquery:
+    //        case (ExpressionType)DbExpressionType.IsNull:
+    //        case (ExpressionType)DbExpressionType.Between:
+    //        case (ExpressionType)DbExpressionType.RowCount:
+    //        case (ExpressionType)DbExpressionType.Projection:
+    //        case (ExpressionType)DbExpressionType.NamedValue:
+    //        case (ExpressionType)DbExpressionType.Insert:
+    //        case (ExpressionType)DbExpressionType.Update:
+    //        case (ExpressionType)DbExpressionType.Delete:
+    //        case (ExpressionType)DbExpressionType.Block:
+    //        case (ExpressionType)DbExpressionType.If:
+    //        case (ExpressionType)DbExpressionType.Declaration:
+    //        case (ExpressionType)DbExpressionType.Variable:
+    //        case (ExpressionType)DbExpressionType.Function:
+    //            return base.Visit(node);
+
+    //        case ExpressionType.ArrayLength:
+    //        case ExpressionType.Quote:
+    //        case ExpressionType.TypeAs:
+    //        case ExpressionType.ArrayIndex:
+    //        case ExpressionType.TypeIs:
+    //        case ExpressionType.Parameter:
+    //        case ExpressionType.Lambda:
+    //        case ExpressionType.NewArrayInit:
+    //        case ExpressionType.NewArrayBounds:
+    //        case ExpressionType.Invoke:
+    //        case ExpressionType.MemberInit:
+    //        case ExpressionType.ListInit:
+    //        default:
+    //            //if (!forDebug)
+    //            //{
+    //            //    throw new NotSupportedException($"The expression node of type '{node.NodeType}' is not supported");
+    //            //}
+    //            //else
+    //            //{
+    //            Write($"?{node.NodeType}?");
+    //            base.Visit(node);
+    //            Write(")");
+    //            return node;
+    //            //}
+    //    }
+    //}
+
+    protected override Expression VisitConditional(ConditionalExpression node)
+    {
+        if (node.Test.IsPredicate())
+        {
+            Write("(CASE WHEN ");
+            VisitPredicate(node.Test);
+            Write(" THEN ");
+            VisitValue(node.IfTrue);
+            var ifFalse = node.IfFalse;
+            while (ifFalse != null && ifFalse.NodeType == ExpressionType.Conditional)
+            {
+                var fc = (ConditionalExpression)ifFalse;
+                Write(" WHEN ");
+                VisitPredicate(fc.Test);
+                Write(" THEN ");
+                VisitValue(fc.IfTrue);
+                ifFalse = fc.IfFalse;
+            }
+            if (ifFalse != null)
+            {
+                Write(" ELSE ");
+                VisitValue(ifFalse);
+            }
+            Write(" END)");
+        }
+        else
+        {
+            Write("(CASE ");
+            VisitValue(node.Test);
+            Write(" WHEN 0 THEN ");
+            VisitValue(node.IfFalse);
+            Write(" ELSE ");
+            VisitValue(node.IfTrue);
+            Write(" END)");
+        }
+        return node;
+    }
+
+    protected virtual Expression VisitPredicate(Expression node)
+    {
+        Visit(node);
+        if (!node.IsPredicate())
+        {
+            Write(" <> 0");
+        }
+        return node;
+    }
+
+    #endregion
+
+    #region Expression Parsers
+
+    private bool ParseAnyExpression(MethodCallExpression expression, bool includeOperand = true)
     {
         var memberExpression = (MemberExpression)expression.Arguments[0];
         var colAttr = memberExpression.Member.GetCustomAttribute<ColumnAttribute>();
-        if (colAttr?.Name != null)
+        if (colAttr?.Name == null)
         {
-            _sb.Append($"{colAttr.Name} IS NULL OR {colAttr.Name} = ''");
-            return true;
+            return false;
         }
-        return false;
-    }
 
-    private bool ParseNullOrWhitespaceStringExpression(MethodCallExpression expression)
-    {
-        var memberExpression = (MemberExpression)expression.Arguments[0];
-        var colAttr = memberExpression.Member.GetCustomAttribute<ColumnAttribute>();
-        if (colAttr?.Name != null)
+        Write($"JSON_LENGTH({colAttr.Name})");
+        if (includeOperand)
         {
-            _sb.Append($"{colAttr.Name} IS NULL OR {colAttr.Name} = '' OR {colAttr.Name} = ' '");
-            return true;
+            Write(" > 0");
         }
-        return false;
+        return true;
     }
 
     private bool ParseOrderByExpression(MethodCallExpression expression, string order)
@@ -391,21 +941,21 @@ public class MySqlQueryTranslator : ExpressionVisitor
         var lambdaExpression = (LambdaExpression)unary.Operand;
         lambdaExpression = (LambdaExpression)Evaluator.PartialEval(lambdaExpression);
 
-        if (lambdaExpression.Body is MemberExpression body)
+        if (lambdaExpression.Body is not MemberExpression body)
         {
-            if (string.IsNullOrEmpty(_orderBy))
-            {
-                _orderBy = string.Format("{0} {1}", body.Member.Name, order);
-            }
-            else
-            {
-                _orderBy = string.Format("{0}, {1} {2}", _orderBy, body.Member.Name, order);
-            }
-
-            return true;
+            return false;
         }
 
-        return false;
+        if (string.IsNullOrEmpty(_orderBy))
+        {
+            _orderBy = string.Format("{0} {1}", body.Member.Name, order);
+        }
+        else
+        {
+            _orderBy = string.Format("{0}, {1} {2}", _orderBy, body.Member.Name, order);
+        }
+
+        return true;
     }
 
     private bool ParseTakeExpression(MethodCallExpression expression)
@@ -434,10 +984,9 @@ public class MySqlQueryTranslator : ExpressionVisitor
         return true;
     }
 
-    protected static bool IsNullConstant(Expression expression)
-    {
-        return expression.NodeType == ExpressionType.Constant && ((ConstantExpression)expression).Value == null;
-    }
+    #endregion
+
+    #region Private Methods
 
     private static Expression StripQuotes(Expression expression)
     {
@@ -448,31 +997,116 @@ public class MySqlQueryTranslator : ExpressionVisitor
         return expression;
     }
 
+    private void Write(object? value)
+    {
+        _sb.Append(value);
+    }
+
+    private void WriteLine(int indent = 2)
+    {
+        _sb.AppendLine();
+        for (var i = 0; i < indent; i++)
+        {
+            Write(" ");
+        }
+    }
+
     #endregion
+}
+
+public class InExpression : Expression
+{
+    // Either select expression or values are assigned
+    public Expression Expression { get; }
+
+    public ReadOnlyCollection<Expression> Values { get; } = null!;
+
+    public SelectExpression Select { get; }
+
+    public override ExpressionType NodeType => (ExpressionType)(int)DbExpressionType.In;
+
+    public override Type Type => typeof(bool);
+
+    public InExpression(Expression expression, SelectExpression select)
+    {
+        Expression = expression;
+        Select = select;
+    }
+
+    public InExpression(Expression expression, IEnumerable<Expression> values, SelectExpression? select = null)
+    {
+        Expression = expression;
+        Values = new ReadOnlyCollection<Expression>(values.ToList());
+        Select = select ?? null!;
+    }
+}
+
+/// <summary>
+/// Extended node types for custom expressions
+/// </summary>
+public enum DbExpressionType
+{
+    Table = 1000, // make sure these don't overlap with ExpressionType
+    ClientJoin = 1001,
+    Column = 1002,
+    Select = 1003,
+    Projection = 1004,
+    Entity = 1005,
+    Join = 1006,
+    Aggregate = 1007,
+    Scalar = 1008,
+    Exists = 1009,
+    In = 1010,
+    Grouping = 1011,
+    AggregateSubquery = 1012,
+    IsNull = 1013,
+    Between = 1014,
+    RowCount = 1015,
+    NamedValue = 1016,
+    OuterJoined = 1017,
+    Insert = 1018,
+    Update = 1019,
+    Delete = 1020,
+    Batch = 1021,
+    Function = 1022,
+    Block = 1023,
+    If = 1024,
+    Declaration = 1025,
+    Variable = 1026
 }
 
 // Credits: https://github.com/mattwar/iqtoolkit/blob/master/docs/blog/building-part-03.md
 public static class Evaluator
 {
     /// <summary>
-    /// Performs evaluation & replacement of independent sub-trees
+    /// Performs evaluation and replacement of independent sub-trees
+    /// </summary>
+    /// <param name="expression">The root of the expression tree.</param>
+    /// <returns>A new tree with sub-trees evaluated and replaced.</returns>
+    public static Expression PartialEval(Expression expression) =>
+        PartialEval(expression, CanBeEvaluatedLocally, null!);
+
+    /// <summary>
+    /// Performs evaluation and replacement of independent sub-trees
     /// </summary>
     /// <param name="expression">The root of the expression tree.</param>
     /// <param name="fnCanBeEvaluated">A function that decides whether a given expression node can be part of the local function.</param>
     /// <returns>A new tree with sub-trees evaluated and replaced.</returns>
-    public static Expression PartialEval(Expression expression, Func<Expression, bool> fnCanBeEvaluated)
-    {
-        return new SubtreeEvaluator(new Nominator(fnCanBeEvaluated).Nominate(expression)).Eval(expression);
-    }
+    public static Expression PartialEval(Expression expression, Func<Expression, bool> fnCanBeEvaluated) =>
+        PartialEval(expression, fnCanBeEvaluated, null!);
 
     /// <summary>
     /// Performs evaluation & replacement of independent sub-trees
     /// </summary>
     /// <param name="expression">The root of the expression tree.</param>
+    /// <param name="fnCanBeEvaluated">A function that decides whether a given expression node can be part of the local function.</param>
+    /// <param name="fnPostEval">A function to apply to each newly formed <see cref="ConstantExpression"/>.</param>
     /// <returns>A new tree with sub-trees evaluated and replaced.</returns>
-    public static Expression PartialEval(Expression expression)
+    public static Expression PartialEval(Expression expression, Func<Expression, bool>? fnCanBeEvaluated, Func<ConstantExpression, Expression> fnPostEval)
     {
-        return PartialEval(expression, CanBeEvaluatedLocally);
+        fnCanBeEvaluated ??= CanBeEvaluatedLocally;
+        //return SubtreeEvaluator.Eval(new Nominator(fnCanBeEvaluated).Nominate(expression), fnPostEval, expression);
+        return new SubtreeEvaluator(new Nominator(fnCanBeEvaluated).Nominate(expression), fnPostEval).Eval(expression);
     }
 
     private static bool CanBeEvaluatedLocally(Expression expression)
@@ -486,16 +1120,23 @@ public static class Evaluator
     private class SubtreeEvaluator : ExpressionVisitor
     {
         private readonly HashSet<Expression> _candidates;
+        private readonly Func<ConstantExpression, Expression> _onEval;
 
-        internal SubtreeEvaluator(HashSet<Expression> candidates)
+        internal SubtreeEvaluator(HashSet<Expression> candidates, Func<ConstantExpression, Expression> onEval)
         {
             _candidates = candidates;
+            _onEval = onEval;
         }
 
-        internal Expression Eval(Expression exp)
+        internal Expression Eval(Expression node)
         {
-            return Visit(exp);
+            return Visit(node);
         }
+
+        //internal static Expression Eval(HashSet<Expression> candidates, Func<ConstantExpression, Expression> onEval, Expression exp)
+        //{
+        //    return new SubtreeEvaluator(candidates, onEval).Visit(exp);
+        //}
 
         public override Expression Visit(Expression? node)
         {
@@ -512,16 +1153,75 @@ public static class Evaluator
             return base.Visit(node);
         }
 
-        private static Expression Evaluate(Expression node)
+        //private static Expression Evaluate(Expression node)
+        //{
+        //    if (node.NodeType == ExpressionType.Constant)
+        //    {
+        //        return node;
+        //    }
+
+        //    var lambda = Expression.Lambda(node);
+        //    var fn = lambda.Compile();
+        //    return Expression.Constant(fn.DynamicInvoke(null), node.Type);
+        //}
+
+        private Expression Evaluate(Expression node)
         {
-            if (node.NodeType == ExpressionType.Constant)
+            var type = node.Type;
+
+            switch (node.NodeType)
             {
-                return node;
+                case ExpressionType.Convert:
+                    // Check for unnecessary convert & strip them
+                    var u = (UnaryExpression)node;
+                    if (u.Operand.Type.GetNonNullableType() == type.GetNonNullableType())
+                    {
+                        node = ((UnaryExpression)node).Operand;
+                    }
+                    break;
+
+                case ExpressionType.Constant:
+                    // In case we actually threw out a nullable conversion above, simulate it here
+                    // don't post-eval nodes that were already constants
+                    if (node.Type == type)
+                    {
+                        return node;
+                    }
+                    else if (node.Type.GetNonNullableType() == type.GetNonNullableType())
+                    {
+                        return Expression.Constant(((ConstantExpression)node).Value, type);
+                    }
+                    break;
             }
 
-            var lambda = Expression.Lambda(node);
+            if (node is MemberExpression me)
+            {
+                // Member accesses off of constant's are common, and yet since these partial evals
+                // are never re-used, using reflection to access the member is faster than compiling  
+                // and invoking a lambda
+                if (me.Expression is ConstantExpression ce)
+                {
+                    return PostEval(Expression.Constant(me.Member.GetValue(ce.Value), type));
+                }
+            }
+
+            if (type.GetTypeInfo().IsValueType)
+            {
+                node = Expression.Convert(node, typeof(object));
+            }
+
+            var lambda = Expression.Lambda<Func<object>>(node);
             var fn = lambda.Compile();
-            return Expression.Constant(fn.DynamicInvoke(null), node.Type);
+            return PostEval(Expression.Constant(fn(), type));
+        }
+
+        private Expression PostEval(ConstantExpression node)
+        {
+            if (_onEval != null)
+            {
+                return _onEval(node);
+            }
+            return node;
         }
     }
 
@@ -548,6 +1248,18 @@ public static class Evaluator
 
             return _candidates;
         }
+
+        internal static HashSet<Expression> Nominate(Func<Expression, bool> fnCanBeEvaluated, Expression expression)
+        {
+            var nominator = new Nominator(fnCanBeEvaluated);
+            nominator.Visit(expression);
+            return nominator._candidates;
+        }
+
+        //protected override Expression VisitConstant(ConstantExpression node)
+        //{
+        //    return base.VisitConstant(node);
+        //}
 
         public override Expression Visit(Expression? expression)
         {
