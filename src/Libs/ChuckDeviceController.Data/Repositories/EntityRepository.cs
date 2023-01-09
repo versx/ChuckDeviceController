@@ -9,6 +9,7 @@ using MySqlConnector;
 using ChuckDeviceController.Caching.Memory;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Extensions;
+using ChuckDeviceController.Extensions;
 using ChuckDeviceController.Logging;
 
 public class EntityRepository

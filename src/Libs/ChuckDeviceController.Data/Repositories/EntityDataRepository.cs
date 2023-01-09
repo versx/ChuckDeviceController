@@ -11,6 +11,7 @@ using ChuckDeviceController.Data.Common;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Extensions;
 using ChuckDeviceController.Data.TypeHandlers;
+using ChuckDeviceController.Extensions;
 using ChuckDeviceController.Logging;
 
 public class EntityDataRepository : IEntityDataRepository

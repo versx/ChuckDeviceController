@@ -111,6 +111,25 @@ public abstract class DapperGenericRepository<TKey, TEntity> : IDapperGenericRep
         return result;
     }
 
+    public async Task<TEntity> FirstOrDefaultAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken stoppingToken = default)
+    {
+        var properties = GenerateListOfProperties(typeof(TEntity).GetProperties());
+        var columnNames = properties.Keys.ToList();
+        var filterData = new FilterData
+        {
+            SelectInfo = new SelectInfo
+            {
+                Columns = columnNames,
+                Permanent = false,
+            },
+        };
+        var (sql, param) = GenerateSelectQuery(predicate, filterData);
+
+        using var connection = await CreateConnectionAsync(stoppingToken);
+        var result = await connection.QueryFirstOrDefaultAsync<TEntity>(sql, param);
+        return result;
+    }
+
     public async Task<int> InsertAsync(TEntity entity, CancellationToken stoppingToken = default)
     {
         var insertQuery = GenerateInsertQuery();

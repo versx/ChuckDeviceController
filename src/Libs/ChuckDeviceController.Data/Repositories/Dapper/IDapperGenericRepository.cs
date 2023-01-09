@@ -17,6 +17,10 @@ public interface IDapperGenericRepository<TKey, TEntity>
         Expression<Func<TEntity, bool>> predicate,
         CancellationToken stoppingToken = default);
 
+    Task<TEntity> FirstOrDefaultAsync(
+        Expression<Func<TEntity, bool>> predicate,
+        CancellationToken stoppingToken = default);
+
     Task<int> InsertAsync(
         TEntity entity,
         CancellationToken stoppingToken = default);
