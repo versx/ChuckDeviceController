@@ -64,7 +64,6 @@ public class ControllerDbContext : DbContext
             entity.HasIndex(p => p.FirstWarningTimestamp);
             entity.HasIndex(p => p.HasWarn);
             entity.HasIndex(p => p.WarnExpireTimestamp);
-            entity.HasIndex(p => p.HasWarn);
             entity.HasIndex(p => p.WasSuspended);
             entity.HasIndex(p => p.LastUsedTimestamp);
             entity.HasIndex(p => p.LastEncounterTime);
@@ -76,10 +75,11 @@ public class ControllerDbContext : DbContext
             entity.Property(p => p.LastEncounterLongitude)
                   .HasPrecision(18, 6);
 
-            //entity.HasOne(a => a.Device)
-            //      .WithOne(d => d.Account)
-            //      .HasForeignKey(nameof(Account.Username))
-            //      .OnDelete(DeleteBehavior.SetNull);
+            entity.HasOne(a => a.Device)
+                  .WithOne(d => d.Account)
+                  .IsRequired(required: false)
+                  .HasForeignKey(nameof(Device.AccountUsername))
+                  .OnDelete(DeleteBehavior.SetNull);
         });
 
         modelBuilder.Entity<ApiKey>(entity =>
@@ -126,10 +126,6 @@ public class ControllerDbContext : DbContext
                   .HasPrecision(18, 6);
             entity.Property(p => p.LastLongitude)
                   .HasPrecision(18, 6);
-
-            entity.HasOne(d => d.Account);
-                  //.WithOne(a => a.Username)
-                  //.HasForeignKey(nameof(Device.AccountUsername));
         });
 
         modelBuilder.Entity<DeviceGroup>(entity =>
@@ -166,9 +162,9 @@ public class ControllerDbContext : DbContext
                        DbContextFactory.CreateJsonValueConverter<List<string>>(),
                        DbContextFactory.CreateValueComparer<string>()
                    );
-
             entity.HasMany(i => i.Devices)
                   .WithOne(d => d.Instance)
+                  .IsRequired(required: false)
                   .HasForeignKey(d => d.InstanceName)
                   .OnDelete(DeleteBehavior.SetNull);
         });

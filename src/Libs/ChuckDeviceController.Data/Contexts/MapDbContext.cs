@@ -90,38 +90,18 @@ public class MapDbContext : DbContext
         
         modelBuilder.Entity<Cell>(entity =>
         {
-            /*
-            entity.HasMany(c => c.Gyms)
-                  .WithOne(g => g.Cell)
-                  .HasForeignKey(g => g.CellId)
-                  .OnDelete(DeleteBehavior.Cascade);
-
-            entity.HasMany(c => c.Pokestops)
-                  .WithOne(p => p.Cell)
-                  .HasForeignKey(p => p.CellId)
-                  .OnDelete(DeleteBehavior.Cascade);
-
-            entity.HasMany(c => c.Pokemon)
-                  .WithOne(p => p.Cell)
-                  .HasForeignKey(p => p.CellId)
-                  .OnDelete(DeleteBehavior.Cascade);
-            */
-
             entity.HasIndex(p => p.Latitude);
             entity.HasIndex(p => p.Longitude);
+            entity.HasIndex(p => p.Updated);
         });
 
         modelBuilder.Entity<Gym>(entity =>
         {
-            /*
-            entity.HasOne(g => g.Cell)
-                  .WithMany(c => c.Gyms)
-                  .HasForeignKey(g => g.CellId);
-            */
-
             entity.HasMany(g => g.Defenders)
                   .WithOne(d => d.Fort)
-                  .HasForeignKey(d => d.FortId);
+                  .IsRequired(required: false)
+                  .HasForeignKey(d => d.FortId)
+                  .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasIndex(p => p.Latitude);
             entity.HasIndex(p => p.Longitude);
@@ -134,9 +114,9 @@ public class MapDbContext : DbContext
 
         modelBuilder.Entity<GymDefender>(entity =>
         {
-            entity.HasOne(g => g.Trainer)
-                  .WithMany(t => t.Defenders)
-                  .HasForeignKey(t => t.TrainerName);
+            entity.HasOne(g => g.Fort)
+                  .WithMany(g => g.Defenders)
+                  .HasForeignKey(g => g.FortId);
 
             entity.HasIndex(p => p.TrainerName);
         });
@@ -145,7 +125,7 @@ public class MapDbContext : DbContext
         {
             entity.HasMany(t => t.Defenders)
                   .WithOne(g => g.Trainer)
-                  .HasForeignKey(p => p.TrainerName)
+                  .HasForeignKey(g => g.TrainerName)
                   .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasIndex(p => p.Name);
@@ -155,6 +135,7 @@ public class MapDbContext : DbContext
         {
             entity.HasOne(p => p.Pokestop)
                   .WithMany(p => p.Incidents)
+                  .IsRequired(required: true)
                   .HasForeignKey(p => p.PokestopId);
                   //.HasConstraintName("FK_incident_pokestop_pokestop_id");
 
@@ -213,11 +194,13 @@ public class MapDbContext : DbContext
 
             entity.HasMany(p => p.Incidents)
                   .WithOne(p => p.Pokestop)
+                  .IsRequired(required: false)
                   .HasForeignKey(p => p.PokestopId)
                   .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasMany(p => p.Pokemon)
                   .WithOne(p => p.Pokestop)
+                  .IsRequired(required: false)
                   .HasForeignKey(p => p.PokestopId)
                   .OnDelete(DeleteBehavior.SetNull);
 
@@ -314,16 +297,15 @@ public class MapDbContext : DbContext
 
         modelBuilder.Entity<Spawnpoint>(entity =>
         {
-            /*
-            entity.HasMany(p => p.Pokemon)
-                  .WithOne(p => p.Spawnpoint)
-                  .HasForeignKey(p => p.SpawnId)
-                  .OnDelete(DeleteBehavior.SetNull);
-            */
-
             entity.HasIndex(p => p.Latitude);
             entity.HasIndex(p => p.Longitude);
             entity.HasIndex(p => p.DespawnSecond);
+
+            entity.HasMany(s => s.Pokemon)
+                  .WithOne(p => p.Spawnpoint)
+                  .IsRequired(required: false)
+                  .HasForeignKey(p => p.SpawnId)
+                  .OnDelete(DeleteBehavior.SetNull);
         });
 
         modelBuilder.Entity<PokemonStats>(entity =>

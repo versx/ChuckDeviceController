@@ -179,6 +179,9 @@ public class Account : BaseEntity, IAccount, IWebhookEntity
     ]
     public string? GroupName { get; set; }
 
+    [JsonIgnore]
+    public virtual Device? Device { get; set; }
+
     [
         DisplayName("Status"),
         NotMapped,

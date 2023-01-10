@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
+using System.Text.Json.Serialization;
 
 using Microsoft.EntityFrameworkCore;
 using MySqlConnector;
@@ -50,7 +51,8 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
     ]
     public ulong? SpawnId { get; set; }
 
-    //public virtual Spawnpoint? Spawnpoint { get; set; }
+    [JsonIgnore]
+    public virtual Spawnpoint? Spawnpoint { get; set; }
 
     [Column("expire_timestamp")]
     public ulong ExpireTimestamp { get; set; }

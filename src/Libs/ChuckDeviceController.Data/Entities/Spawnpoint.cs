@@ -2,6 +2,7 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 using MySqlConnector;
 
@@ -40,7 +41,8 @@ public class Spawnpoint : BaseEntity, ISpawnpoint, ICoordinateEntity
     [NotMapped]
     public bool HasChanges { get; set; }
 
-    //public virtual ICollection<Pokemon>? Pokemon { get; set; }
+    [JsonIgnore]
+    public virtual ICollection<Pokemon>? Pokemon { get; set; }
 
     #endregion
 
