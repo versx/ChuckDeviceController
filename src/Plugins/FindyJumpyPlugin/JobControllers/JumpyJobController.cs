@@ -51,11 +51,11 @@ public class JumpyJobController : IJobController, IJobControllerCoordinates, ISc
         AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(60),
     };
 
-#endregion
+    #endregion
 
-#region Properties
+    #region Properties
 
-public string Name { get; }
+    public string Name { get; }
 
     public ushort MinimumLevel { get; }
 
@@ -133,7 +133,7 @@ public string Name { get; }
             var newLoc = GetNextScanLocation(curSecInHour, loc);
             _firstRun = false;
 
-            _logger.LogDebug($"[{Name}] [{options.Uuid}] Pokemon - Instance: {Name} - oldLoc={loc:N0} & newLoc={newLoc:N0}/{_pokemonCoords.Count / 2:N0}");
+            _logger.LogDebug("[{Name}] [{Uuid}] Pokemon - oldLoc={Loc:N0} & newLoc={NewLoc:N0}/{Count:N0}", Name, options.Uuid, loc, newLoc, _pokemonCoords.Count / 2);
 
             var currentCoord = new JumpyCoord
             {
@@ -357,7 +357,7 @@ public string Name { get; }
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error: {ex}");
+                _logger.LogError("Error: {Message}", ex.InnerException?.Message ?? ex.Message);
             }
 
             if (!found)

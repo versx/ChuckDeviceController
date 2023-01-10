@@ -18,7 +18,7 @@ public static class TypeExtensions
         IInstance instance,
         IReadOnlyList<Geofence> geofences,
         IReadOnlyDictionary<Type, object> sharedServices,
-        ServiceProvider serviceProvider)
+        IServiceProvider serviceProvider)
     {
         // Construct dictionary of plugin specific service parameters
         var dict = jobControllerType.GetPluginServiceParameters(instance, geofences, sharedServices);
@@ -115,7 +115,7 @@ public static class TypeExtensions
     /// the methods or properties have attribute T
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    /// <returns>List&lt;Type&gt;</returns>
+    /// <returns><see cref="IEnumerable{T}"/></returns>
     public static IEnumerable<Type> GetTypes<T>(IEnumerable<IPluginHost> plugins)
     {
         var results = new List<Type>();
@@ -199,9 +199,10 @@ public static class TypeExtensions
 
     public static bool HasAttributeType<T>(this MemberInfo member)
     {
-        var result = member.GetCustomAttributes()
-                           .Where(t => t.GetType() == typeof(T))
-                           .FirstOrDefault() != null;
+        var result = member
+            .GetCustomAttributes()
+            .Where(t => t.GetType() == typeof(T))
+            .FirstOrDefault() != null;
         return result;
     }
 }

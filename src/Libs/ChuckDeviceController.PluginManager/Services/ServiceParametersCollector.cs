@@ -36,12 +36,9 @@ public class ServiceParametersCollector
                 if (_ignoredServices.Contains(param.ParameterType))
                     continue;
 
-                var paramClass = _serviceProvider?.GetService(param.ParameterType);
-                if (paramClass == null)
-                    continue;
-
                 // If we did not find a specific param type for this constructor,
                 // clear the args list and try the next constructor.
+                var paramClass = _serviceProvider?.GetService(param.ParameterType);
                 if (paramClass == null)
                 {
                     result.Clear();

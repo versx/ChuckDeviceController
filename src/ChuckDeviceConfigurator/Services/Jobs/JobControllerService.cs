@@ -45,7 +45,7 @@ public class JobControllerService : IJobControllerService
     private readonly IAssignmentControllerService _assignmentService = null!;
     private readonly IRoutingHost _routeGenerator;
     private readonly IRouteCalculator _routeCalculator;
-    private ServiceProvider _serviceProvider = null!;
+    private static ServiceProvider _serviceProvider = null!;
 
     private static readonly ConcurrentDictionary<string, IDevice> _devices = new();
     private static readonly ConcurrentDictionary<string, IJobController> _instances = new();
@@ -902,7 +902,7 @@ public class JobControllerService : IJobControllerService
         return jobController;
     }
 
-    private static IJobController CreatePluginJobController(string customInstanceType, IInstance instance, IReadOnlyList<Geofence> geofences, ServiceProvider services)
+    private static IJobController CreatePluginJobController(string customInstanceType, IInstance instance, IReadOnlyList<Geofence> geofences, IServiceProvider services)
     {
         if (!_pluginInstances.ContainsKey(customInstanceType))
         {
