@@ -78,7 +78,7 @@ public class ControllerDbContext : DbContext
             entity.HasOne(a => a.Device)
                   .WithOne(d => d.Account)
                   .IsRequired(required: false)
-                  .HasForeignKey(nameof(Device.AccountUsername))
+                  .HasForeignKey(typeof(Device), nameof(Device.AccountUsername))
                   .OnDelete(DeleteBehavior.SetNull);
         });
 
