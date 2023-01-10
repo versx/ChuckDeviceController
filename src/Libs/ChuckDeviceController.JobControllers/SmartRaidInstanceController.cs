@@ -70,8 +70,8 @@ public class SmartRaidInstanceController : IJobController
     #region Constructor
 
     public SmartRaidInstanceController(
-        IDapperUnitOfWork uow,
         Instance instance,
+        IDapperUnitOfWork uow,
         IReadOnlyList<IMultiPolygon> multiPolygons)
     {
         Name = instance.Name;

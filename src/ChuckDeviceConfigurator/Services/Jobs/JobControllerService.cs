@@ -3,7 +3,6 @@
 using System.Collections.Concurrent;
 using System.Reflection;
 
-using Microsoft.EntityFrameworkCore;
 using POGOProtos.Rpc;
 
 using ChuckDeviceConfigurator.Extensions;
@@ -16,7 +15,6 @@ using ChuckDeviceConfigurator.Services.TimeZone;
 using ChuckDeviceController.Common.Jobs;
 using ChuckDeviceController.Data.Abstractions;
 using ChuckDeviceController.Data.Common;
-using ChuckDeviceController.Data.Contexts;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Extensions;
 using ChuckDeviceController.Data.Repositories;
@@ -27,6 +25,7 @@ using ChuckDeviceController.JobControllers;
 using ChuckDeviceController.Logging;
 using ChuckDeviceController.Plugin;
 using ChuckDeviceController.PluginManager;
+using ChuckDeviceController.PluginManager.Mvc.Extensions;
 using ChuckDeviceController.Routing;
 
 using Type = System.Type;
@@ -290,7 +289,7 @@ public class JobControllerService : IJobControllerService
             {
                 var timeZone = instance.Data?.TimeZone;
                 var timeZoneOffset = ConvertTimeZoneToOffset(timeZone, instance.Data?.EnableDst ?? Strings.DefaultEnableDst);
-                jobController = CreateAutoQuestJobController(_uow, instance, multiPolygons, timeZoneOffset);
+                jobController = CreateAutoQuestJobController(instance, _uow, multiPolygons, timeZoneOffset);
                 ((AutoInstanceController)jobController).InstanceComplete += OnAutoInstanceComplete;
             }
             else if (instance.Type == InstanceType.Bootstrap)
@@ -304,11 +303,11 @@ public class JobControllerService : IJobControllerService
             }
             else if (instance.Type == InstanceType.FindTth)
             {
-                jobController = CreateSpawnpointJobController(_uow, instance, multiPolygons, _routeCalculator);
+                jobController = CreateSpawnpointJobController(instance, _uow, multiPolygons, _routeCalculator);
             }
             else if (instance.Type == InstanceType.Leveling)
             {
-                jobController = CreateLevelingJobController(_uow, instance, multiPolygons);
+                jobController = CreateLevelingJobController(instance, _uow, multiPolygons);
                 ((LevelingInstanceController)jobController).AccountLevelUp += OnAccountLevelUp;
             }
             else if (instance.Type == InstanceType.PokemonIV)
@@ -319,11 +318,11 @@ public class JobControllerService : IJobControllerService
                     _logger.LogError($"[{instance.Name}] Failed to fetch IV list, skipping controller instantiation...");
                     return;
                 }
-                jobController = CreateIvJobController(_uow, instance, multiPolygons, ivList);
+                jobController = CreateIvJobController(instance, _uow, multiPolygons, ivList);
             }
             else if (instance.Type == InstanceType.SmartRaid)
             {
-                jobController = CreateSmartRaidJobController(_uow, instance, multiPolygons);
+                jobController = CreateSmartRaidJobController(instance, _uow, multiPolygons);
             }
         }
 
@@ -395,7 +394,10 @@ public class JobControllerService : IJobControllerService
 
         if (jobController == null)
         {
-            _logger.LogError($"[{instance.Name}] Unable to instantiate job instance controller with type '{instance.Type}'");
+            var instanceType = instance.Type == InstanceType.Custom
+                ? $"{instance.Type} ({instance.Data?.CustomInstanceType})"
+                : $"{instance.Type}";
+            _logger.LogError($"[{instance.Name}] Unable to instantiate job controller instance type '{instanceType}'");
             return;
         }
 
@@ -825,21 +827,21 @@ public class JobControllerService : IJobControllerService
         return jobController;
     }
 
-    private static IJobController CreateSmartRaidJobController(IDapperUnitOfWork factory, Instance instance, IReadOnlyList<IMultiPolygon> multiPolygons)
+    private static IJobController CreateSmartRaidJobController(Instance instance, IDapperUnitOfWork uow, IReadOnlyList<IMultiPolygon> multiPolygons)
     {
         var jobController = new SmartRaidInstanceController(
-            factory,
             instance,
+            uow,
             multiPolygons
         );
         return jobController;
     }
 
-    private static IJobController CreateAutoQuestJobController(IDapperUnitOfWork uow, Instance instance, IReadOnlyList<IMultiPolygon> multiPolygons, short timeZoneOffset)
+    private static IJobController CreateAutoQuestJobController(Instance instance, IDapperUnitOfWork uow, IReadOnlyList<IMultiPolygon> multiPolygons, short timeZoneOffset)
     {
         var jobController = new AutoInstanceController(
-            uow,
             instance,
+            uow,
             multiPolygons,
             timeZoneOffset
         );
@@ -868,32 +870,32 @@ public class JobControllerService : IJobControllerService
         return jobController;
     }
 
-    private static IJobController CreateIvJobController(IDapperUnitOfWork factory, Instance instance, IReadOnlyList<IMultiPolygon> multiPolygons, IvList ivList)
+    private static IJobController CreateIvJobController(Instance instance, IDapperUnitOfWork uow, IReadOnlyList<IMultiPolygon> multiPolygons, IvList ivList)
     {
         var jobController = new IvInstanceController(
-            factory,
             instance,
+            uow,
             multiPolygons,
             ivList.PokemonIds
         );
         return jobController;
     }
 
-    private static IJobController CreateLevelingJobController(IDapperUnitOfWork factory, Instance instance, IReadOnlyList<IMultiPolygon> multiPolygons)
+    private static IJobController CreateLevelingJobController(Instance instance, IDapperUnitOfWork uow, IReadOnlyList<IMultiPolygon> multiPolygons)
     {
         var jobController = new LevelingInstanceController(
-            factory,
             instance,
+            uow,
             multiPolygons
         );
         return jobController;
     }
 
-    private static IJobController CreateSpawnpointJobController(IDapperUnitOfWork uow, Instance instance, IReadOnlyList<IMultiPolygon> multiPolygons, IRouteCalculator routeCalculator)
+    private static IJobController CreateSpawnpointJobController(Instance instance, IDapperUnitOfWork uow, IReadOnlyList<IMultiPolygon> multiPolygons, IRouteCalculator routeCalculator)
     {
         var jobController = new TthFinderInstanceController(
-            uow,
             instance,
+            uow,
             multiPolygons,
             routeCalculator
         );
@@ -918,27 +920,15 @@ public class JobControllerService : IJobControllerService
                 PluginManager.Instance.Options.SharedServiceHosts,
                 services
             );
-            if (args?.Any() ?? false)
-            {
-                jobControllerInstance = Activator.CreateInstance(jobControllerType, args);
-            }
-            else
-            {
-                jobControllerInstance = Activator.CreateInstance(jobControllerType);
-            }
+
+            jobControllerInstance = jobControllerType.CreateInstance(args);
         }
         catch (Exception ex)
         {
             _logger.LogError($"Error: {ex}");
         }
 
-        if (jobControllerInstance == null)
-        {
-            _logger.LogError($"Failed to instantiate a new custom job controller instance for '{instance.Name}'");
-            return null;
-        }
-
-        var jobController = (IJobController)jobControllerInstance;
+        var jobController = jobControllerInstance as IJobController;
         return jobController;
     }
 

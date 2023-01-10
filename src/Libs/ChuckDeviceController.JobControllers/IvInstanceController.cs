@@ -77,8 +77,8 @@ public class IvInstanceController : IJobController, ILureInstanceController, ISc
     #region Constructor
 
     public IvInstanceController(
-        IDapperUnitOfWork uow,
         Instance instance,
+        IDapperUnitOfWork uow,
         IReadOnlyList<IMultiPolygon> multiPolygons,
         List<string> pokemonIds)
     {

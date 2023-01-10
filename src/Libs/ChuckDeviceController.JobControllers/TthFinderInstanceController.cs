@@ -74,8 +74,8 @@ public class TthFinderInstanceController : IJobController
     #region Constructor
 
     public TthFinderInstanceController(
-        IDapperUnitOfWork uow,
         Instance instance,
+        IDapperUnitOfWork uow,
         IReadOnlyList<IMultiPolygon> multiPolygons,
         IRouteCalculator routeCalculator)
     {

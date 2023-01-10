@@ -131,8 +131,8 @@ public class LevelingInstanceController : IJobController
     #region Constructor
 
     public LevelingInstanceController(
-        IDapperUnitOfWork uow,
         Instance instance,
+        IDapperUnitOfWork uow,
         IReadOnlyList<IMultiPolygon> multiPolygons)
     {
         Name = instance.Name;

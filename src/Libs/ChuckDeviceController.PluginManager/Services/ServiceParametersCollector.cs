@@ -40,7 +40,8 @@ public class ServiceParametersCollector
                 if (paramClass == null)
                     continue;
 
-                // If we did not find a specific param type for this constructor, try the next constructor
+                // If we did not find a specific param type for this constructor,
+                // clear the args list and try the next constructor.
                 if (paramClass == null)
                 {
                     result.Clear();
@@ -106,7 +107,8 @@ public class ServiceParametersCollector
                 var paramClass = GetClassImplementation<object>(param.ParameterType);
                 if (paramClass == null)
                 {
-                    // If we did not find a specific param type for this constructor, try the next constructor
+                    // If we did not find a specific param type for this constructor,
+                    // clear the args list and try the next constructor.
                     result.Clear();
                     break;
                 }

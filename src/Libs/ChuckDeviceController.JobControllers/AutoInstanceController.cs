@@ -92,8 +92,8 @@ public class AutoInstanceController : IJobController
     #region Constructor
 
     public AutoInstanceController(
-        IDapperUnitOfWork uow,
         Instance instance,
+        IDapperUnitOfWork uow,
         IReadOnlyList<IMultiPolygon> multiPolygons,
         short timeZoneOffset = Strings.DefaultTimeZoneOffset)
     {
