@@ -71,7 +71,7 @@ public class TestApiController : ControllerBase
     {
         foreach (var coord in _coords)
         {
-            _logger.LogInformation($"Coord: {coord}");
+            _logger.LogInformation("Coord: {Coord}", coord);
         }
 
         // Should return: '[{ "lat": 1.1, "lon": 1.1 }, { "lat": 2.2, "lon": 2.2 }, etc]'

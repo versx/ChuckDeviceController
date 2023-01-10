@@ -172,7 +172,7 @@ public class ChuckPluginMvc : IPlugin, IDatabaseEvents, IJobControllerServiceEve
             await httpContext.Response.WriteAsync($"{httpContext.Request.RouteValues["greeting"]}, {httpContext.Request.RouteValues["name"]}!"));
 
         // Use built in logger
-        appBuilder.Logger.LogInformation($"Logging from the plugin '{Name}'");
+        appBuilder.Logger.LogInformation("Logging from the plugin '{Name}'", Name);
     }
 
     /// <summary>

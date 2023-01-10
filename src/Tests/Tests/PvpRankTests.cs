@@ -67,7 +67,7 @@ public class PvpRankTests
             iv,
             level
         );
-        Assert.That(ranks?.Count == 3, Is.True);
+        Assert.That(ranks?.Count, Is.EqualTo(3));
     }
 
     [TestCase(0, 13, 14, HoloPokemonId.Lucario)]
@@ -96,6 +96,6 @@ public class PvpRankTests
         );
         */
 
-        Assert.That(evolutions?.Count == 3, Is.True);
+        Assert.That(evolutions?.Count, Is.EqualTo(3));
     }
 }

@@ -1,34 +1,33 @@
-﻿namespace ChuckDeviceController.Authorization.Jwt.Attributes
+﻿namespace ChuckDeviceController.Authorization.Jwt.Attributes;
+
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
+
+/// <summary>
+/// Class and method attribute decoration restricting access
+/// to JWT authorized gRPC requests.
+/// </summary>
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
+public class JwtAuthorizeAttribute : Attribute, IAuthorizationFilter
 {
-    using Microsoft.AspNetCore.Http;
-    using Microsoft.AspNetCore.Mvc;
-    using Microsoft.AspNetCore.Mvc.Filters;
+    public string Identifier { get; }
 
-    /// <summary>
-    /// Class and method attribute decoration restricting access
-    /// to JWT authorized gRPC requests.
-    /// </summary>
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
-    public class JwtAuthorizeAttribute : Attribute, IAuthorizationFilter
+    public JwtAuthorizeAttribute(string identifier)
     {
-        public string Identifier { get; }
+        Identifier = identifier;
+    }
 
-        public JwtAuthorizeAttribute(string identifier)
+    public void OnAuthorization(AuthorizationFilterContext context)
+    {
+        var identifier = context.HttpContext.Items[Identifier];
+        if (identifier == null)
         {
-            Identifier = identifier;
-        }
-
-        public void OnAuthorization(AuthorizationFilterContext context)
-        {
-            var identifier = context.HttpContext.Items[Identifier];
-            if (identifier == null)
+            context.Result = new JsonResult(new
             {
-                context.Result = new JsonResult(new
-                {
-                    message = "Unauthorized",
-                    status = StatusCodes.Status401Unauthorized,
-                });
-            }
+                message = "Unauthorized",
+                status = StatusCodes.Status401Unauthorized,
+            });
         }
     }
 }

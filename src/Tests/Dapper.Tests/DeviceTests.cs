@@ -24,7 +24,7 @@ internal class DeviceTests
     public async Task TestDevice(string uuid)
     {
         SetTypeMap<Device>();
-        var device = await EntityRepository.GetEntityAsync<string, Device>(_connection, uuid, null, skipCache: true, setCache: false);
+        var device = await EntityRepository.GetEntityAsync<string, Device>(_connection, uuid, null!, skipCache: true, setCache: false);
         Assert.That(device, Is.Not.Null);
     }
 

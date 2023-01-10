@@ -13,6 +13,7 @@ using MySqlConnector;
 
 using ChuckDeviceController.Data.Factories;
 using ChuckDeviceController.Data.Translators;
+using POGOProtos.Rpc;
 
 // Reference: https://itnext.io/generic-repository-pattern-using-dapper-bd48d9cd7ead
 // Reference: https://github.com/phnx47/dapper-repositories
@@ -228,8 +229,10 @@ public abstract class DapperGenericRepository<TKey, TEntity> : IDapperGenericRep
         FilterData? filterData,
         params Expression<Func<TEntity, object>>[] includes)
     {
-        var whereExpression = _translator.Translate(predicate!);
         var query = _sqlGenerator.GetSelectAll(null, filterData, includes);
+
+        _ = _translator.Translate(predicate!);
+
         if (!string.IsNullOrEmpty(_translator.WhereClause))
         {
             query.SqlBuilder.Append(" WHERE ");
@@ -240,12 +243,15 @@ public abstract class DapperGenericRepository<TKey, TEntity> : IDapperGenericRep
             query.SqlBuilder.Append(" ORDER BY ");
             query.SqlBuilder.Append(_translator.OrderBy);
         }
-        if (_translator.Skip != null || _translator.Take != null)
+        if (_translator.Skip != null)
         {
             query.SqlBuilder.Append(" LIMIT ");
-            var skip = _translator.Skip ?? 0;
-            var take = _translator.Take ?? 0;
-            query.SqlBuilder.Append($"{skip},{take}");
+            query.SqlBuilder.Append(_translator.Skip);
+        }
+        if (_translator.Take != null)
+        {
+            query.SqlBuilder.Append(" OFFSET ");
+            query.SqlBuilder.Append(_translator.Take);
         }
         //query.SqlBuilder.Append(" WHERE ");
         //query.SqlBuilder.Append(whereExpression);

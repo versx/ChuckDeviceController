@@ -66,7 +66,7 @@ internal class PriorityQueueTests
             //Form = 0,
         };
         _queue.Add(pokemon);
-        Assert.That(_queue.Count == 5, Is.True);
+        Assert.That(_queue, Has.Count.EqualTo(5));
     }
 
     [Test]
@@ -79,8 +79,11 @@ internal class PriorityQueueTests
         };
         _queue.Add(pokemon);
         var item = _queue.Dequeue();
-        Assert.That(item.PokemonId == 9, Is.True);
-        Assert.That(_queue.Count == 4, Is.True);
+        Assert.Multiple(() =>
+        {
+            Assert.That(item.PokemonId, Is.EqualTo(9));
+            Assert.That(_queue, Has.Count.EqualTo(4));
+        });
     }
 
     [Test]
@@ -93,8 +96,11 @@ internal class PriorityQueueTests
         };
         _queue.Add(pokemon);
         var item = _queue.DequeueLast();
-        Assert.That(item.PokemonId == 25, Is.True);
-        Assert.That(_queue.Count == 4, Is.True);
+        Assert.Multiple(() =>
+        {
+            Assert.That(item.PokemonId, Is.EqualTo(25));
+            Assert.That(_queue, Has.Count.EqualTo(4));
+        });
     }
 
     [TestCase(150)]
@@ -117,7 +123,7 @@ internal class PriorityQueueTests
         };
         _queue.Add(pkmn);
 
-        Assert.That(_queue.Count == MaxQueueSize, Is.True);
+        Assert.That(_queue, Has.Count.EqualTo(MaxQueueSize));
     }
 }
 
