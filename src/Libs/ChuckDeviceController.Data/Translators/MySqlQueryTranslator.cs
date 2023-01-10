@@ -200,11 +200,22 @@ public class MySqlQueryTranslator : ExpressionVisitor
                     return node;
 
                 case "Contains":
-                    Write("(");
-                    Visit(node.Object);
-                    Write(" LIKE CONCAT('%',");
-                    Visit(node.Arguments[0]);
-                    Write(",'%'))");
+                    if (node.Method.DeclaringType == typeof(string))
+                    {
+                        Write("(");
+                        Visit(node.Object);
+                        Write(" LIKE CONCAT('%',");
+                        Visit(node.Arguments[0]);
+                        Write(",'%'))");
+                    }
+                    else
+                    {
+                        Write('(');
+                        Visit(node.Arguments[1]);
+                        Write(" IN (");
+                        Visit(node.Arguments[0]);
+                        Write("))");
+                    }
                     return node;
 
                 case "Concat":
@@ -593,7 +604,19 @@ public class MySqlQueryTranslator : ExpressionVisitor
                     break;
 
                 case TypeCode.Object:
-                    throw new NotSupportedException($"The constant for '{node.Value}' is not supported");
+                    if (node.Value is IEnumerable list)
+                    {
+                        var items = list.Cast<string>();
+                        //Write('(');
+                        var str = "'" + string.Join("', '", items) + "'";
+                        Write(str);
+                        //Write(')');
+                    }
+                    else
+                    {
+                        throw new NotSupportedException($"The constant for '{node.Value}' is not supported");
+                    }
+                    break;
 
                 default:
                     var converted = (node.Value as IConvertible)?.ToString(CultureInfo.InvariantCulture) ?? node.Value;
@@ -1041,9 +1064,6 @@ public class InExpression : Expression
     }
 }
 
-/// <summary>
-/// Extended node types for custom expressions
-/// </summary>
 public enum DbExpressionType
 {
     Table = 1000, // make sure these don't overlap with ExpressionType
