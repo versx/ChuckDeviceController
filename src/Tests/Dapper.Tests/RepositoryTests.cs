@@ -163,13 +163,21 @@ internal class RepositoryTests
         Assert.Pass();
     }
 
-    //pokestop.QuestConditions = null;
-    //pokestop.QuestRewards = null;
-    //pokestop.QuestTarget = null;
-    //pokestop.QuestTemplate = null;
-    //pokestop.QuestTimestamp = null;
-    //pokestop.QuestTitle = null;
-    //pokestop.QuestType = null;
+    [Test]
+    public async Task PokestopIdsContainsTest()
+    {
+        var factory = new MySqlConnectionFactory(ConnectionString);
+
+        var pokestopRepository = new PokestopRepository(factory);
+        var pokestops = await pokestopRepository.FindAsync(x => x.QuestType != null || x.AlternativeQuestType != null);
+        var pokestopIds = pokestops.Select(x => x.Id).ToList();
+        var contains = await pokestopRepository.FindAsync(x => pokestopIds.Contains("74507fb96150498d8b6a5bac14df8efc.16"));
+        var notContains = await pokestopRepository.FindAsync(x => pokestopIds.Contains("32uk3jkj23lkj2kl3rjl2k3rj"));
+
+        Console.WriteLine($"Contains: {contains}, NotContains: {notContains}");
+
+        Assert.Pass();
+    }
 
     [Test]
     public async Task GetNewAccountTests()
