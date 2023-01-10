@@ -28,6 +28,9 @@ public class Device : BaseEntity, IDevice
     ]
     public string? InstanceName { get; set; }
 
+    [JsonIgnore]
+    public virtual Instance? Instance { get; set; }
+
     [
         DisplayName("Account Username"),
         Column("account_username"),

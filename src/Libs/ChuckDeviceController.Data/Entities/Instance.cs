@@ -79,6 +79,9 @@ public class Instance : BaseEntity, IInstance
     ]
     public string? Status { get; set; }
 
+    [JsonIgnore]
+    public virtual ICollection<Device>? Devices { get; set; }
+
     #endregion
 
     #region Helper Methods

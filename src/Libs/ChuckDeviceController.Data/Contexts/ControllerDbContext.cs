@@ -162,6 +162,11 @@ public class ControllerDbContext : DbContext
                        DbContextFactory.CreateJsonValueConverter<List<string>>(),
                        DbContextFactory.CreateValueComparer<string>()
                    );
+
+            entity.HasMany(i => i.Devices)
+                  .WithOne(d => d.Instance)
+                  .HasForeignKey(d => d.InstanceName)
+                  .OnDelete(DeleteBehavior.SetNull);
         });
 
         modelBuilder.Entity<IvList>(entity =>
