@@ -13,7 +13,6 @@ using MySqlConnector;
 
 using ChuckDeviceController.Data.Factories;
 using ChuckDeviceController.Data.Translators;
-using POGOProtos.Rpc;
 
 // Reference: https://itnext.io/generic-repository-pattern-using-dapper-bd48d9cd7ead
 // Reference: https://github.com/phnx47/dapper-repositories

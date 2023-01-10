@@ -124,8 +124,15 @@ builder.Services.AddDbContext<MapDbContext>(options =>
 builder.Services.AddScoped<MySqlConnection>(options =>
 {
     var connection = new MySqlConnection(connectionString);
-    //Task.Run(connection.OpenAsync).Wait();
-    connection.Open();
+    try
+    {
+        //Task.Run(connection.OpenAsync).Wait();
+        connection.Open();
+    }
+    catch (Exception ex)
+    {
+        logger.LogError("Failed to open connection to MySQL server: {Message}", ex.InnerException?.Message ?? ex.Message);
+    }
     return connection;
 });
 
