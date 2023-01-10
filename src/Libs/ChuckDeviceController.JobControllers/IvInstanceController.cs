@@ -402,8 +402,8 @@ public class IvInstanceController : IJobController, ILureInstanceController, ISc
             {
                 if (_scannedPokemon.Count == 0)
                 {
-                    //Thread.Sleep(5 * 1000);
-                    Task.Delay(TimeSpan.FromSeconds(5)).ConfigureAwait(false);
+                    Thread.Sleep(5 * 1000);
+                    //Task.Delay(TimeSpan.FromSeconds(5)).ConfigureAwait(false);
                     continue;
                 }
 
@@ -443,14 +443,14 @@ public class IvInstanceController : IJobController, ILureInstanceController, ISc
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError($"Error: {ex}");
-                    //Thread.Sleep(1000);
-                    await Task.Delay(TimeSpan.FromSeconds(15));
+                    _logger.LogError("Error: {Message}", ex.InnerException?.Message ?? ex.Message);
+                    Thread.Sleep(15 * 1000);
+                    //await Task.Delay(TimeSpan.FromSeconds(15));
                     continue;
                 }
 
-                //Thread.Sleep(1000);
-                await Task.Delay(TimeSpan.FromSeconds(15));
+                Thread.Sleep(15 * 1000);
+                //await Task.Delay(TimeSpan.FromSeconds(15));
             }
 
             if (pokemonReal != null)
@@ -465,8 +465,8 @@ public class IvInstanceController : IJobController, ILureInstanceController, ISc
                 }
             }
 
-            //Thread.Sleep(100);
-            await Task.Delay(TimeSpan.FromSeconds(1));
+            Thread.Sleep(100);
+            //await Task.Delay(TimeSpan.FromSeconds(1));
         }
     }
 

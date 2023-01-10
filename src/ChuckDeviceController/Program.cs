@@ -226,11 +226,7 @@ app.Use((context, next) =>
 app.UseAuthorization();
 app.MapControllers();
 
-new Thread(async () =>
-{
-    var stopwatch = new Stopwatch();
-    await MonitorResults(TimeSpan.FromMinutes(5), stopwatch);
-})
+new Thread(async () => await MonitorResults(TimeSpan.FromMinutes(5), new()))
 { IsBackground = true }.Start();
 
 // Open DB connection
