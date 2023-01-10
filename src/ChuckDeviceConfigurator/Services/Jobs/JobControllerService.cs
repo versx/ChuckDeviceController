@@ -712,7 +712,7 @@ public class JobControllerService : IJobControllerService
     {
         if (!_devices.ContainsKey(uuid))
         {
-            _logger.LogError($"[{uuid}] Unable to remove device from cache, it does not exist");
+            // Device already removed
             return;
         }
 

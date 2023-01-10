@@ -66,6 +66,10 @@ public class ControllerDbContext : DbContext
             entity.HasIndex(p => p.WarnExpireTimestamp);
             entity.HasIndex(p => p.HasWarn);
             entity.HasIndex(p => p.WasSuspended);
+            entity.HasIndex(p => p.LastUsedTimestamp);
+            entity.HasIndex(p => p.LastEncounterTime);
+            entity.HasIndex(p => new { p.LastEncounterLatitude, p.LastEncounterLongitude });
+            entity.HasIndex(p => p.Spins);
 
             entity.Property(p => p.LastEncounterLatitude)
                   .HasPrecision(18, 6);
