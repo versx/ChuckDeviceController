@@ -9,33 +9,29 @@ using ChuckDeviceConfigurator.ViewModels;
 using ChuckDeviceController.Common;
 using ChuckDeviceController.Configuration;
 using ChuckDeviceController.Data.Common;
-using ChuckDeviceController.Data.Contexts;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Extensions;
-using ChuckDeviceController.Data.Repositories;
 using ChuckDeviceController.Extensions;
 using ChuckDeviceController.Extensions.Json;
 using ChuckDeviceController.JobControllers;
+using ChuckDeviceController.Data.Repositories.Dapper;
 
 [Authorize(Roles = RoleConsts.UtilitiesRole)]
 public class UtilitiesController : BaseMvcController
 {
     private readonly ILogger<UtilitiesController> _logger;
-    private readonly IUnitOfWork _uow;
-    private readonly MapDbContext _mapContext;
+    private readonly IDapperUnitOfWork _uow;
     private readonly IJobControllerService _jobControllerService;
     private readonly LeafletMapConfig _mapConfig;
 
     public UtilitiesController(
         ILogger<UtilitiesController> logger,
-        IUnitOfWork uow,
-        MapDbContext mapContext,
+        IDapperUnitOfWork uow,
         IJobControllerService jobControllerService,
         IOptions<LeafletMapConfig> mapConfig)
     {
         _logger = logger;
         _uow = uow;
-        _mapContext = mapContext;
         _jobControllerService = jobControllerService;
         _mapConfig = mapConfig.Value;
     }
@@ -97,7 +93,7 @@ public class UtilitiesController : BaseMvcController
             if (!string.IsNullOrEmpty(model.GeofenceName))
             {
                 // Retrieve geofence from database
-                var geofence = await _uow.Geofences.FindByIdAsync(model.GeofenceName);
+                var geofence = await _uow.Geofences.FindAsync(model.GeofenceName);
                 if (geofence == null)
                 {
                     ModelState.AddModelError("Utilities", $"Failed to find geofence with name '{model.GeofenceName}'");
@@ -123,7 +119,7 @@ public class UtilitiesController : BaseMvcController
                 }
 
                 // Clear quests by geofence
-                await _mapContext.ClearQuestsAsync(multiPolygons!);
+                await _uow.ClearQuestsAsync(multiPolygons!);
                 _logger.LogInformation($"All quests have been cleared in geofence '{model.GeofenceName}'");
 
                 CreateNotification(new NotificationViewModel
@@ -136,7 +132,7 @@ public class UtilitiesController : BaseMvcController
             if (string.IsNullOrEmpty(model.InstanceName) && string.IsNullOrEmpty(model.GeofenceName))
             {
                 // Clear all quests
-                await _mapContext.ClearQuestsAsync();
+                await _uow.ClearQuestsAsync();
                 _logger.LogInformation($"All quests have been cleared");
 
                 CreateNotification(new NotificationViewModel
@@ -165,11 +161,11 @@ public class UtilitiesController : BaseMvcController
     #region Convert Forts
 
     // GET: UtilitiesController/ConvertForts
-    public ActionResult ConvertForts()
+    public async Task<ActionResult> ConvertForts()
     {
         // Retrieve Pokestops/Gyms that have been upgraded/downgraded
-        var pokestops = _mapContext.Pokestops.ToList();
-        var gyms = _mapContext.Gyms.ToList();
+        var pokestops = (await _uow.Pokestops.FindAllAsync()).ToList();
+        var gyms = (await _uow.Gyms.FindAllAsync()).ToList();
         var convertiblePokestops = pokestops
             .Where(pokestop => gyms.Exists(gym => gym.Id == pokestop.Id && gym.Updated > pokestop.Updated))
             .ToList();
@@ -192,8 +188,8 @@ public class UtilitiesController : BaseMvcController
     {
         try
         {
-            var pokestops = _mapContext.Pokestops.ToList();
-            var gyms = _mapContext.Gyms.ToList();
+            var pokestops = (await _uow.Pokestops.FindAllAsync()).ToList();
+            var gyms = (await _uow.Gyms.FindAllAsync()).ToList();
             var convertiblePokestops = pokestops
                 .Where(pokestop => gyms.Exists(gym => gym.Id == pokestop.Id && gym.Updated > pokestop.Updated))
                 .ToList();
@@ -235,7 +231,7 @@ public class UtilitiesController : BaseMvcController
         try
         {
             // Convert individual Pokestop to Gym
-            var pokestop = await _mapContext.Pokestops.FindAsync(id);
+            var pokestop = await _uow.Pokestops.FindAsync(id);
             if (pokestop == null)
             {
                 ModelState.AddModelError("Utilities", $"Failed to retrieve Pokestop with id '{id}'");
@@ -267,11 +263,14 @@ public class UtilitiesController : BaseMvcController
     {
         try
         {
-            var pokestop = await _mapContext.Pokestops.FindAsync(id);
+            var pokestop = await _uow.Pokestops.FindAsync(id);
             if (pokestop != null)
             {
-                _mapContext.Pokestops.Remove(pokestop);
-                await _mapContext.SaveChangesAsync();
+                var result = await _uow.Pokestops.DeleteAsync(pokestop.Id);
+                if (!result)
+                {
+                    _logger.LogError("Failed to delete pokestop with id '{Id}'", id);
+                }
             }
         }
         catch
@@ -288,7 +287,7 @@ public class UtilitiesController : BaseMvcController
         try
         {
             // Convert individual Gym to Pokestop
-            var gym = await _mapContext.Gyms.FindAsync(id);
+            var gym = await _uow.Gyms.FindAsync(id);
             if (gym == null)
             {
                 ModelState.AddModelError("Utilities", $"Failed to retrieve Gym with id '{id}'");
@@ -320,11 +319,14 @@ public class UtilitiesController : BaseMvcController
     {
         try
         {
-            var gym = await _mapContext.Gyms.FindAsync(id);
+            var gym = await _uow.Gyms.FindAsync(id);
             if (gym != null)
             {
-                _mapContext.Gyms.Remove(gym);
-                await _mapContext.SaveChangesAsync();
+                var result = await _uow.Gyms.DeleteAsync(gym.Id);
+                if (!result)
+                {
+                    _logger.LogError("Failed to delete gym with id '{Id}'", id);
+                }
             }
         }
         catch
@@ -341,8 +343,8 @@ public class UtilitiesController : BaseMvcController
         try
         {
             // Convert all Pokestops to Gyms
-            var pokestops = _mapContext.Pokestops.ToList();
-            var gyms = _mapContext.Gyms.ToList();
+            var pokestops = (await _uow.Pokestops.FindAllAsync()).ToList();
+            var gyms = (await _uow.Gyms.FindAllAsync()).ToList();
             var convertiblePokestops = pokestops
                 .Where(pokestop => gyms.Exists(gym => gym.Id == pokestop.Id && gym.Updated > pokestop.Updated))
                 .ToList();
@@ -372,8 +374,8 @@ public class UtilitiesController : BaseMvcController
         try
         {
             // Convert all Gyms to Pokestops
-            var pokestops = _mapContext.Pokestops.ToList();
-            var gyms = _mapContext.Gyms.ToList();
+            var pokestops = (await _uow.Pokestops.FindAllAsync()).ToList();
+            var gyms = (await _uow.Gyms.FindAllAsync()).ToList();
             var convertibleGyms = gyms
                 .Where(gym => pokestops.Exists(pokestop => pokestop.Id == gym.Id && pokestop.Updated > gym.Updated))
                 .ToList();
@@ -401,12 +403,10 @@ public class UtilitiesController : BaseMvcController
     #region Clear Stale Pokestops
 
     // GET: UtilitiesController/ClearStalePokestops
-    public ActionResult ClearStalePokestops()
+    public async Task<ActionResult> ClearStalePokestops()
     {
         var now = DateTime.UtcNow.ToTotalSeconds();
-        var pokestops = _mapContext.Pokestops
-            .Where(pokestop => Math.Abs((decimal)now - pokestop.Updated) > Strings.OneDayS)
-            .ToList();
+        var pokestops = await _uow.Pokestops.FindAsync(pokestop => Math.Abs((decimal)now - pokestop.Updated) > Strings.OneDayS);
         return View(pokestops);
     }
 
@@ -418,14 +418,19 @@ public class UtilitiesController : BaseMvcController
         try
         {
             var now = DateTime.UtcNow.ToTotalSeconds();
-            var pokestopsToDelete = _mapContext.Pokestops
-                .Where(pokestop => Math.Abs((decimal)now - pokestop.Updated) > Strings.OneDayS)
-                .ToList();
+            var pokestopsToDelete = await _uow.Pokestops.FindAsync(pokestop => Math.Abs((decimal)now - pokestop.Updated) > Strings.OneDayS);
 
-            _mapContext.Pokestops.RemoveRange(pokestopsToDelete);
-            await _mapContext.SaveChangesAsync();
-
-            _logger.LogInformation($"Deleted {pokestopsToDelete.Count:N0} stale Pokestops from the database.");
+            var pokestopIdsToDelete = pokestopsToDelete.Select(pokestop => pokestop.Id);
+            var result = await _uow.Pokestops.DeleteRangeAsync(pokestopIdsToDelete);
+            if (!result)
+            {
+                // Failed to delete stale pokestops
+                _logger.LogError("Failed to delete stale pokestops.");
+            }
+            else
+            {
+                _logger.LogInformation($"Deleted {pokestopsToDelete.Count():N0} stale Pokestops from the database.");
+            }
             return RedirectToAction(nameof(ClearStalePokestops));
         }
         catch
@@ -485,8 +490,8 @@ public class UtilitiesController : BaseMvcController
     {
         if (timeSpan == null && dataType == null)
         {
-            ViewBag.PokemonCount = _mapContext.Pokemon.LongCount().ToString("N0");
-            ViewBag.IncidentsCount = _mapContext.Incidents.LongCount().ToString("N0");
+            ViewBag.PokemonCount = _uow.Pokemon.Count().ToString("N0");
+            ViewBag.IncidentsCount = _uow.Incidents.Count().ToString("N0");
             ViewBag.DataTypes = new List<string>
             {
                 "Pokemon",
@@ -503,10 +508,10 @@ public class UtilitiesController : BaseMvcController
             switch (dataType)
             {
                 case "Pokemon":
-                    count = _mapContext.Pokemon.Count(pokemon => Math.Abs((decimal)now - pokemon.ExpireTimestamp) >= time);
+                    count = _uow.Pokemon.Count(pokemon => Math.Abs((decimal)now - pokemon.ExpireTimestamp) >= time);
                     break;
                 case "Incidents":
-                    count = _mapContext.Incidents.Count(incident => Math.Abs((decimal)now - incident.Expiration) >= time);
+                    count = _uow.Incidents.Count(incident => Math.Abs((decimal)now - incident.Expiration) >= time);
                     break;
                 default:
                     _logger.LogWarning($"Unknown data type provided '{dataType}', unable to truncate.");
@@ -535,27 +540,31 @@ public class UtilitiesController : BaseMvcController
             {
                 case "Pokemon":
                     sw.Start();
-                    var pokemonToDelete = _mapContext.Pokemon
-                        .Where(pokemon => Math.Abs((decimal)now - pokemon.ExpireTimestamp) > time)
-                        .Select(pokemon => pokemon.Id)
-                        .ToList();
-                    _mapContext.Pokemon.RemoveRange(pokemonToDelete.Select(id => new Pokemon { Id = id }));
-                    await _mapContext.SaveChangesAsync();
+                    var pokemonToDelete = await _uow.Pokemon.FindAsync(pokemon => Math.Abs((decimal)now - pokemon.ExpireTimestamp) > time);
+                    var pokemonIdsToDelete = pokemonToDelete.Select(p => p.Id);
+                    var resultPokemon = await _uow.Pokemon.DeleteRangeAsync(pokemonIdsToDelete);
+                    if (!resultPokemon)
+                    {
+                        // Failed
+                    }
+                    
                     sw.Stop();
                     var pkmnSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
-                    _logger.LogInformation($"Successfully deleted {pokemonToDelete.Count:N0} old Pokemon from the database in {pkmnSeconds}s");
+                    _logger.LogInformation($"Successfully deleted {pokemonToDelete.Count():N0} old Pokemon from the database in {pkmnSeconds}s");
                     break;
                 case "Incidents":
                     sw.Start();
-                    var incidentsToDelete = _mapContext.Incidents
-                        .Where(incident => Math.Abs((decimal)now - incident.Expiration) > time)
-                        .Select(incident => incident.Id)
-                        .ToList();
-                    _mapContext.Incidents.RemoveRange(incidentsToDelete.Select(id => new Incident { Id = id }));
-                    await _mapContext.SaveChangesAsync();
+                    var incidentsToDelete = await _uow.Incidents.FindAsync(incident => Math.Abs((decimal)now - incident.Expiration) > time);
+                    var incidentIdsToDelete = incidentsToDelete.Select(i => i.Id);
+                    var resultIncidents = await _uow.Incidents.DeleteRangeAsync(incidentIdsToDelete);
+                    if (!resultIncidents)
+                    {
+                        // Failed
+                    }
+
                     sw.Stop();
                     var invasionSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
-                    _logger.LogInformation($"Successfully deleted {incidentsToDelete.Count:N0} old Invasions from the database in {invasionSeconds}s");
+                    _logger.LogInformation($"Successfully deleted {incidentsToDelete.Count():N0} old Invasions from the database in {invasionSeconds}s");
                     break;
                 default:
                     _logger.LogWarning($"Unknown data type provided '{dataType}', unable to truncate.");
@@ -613,7 +622,7 @@ public class UtilitiesController : BaseMvcController
 
     private async Task<bool> ConvertPokestopToGymAsync(Pokestop pokestop)
     {
-        var gym = await _mapContext.Gyms.FindAsync(pokestop.Id);
+        var gym = await _uow.Gyms.FindAsync(pokestop.Id);
         if (gym != null)
         {
             var needsUpdate = false;
@@ -631,16 +640,15 @@ public class UtilitiesController : BaseMvcController
             try
             {
                 // Delete old Pokestop
-                _mapContext.Pokestops.Remove(pokestop);
+                await _uow.Pokestops.DeleteAsync(pokestop.Id);
 
                 if (needsUpdate)
                 {
                     // Update Gym details
                     gym.IsEnabled = true;
                     gym.IsDeleted = false;
-                    _mapContext.Gyms.Update(gym);
+                    await _uow.Gyms.UpdateAsync(gym);
                 }
-                await _mapContext.SaveChangesAsync();
                 return true;
             }
             catch (Exception ex)
@@ -672,8 +680,7 @@ public class UtilitiesController : BaseMvcController
 
         try
         {
-            await _mapContext.Gyms.AddAsync(gym);
-            await _mapContext.SaveChangesAsync();
+            await _uow.Gyms.InsertAsync(gym);
             return true;
         }
         catch (Exception ex)
@@ -685,7 +692,7 @@ public class UtilitiesController : BaseMvcController
 
     private async Task<bool> ConvertGymToPokestopAsync(Gym gym)
     {
-        var pokestop = await _mapContext.Pokestops.FindAsync(gym.Id);
+        var pokestop = await _uow.Pokestops.FindAsync(gym.Id);
         if (pokestop != null)
         {
             var needsUpdate = false;
@@ -703,16 +710,19 @@ public class UtilitiesController : BaseMvcController
             try
             {
                 // Delete old Gym
-                _mapContext.Gyms.Remove(gym);
+                var result = await _uow.Gyms.DeleteAsync(gym.Id);
+                if (!result)
+                {
+                    // Failed
+                }
 
                 if (needsUpdate)
                 {
                     // Update Pokestop details
                     pokestop.IsEnabled = true;
                     pokestop.IsDeleted = false;
-                    _mapContext.Pokestops.Update(pokestop);
+                    await _uow.Pokestops.UpdateAsync(pokestop);
                 }
-                await _mapContext.SaveChangesAsync();
                 return true;
             }
             catch (Exception ex)
@@ -723,7 +733,11 @@ public class UtilitiesController : BaseMvcController
         }
 
         // Delete old Pokestop
-        _mapContext.Gyms.Remove(gym);
+        var gymResult = await _uow.Gyms.DeleteAsync(gym.Id);
+        if (!gymResult)
+        {
+            // Failed
+        }
 
         // Insert new pokestop with gym properties
         pokestop = new Pokestop
@@ -747,8 +761,7 @@ public class UtilitiesController : BaseMvcController
 
         try
         {
-            await _mapContext.Pokestops.AddAsync(pokestop);
-            await _mapContext.SaveChangesAsync();
+            await _uow.Pokestops.InsertAsync(pokestop);
             return true;
         }
         catch (Exception ex)

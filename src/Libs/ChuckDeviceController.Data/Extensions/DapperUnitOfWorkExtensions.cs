@@ -8,6 +8,17 @@ using ChuckDeviceController.Geometry.Models.Abstractions;
 
 public static class DapperUnitOfWorkExtensions
 {
+    public static async Task ClearQuestsAsync(this IDapperUnitOfWork uow)
+    {
+        var pokestops = await uow.Pokestops.FindAllAsync();
+        if (!(pokestops?.Any() ?? false))
+        {
+            return;
+        }
+
+        await uow.ClearQuestsAsync(pokestops);
+    }
+
     public static async Task ClearQuestsAsync(this IDapperUnitOfWork uow, IEnumerable<Pokestop> pokestops)
     {
         var result = await uow.Pokestops.UpdateRangeAsync(pokestops, mappings: new()
