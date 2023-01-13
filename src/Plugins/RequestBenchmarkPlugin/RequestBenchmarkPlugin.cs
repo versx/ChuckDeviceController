@@ -18,7 +18,8 @@ public class RequestBenchmarkPlugin : IPlugin
     //public const string RequestBenchmarkRoleName = "RequestBenchmark";
     //public const string RequestBenchmarkRole = $"{nameof(Roles.SuperAdmin)},{nameof(Roles.Admin)},{RequestBenchmarkRoleName}";
 
-    private const string DbName = "timings";
+    public const string DbName = "request_timings";
+    private readonly string DbFilePath = Path.Combine("./bin/debug/plugins", nameof(RequestBenchmarkPlugin), "data", DbName + ".db");
 
     private readonly IUiHost _uiHost;
     private readonly IConfiguration _config;
@@ -59,8 +60,15 @@ public class RequestBenchmarkPlugin : IPlugin
 
     public void ConfigureServices(IServiceCollection services)
     {
+        var dataFolderPath = Path.GetDirectoryName(DbFilePath);
+        if (!Directory.Exists(dataFolderPath))
+        {
+            Directory.CreateDirectory(dataFolderPath!);
+        }
+
         services.Configure<RequestBenchmarkConfig>(_config);
-        services.AddDbContext<RequestTimesDbContext>(options => options.UseInMemoryDatabase(DbName), ServiceLifetime.Scoped);
+        services.AddDbContext<RequestTimesDbContext>(options =>
+            options.UseSqlite($"Data Source={DbFilePath}"), ServiceLifetime.Scoped);
         services.AddSingleton<IRequestBenchmarkService, RequestBenchmarkService>();
     }
 

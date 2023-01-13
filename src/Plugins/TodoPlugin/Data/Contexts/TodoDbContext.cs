@@ -2,7 +2,7 @@
 
 using Microsoft.EntityFrameworkCore;
 
-using Entities;
+using Data.Entities;
 
 public class TodoDbContext : DbContext
 {
@@ -11,6 +11,8 @@ public class TodoDbContext : DbContext
     public TodoDbContext(DbContextOptions<TodoDbContext> options)
         : base(options)
     {
+        base.Database.EnsureCreated();
+        base.ChangeTracker.AutoDetectChangesEnabled = false;
         base.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
     }
 }

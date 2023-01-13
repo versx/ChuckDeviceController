@@ -11,16 +11,16 @@ using Services;
 [Authorize(Roles = RoleConsts.BenchmarksRole)]
 public class RequestTimeController : Controller
 {
-    //private readonly ILogger<RequestTimeController> _logger;
+    private readonly ILogger<RequestTimeController> _logger;
     private readonly RequestTimesDbContext _context;
     private readonly IRequestBenchmarkService _benchmarkService;
 
     public RequestTimeController(
-        //ILogger<RequestTimeController> logger,
+        ILogger<RequestTimeController> logger,
         RequestTimesDbContext context,
         IRequestBenchmarkService benchmarkService)
     {
-        //_logger = logger;
+        _logger = logger;
         _context = context;
         _benchmarkService = benchmarkService;
     }
@@ -36,6 +36,7 @@ public class RequestTimeController : Controller
         var timing = await _context.RequestTimes.FindAsync(route);
         if (timing == null)
         {
+            _logger.LogError("Failed to find benchmark request for route '{Route}'", route);
             return View();
         }
         return View(timing);

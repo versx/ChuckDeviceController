@@ -42,8 +42,9 @@ public class TodoController : Controller
     // GET: TodoController/Complete
     public ActionResult Complete()
     {
-        var todosComplete = _context.Todos.Where(x => x.IsComplete)
-                                          .ToList();
+        var todosComplete = _context.Todos
+            .Where(x => x.IsComplete)
+            .ToList();
         return View(todosComplete);
     }
 
@@ -59,7 +60,7 @@ public class TodoController : Controller
     {
         if (_context.Todos.Any(x => x.Name == todo.Name))
         {
-            _logger.LogError($"Todo already exists with name '{todo.Name}'");
+            _logger.LogError("Todo already exists with name '{Name}'", todo.Name);
             ModelState.AddModelError("Todo", $"Todo already exists with name '{todo.Name}'");
             return View(todo);
         }
@@ -76,7 +77,7 @@ public class TodoController : Controller
         var todo = await _context.Todos.FindAsync(id);
         if (todo == null)
         {
-            _logger.LogError($"Failed to find todo with id '{id}'");
+            _logger.LogError("Failed to find todo with id '{Id}'", id);
             return RedirectToAction(nameof(Index));
         }
         return View(todo);
@@ -89,14 +90,14 @@ public class TodoController : Controller
         var dbTodo = await _context.Todos.FindAsync(id);
         if (dbTodo == null)
         {
-            _logger.LogError($"Todo does not exist with id '{id}'");
+            _logger.LogError("Todo does not exist with id '{Id}'", id);
             ModelState.AddModelError("Todo", $"Todo does not exist with id '{id}'");
             return View(todo);
         }
 
         if (!_context.Todos.Any(x => x.Name == todo.Name))
         {
-            _logger.LogError($"Todo already exists with name '{todo.Name}'");
+            _logger.LogError("Todo already exists with name '{Name}'", todo.Name);
             ModelState.AddModelError("Todo", $"Todo already exists with name '{todo.Name}'");
             return View(todo);
         }
@@ -116,7 +117,7 @@ public class TodoController : Controller
         var todo = await _context.Todos.FindAsync(id);
         if (todo == null)
         {
-            _logger.LogError($"Failed to find todo with id '{id}'");
+            _logger.LogError("Failed to find todo with id '{Id}'", id);
             return RedirectToAction(nameof(Index));
         }
         return View(todo);
@@ -129,7 +130,7 @@ public class TodoController : Controller
         var dbTodo = await _context.Todos.FindAsync(id);
         if (dbTodo == null)
         {
-            _logger.LogError($"Todo does not exist with id '{id}'");
+            _logger.LogError("Todo does not exist with id '{Id}'", id);
             ModelState.AddModelError("Todo", $"Todo does not exist with id '{id}'");
             return RedirectToAction(nameof(Index));
         }

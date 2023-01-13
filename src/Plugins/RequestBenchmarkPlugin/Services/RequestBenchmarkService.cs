@@ -36,10 +36,10 @@ public class RequestBenchmarkService : IRequestBenchmarkService
         {
             if (!_requestBenchmarks.TryRemove(route, out var _))
             {
-                _logger.LogWarning($"Failed to remove request benchmark for route '{route}' from cache");
+                _logger.LogWarning("Failed to remove request benchmark for route '{Route}' from cache", route);
                 return;
             }
-            _logger.LogDebug($"Removed benchmark for route '{route}' from benchmark cache");
+            _logger.LogDebug("Removed benchmark for route '{Route}' from benchmark cache", route);
         }
     }
 
@@ -67,7 +67,7 @@ public class RequestBenchmarkService : IRequestBenchmarkService
         try { await context.SaveChangesAsync(); }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error: {ex.InnerException?.Message ?? ex.Message}");
+            _logger.LogError("Error: {Message}", ex.InnerException?.Message ?? ex.Message);
         }
 
         _sem.Release();

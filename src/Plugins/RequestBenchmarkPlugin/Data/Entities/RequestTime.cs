@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 using Utilities;
 
-[Table("timing")]
+[Table(RequestBenchmarkPlugin.DbName)]
 public class RequestTime
 {
     /// <summary>

@@ -4,18 +4,21 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-using Data.Contexts;
-
 using ChuckDeviceController.Common;
 using ChuckDeviceController.Data.Common;
 using ChuckDeviceController.Plugin;
+
+using Data.Contexts;
 
 [PluginApiKey("CDC-328TVvD7o85TNbNhjLE0JysVMbOxjXKT")]
 [StaticFilesLocation(StaticFilesLocation.Resources, StaticFilesLocation.External)]
 public class TodoPlugin : IPlugin
 {
-    public const string TodoRoleName = "RobotCrawlers";
+    public const string TodoRoleName = "Todo";
     public const string TodoRole = $"{nameof(Roles.SuperAdmin)},{nameof(Roles.Admin)},{TodoRoleName}";
+
+    public const string DbName = "todos";
+    private readonly string DbFilePath = Path.Combine("./bin/debug/plugins", nameof(TodoPlugin), "data", DbName + ".db");
 
     #region Variables
 
@@ -56,7 +59,14 @@ public class TodoPlugin : IPlugin
 
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddDbContext<TodoDbContext>(options => options.UseInMemoryDatabase("todo"), ServiceLifetime.Scoped);
+        var dataFolderPath = Path.GetDirectoryName(DbFilePath);
+        if (!Directory.Exists(dataFolderPath))
+        {
+            Directory.CreateDirectory(dataFolderPath!);
+        }
+
+        services.AddDbContext<TodoDbContext>(options =>
+            options.UseSqlite($"Data Source={DbFilePath}"), ServiceLifetime.Scoped);
     }
 
     public void ConfigureMvcBuilder(IMvcBuilder mvcBuilder)
