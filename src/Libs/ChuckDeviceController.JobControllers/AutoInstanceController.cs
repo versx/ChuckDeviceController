@@ -316,7 +316,7 @@ public class AutoInstanceController : IJobController
                 }
 
                 var ids = _allStops.Select(x => x.Pokestop.Id).ToList();
-                var currentCountDb = await GetPokestopQuestCountAsync(ids, QuestMode);
+                var currentCountDb = await _uow.GetQuestCountAsync(ids, QuestMode);
 
                 var maxCount = _allStops.Count;
                 var currentCount = maxCount - _todayStops.Count;
@@ -388,7 +388,7 @@ public class AutoInstanceController : IJobController
 
         var sw = new Stopwatch();
         sw.Start();
-        await ClearPokestopQuestsAsync(_allStops);
+        await _uow.ClearQuestsAsync(_allStops.Select(x => x.Pokestop));
         sw.Stop();
         var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
         _logger.LogInformation("[{Name}] {Count:N0} Pokestop Quests have been cleared, time taken: {TotalSeconds}s", Name, pokestopCount, totalSeconds);
@@ -470,7 +470,7 @@ public class AutoInstanceController : IJobController
 
         // Get all known cells from the database
         // Get S2 cells within multi polygon
-        var existingCells = await GetS2CellsAsync(MultiPolygons);
+        var existingCells = await _uow.GetS2CellsAsync(MultiPolygons);
         var existingCellIds = existingCells
             .Select(cell => cell.Id)
             .ToList();
@@ -515,7 +515,7 @@ public class AutoInstanceController : IJobController
                         // Get all Pokestops within bounding box of geofence. Some Pokestops
                         // closely outside of geofence will also be returned
                         var bbox = polygon.GetBoundingBox();
-                        var stops = await GetPokestopsInBoundsAsync(bbox, isEnabled: true);
+                        var stops = await _uow.GetPokestopsInBoundsAsync(bbox, isEnabled: true);
 
                         //var isNormal = QuestMode == QuestMode.Normal || QuestMode == QuestMode.Both;
                         var isAlternative = QuestMode == QuestMode.Alternative || QuestMode == QuestMode.Both;
@@ -669,7 +669,7 @@ public class AutoInstanceController : IJobController
         try
         {
             // Get Pokestops within S2 cells
-            newStops = (await GetPokestopsByIdsAsync(ids)).ToList();
+            newStops = (await _uow.GetPokestopsByIdsAsync(ids)).ToList();
         }
         catch (Exception ex)
         {
@@ -900,8 +900,6 @@ public class AutoInstanceController : IJobController
 
     #region Database Helpers
 
-    // TODO: Create extensions
-
     private async Task<Account?> GetAccountAsync(string uuid, Coordinate encounterTarget)
     {
         // TODO: Check account against encounterTarget to see if too far
@@ -959,138 +957,6 @@ public class AutoInstanceController : IJobController
                   (x.Failed == "suspended" && x.FailedTimestamp <= now - suspensionTimeLimitS))
         );
         return account;
-    }
-
-    private async Task ClearPokestopQuestsAsync(IEnumerable<PokestopWithMode> pokestops)
-    {
-        var stops = pokestops.Select(x => x.Pokestop);
-        var result = await _uow.Pokestops.UpdateRangeAsync(stops, mappings: new()
-        {
-            ["id"] = x => x.Id,
-            ["quest_conditions"] = x => null!,
-            ["quest_rewards"] = x => null!,
-            ["quest_target"] = x => null!,
-            ["quest_template"] = x => null!,
-            ["quest_timestamp"] = x => null!,
-            ["quest_title"] = x => null!,
-            ["quest_type"] = x => null!,
-            ["alternative_quest_conditions"] = x => null!,
-            ["alternative_quest_rewards"] = x => null!,
-            ["alternative_quest_target"] = x => null!,
-            ["alternative_quest_template"] = x => null!,
-            ["alternative_quest_timestamp"] = x => null!,
-            ["alternative_quest_title"] = x => null!,
-            ["alternative_quest_type"] = x => null!,
-        });
-        _logger.LogInformation("[{Name}] Clear Quests Result: {Result}", Name, result);
-    }
-
-    private async Task<ulong> GetPokestopQuestCountAsync(List<string> pokestopIds, QuestMode mode, uint maxBatchCount = 10000)
-    {
-        if (pokestopIds.Count > maxBatchCount)
-        {
-            var result = 0ul;
-            var batchSize = Convert.ToInt64(Math.Ceiling(Convert.ToDouble(pokestopIds.Count) / maxBatchCount));
-            for (var i = 0; i < batchSize; i++)
-            {
-                var start = maxBatchCount * i;
-                var end = Math.Max(maxBatchCount * i, pokestopIds.Count - 1);
-                var splice = pokestopIds.GetRange((int)start, (int)end);
-                var spliceResult = await GetPokestopQuestCountAsync(splice, mode);
-                result += spliceResult;
-            }
-            return result;
-        }
-
-        var pokestops = await GetPokestopsByIdsAsync(pokestopIds);
-        var count = pokestops.Count(stop => HasPokestopQuestByType(stop, mode));
-        return Convert.ToUInt64(count);
-    }
-
-    private async Task<IEnumerable<Pokestop>> GetPokestopsByIdsAsync(IEnumerable<string> pokestopIds, bool isEnabled = true, bool isDeleted = false)
-    {
-        var pokestops = await _uow.Pokestops.FindAsync(pokestop =>
-            pokestopIds.Contains(pokestop.Id) &&
-            isEnabled == pokestop.IsEnabled &&
-            isDeleted == pokestop.IsDeleted
-        );
-        return pokestops;
-    }
-
-    private async Task<IEnumerable<Pokestop>> GetPokestopsInBoundsAsync(IBoundingBox bbox, bool isEnabled = true)
-    {
-        var pokestops = await _uow.Pokestops.FindAsync(pokestop =>
-            pokestop.Latitude >= bbox.MinimumLatitude &&
-            pokestop.Longitude >= bbox.MinimumLongitude &&
-            pokestop.Latitude <= bbox.MaximumLatitude &&
-            pokestop.Longitude <= bbox.MaximumLongitude &&
-            isEnabled == pokestop.IsEnabled &&
-            !pokestop.IsDeleted
-        );
-        return pokestops;
-    }
-
-    private static bool HasPokestopQuestByType(Pokestop pokestop, QuestMode mode)
-    {
-        var result = mode == QuestMode.Normal
-            ? pokestop.QuestType != null
-            : mode == QuestMode.Alternative
-                ? pokestop.AlternativeQuestType != null
-                : pokestop.QuestType != null || pokestop.AlternativeQuestType != null;
-        return result;
-    }
-
-    /// <summary>
-    /// Get all S2 cells within bounding box
-    /// </summary>
-    /// <param name="context"></param>
-    /// <param name="bbox"></param>
-    private async Task<IEnumerable<Cell>> GetS2CellsAsync(IBoundingBox bbox)
-    {
-        var cells = await _uow.Cells.FindAsync(cell =>
-            cell.Latitude >= bbox.MinimumLatitude &&
-            cell.Longitude >= bbox.MinimumLongitude &&
-            cell.Latitude <= bbox.MaximumLatitude &&
-            cell.Longitude <= bbox.MaximumLongitude
-        );
-        return cells;
-    }
-
-    /// <summary>
-    /// Get all S2 cells within geofence polygon
-    /// </summary>
-    /// <param name="context"></param>
-    /// <param name="multiPolygon"></param>
-    /// <returns></returns>
-    private async Task<IEnumerable<Cell>> GetS2CellsAsync(IMultiPolygon multiPolygon)
-    {
-        var bbox = multiPolygon.GetBoundingBox();
-        // Get S2 cells within geofence bounding box
-        var bboxCells = await GetS2CellsAsync(bbox);
-        // Filter S2 cells outside of geofence polygon
-        var cellsInArea = bboxCells
-            .Where(cell => GeofenceService.InPolygon(multiPolygon, cell.ToCoordinate()))
-            .ToList();
-        return cellsInArea;
-    }
-
-    /// <summary>
-    /// Get all S2 cells within geofence polygons
-    /// </summary>
-    /// <param name="context"></param>
-    /// <param name="multiPolygons"></param>
-    /// <returns></returns>
-    private async Task<IEnumerable<Cell>> GetS2CellsAsync(IEnumerable<IMultiPolygon> multiPolygons)
-    {
-        var cells = multiPolygons
-            .SelectMany(multiPolygon => GetS2CellsAsync(multiPolygon).Result)
-            .ToList();
-        //foreach (var multiPolygon in multiPolygons)
-        //{
-        //    var list = await GetS2CellsAsync(context, multiPolygon);
-        //    cells.AddRange(list);
-        //}
-        return await Task.FromResult(cells);
     }
 
     #endregion
