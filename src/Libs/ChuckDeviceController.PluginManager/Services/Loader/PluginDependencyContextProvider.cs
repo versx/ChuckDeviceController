@@ -62,7 +62,7 @@ public class PluginDependencyContextProvider : IPluginDependencyContextProvider
 
         var pluginDependencies = GetPluginDependencies(dependencyContext);
         var resourceDependencies = GetResourceDependencies(dependencyContext);
-        var platformDependencies = GetPlatformDependencies(dependencyContext, loadContext.PluginPlatformVersion);
+        var platformDependencies = GetPlatformDependencies(loadContext, dependencyContext);
         var remoteDependencies = GetRemoteDependencies(loadContext);
         var pluginReferenceDependencies = GetPluginReferenceDependencies(dependencyContext);
 
@@ -267,7 +267,7 @@ public class PluginDependencyContextProvider : IPluginDependencyContextProvider
         return dependencies;
     }
 
-    private static IEnumerable<PlatformDependency> GetPlatformDependencies(DependencyContext? pluginDependencyContext, PluginPlatformVersion pluginPlatformVersion)
+    private static IEnumerable<PlatformDependency> GetPlatformDependencies(IPluginAssemblyLoadContext pluginLoadContext, DependencyContext? pluginDependencyContext)
     {
         var dependencies = new List<PlatformDependency>();
         if (pluginDependencyContext == null)
@@ -304,7 +304,7 @@ public class PluginDependencyContextProvider : IPluginDependencyContextProvider
             var validAssets = assets.Where(asset => platformExtensions.Contains(Path.GetExtension(asset)));
             foreach (var asset in validAssets)
             {
-                var platformDependencyPath = ResolvePlatformDependencyPathToRuntime(pluginPlatformVersion, asset);
+                var platformDependencyPath = ResolvePlatformDependencyPathToRuntime(pluginLoadContext, asset);
                 dependencies.Add(new PlatformDependency
                 {
                     DependencyNameWithoutExtension = Path.GetFileNameWithoutExtension(platformDependencyPath),
@@ -366,11 +366,12 @@ public class PluginDependencyContextProvider : IPluginDependencyContextProvider
         return $"linux-{RuntimeInformation.ProcessArchitecture.ToString().ToLower()}";
     }
 
-    private static string ResolvePlatformDependencyPathToRuntime(PluginPlatformVersion pluginPlatformVersion, string platformDependencyPath)
+    private static string ResolvePlatformDependencyPathToRuntime(IPluginAssemblyLoadContext loadContext, string platformDependencyPath)
     {
         var runtimePlatformContext = new RuntimePlatformContext();
         var runtimeInformation = runtimePlatformContext.GetRuntimeInfo();
         var runtimes = runtimeInformation.Runtimes;
+        var pluginPlatformVersion = loadContext.PluginPlatformVersion;
         if (pluginPlatformVersion.IsSpecified)
         {
             // First filter on specific version
@@ -389,21 +390,39 @@ public class PluginDependencyContextProvider : IPluginDependencyContextProvider
 
         foreach (var runtime in runtimes.OrderByDescending(r => r.Version))
         {
-            var platformDependencyName = Path.GetFileName(platformDependencyPath);
-            var platformDependencyFileVersion = FileVersionInfo.GetVersionInfo(platformDependencyName);
-            var platformFiles = Directory.GetFiles(runtime.Location);
-            var candidateFilePath = platformFiles.FirstOrDefault(f => string.Compare(Path.GetFileName(f), platformDependencyName) == 0);
-            if (!string.IsNullOrEmpty(candidateFilePath))
+            var platformDepFullPath = Path.Combine(runtime.Location, platformDependencyPath);
+            if (File.Exists(platformDepFullPath))
             {
+                var platformDepName = Path.GetFileName(platformDepFullPath);
+                var platformDepFileVersion = FileVersionInfo.GetVersionInfo(platformDepFullPath);
+                var platformFiles = Directory.GetFiles(runtime.Location);
+                var candidateFilePath = platformFiles.FirstOrDefault(f => string.Compare(Path.GetFileName(f), platformDepName) == 0);
+                if (string.IsNullOrEmpty(candidateFilePath))
+                {
+                    return platformDepFullPath;
+                }
+
                 var candidateFileVersion = FileVersionInfo.GetVersionInfo(candidateFilePath);
-                if (string.Compare(platformDependencyFileVersion.FileVersion, candidateFileVersion.FileVersion) == 0)
+                if (string.Compare(platformDepFileVersion.FileVersion, candidateFileVersion.FileVersion) == 0)
                 {
                     return candidateFilePath;
                 }
             }
+            else
+            {
+                // Dependency is not a platform file, search additional probing paths specified
+                foreach (var probePath in loadContext.AdditionalProbingPaths)
+                {
+                    var depFullPath = Path.Combine(probePath, platformDependencyPath);
+                    if (File.Exists(depFullPath))
+                    {
+                        return depFullPath;
+                    }
+                }
+            }
         }
 
-        return string.Empty;
+        return null!;
     }
 
     #endregion

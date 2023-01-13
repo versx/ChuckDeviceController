@@ -11,6 +11,10 @@ using ChuckDeviceController.PluginManager.Services.Loader.Runtime;
 
 public class PluginAssemblyLoadContext : AssemblyLoadContext, IPluginAssemblyLoadContext
 {
+    private const string DefaultPluginPlatformVersion = "7.0.0";
+    private const string RuntimesFolderName = "runtimes";
+    private const string LibsFolderName = "libs";
+
     #region Variables
 
     private readonly AssemblyDependencyResolver _resolver;
@@ -85,8 +89,15 @@ public class PluginAssemblyLoadContext : AssemblyLoadContext, IPluginAssemblyLoa
         {
             pluginType,
         };
-        PluginPlatformVersion = PluginPlatformVersion.Empty();// Create("7.0.1", RuntimeType.AspNetCoreApp);
-        AdditionalProbingPaths = new List<string>();
+        PluginPlatformVersion = PluginPlatformVersion.Create(DefaultPluginPlatformVersion, RuntimeType.AspNetCoreApp);
+        //PluginPlatformVersion = PluginPlatformVersion.Empty();
+        var pluginBaseFolder = Path.GetDirectoryName(pluginPath)!;
+        AdditionalProbingPaths = new[]
+        {
+            pluginBaseFolder,
+            Path.Combine(pluginBaseFolder, RuntimesFolderName),
+            Path.Combine(pluginBaseFolder, LibsFolderName),
+        };
         IgnorePlatformInconsistencies = ignorePlatformInconsistencies;
 
         _resolver = new AssemblyDependencyResolver(pluginPath);
