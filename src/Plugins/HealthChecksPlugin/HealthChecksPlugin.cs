@@ -22,8 +22,6 @@ public class HealthChecksPlugin : IPlugin
 
     private readonly ILoggingHost _loggingHost;
 
-    private readonly IUiHost _uiHost;
-
     #endregion
 
     #region Plugin Metadata Properties
@@ -53,10 +51,9 @@ public class HealthChecksPlugin : IPlugin
 
     #region Constructor
 
-    public HealthChecksPlugin(ILoggingHost loggingHost, IUiHost uiHost)
+    public HealthChecksPlugin(ILoggingHost loggingHost)
     {
         _loggingHost = loggingHost;
-        _uiHost = uiHost;
     }
 
     #endregion

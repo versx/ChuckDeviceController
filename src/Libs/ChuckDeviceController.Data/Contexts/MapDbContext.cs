@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore;
 
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Factories;
-using ChuckDeviceController.Data.Triggers;
 
 public class MapDbContext : DbContext
 {
@@ -77,10 +76,10 @@ public class MapDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseTriggers(triggerOptions =>
-        {
-            triggerOptions.AddTrigger<PokemonInsertOrUpdateTrigger>();
-        });
+        //optionsBuilder.UseTriggers(triggerOptions =>
+        //{
+        //    triggerOptions.AddTrigger<PokemonInsertOrUpdateTrigger>();
+        //});
         base.OnConfiguring(optionsBuilder);
     }
 
@@ -116,6 +115,7 @@ public class MapDbContext : DbContext
         {
             entity.HasOne(g => g.Fort)
                   .WithMany(g => g.Defenders)
+                  .IsRequired(required: true)
                   .HasForeignKey(g => g.FortId);
 
             entity.HasIndex(p => p.TrainerName);
@@ -125,6 +125,7 @@ public class MapDbContext : DbContext
         {
             entity.HasMany(t => t.Defenders)
                   .WithOne(g => g.Trainer)
+                  .IsRequired(required: true)
                   .HasForeignKey(g => g.TrainerName)
                   .OnDelete(DeleteBehavior.Cascade);
 
