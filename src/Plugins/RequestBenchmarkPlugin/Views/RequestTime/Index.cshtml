@@ -5,12 +5,12 @@
     var totalTime = Utils.FormatTime(Model?.Sum(x => x.Total) ?? 0, 4);
 }
 
-<h1>Request Benchmarks</h1>
+<h1>@ViewData["Title"]</h1>
 <br />
 @Html.DisplayFor(model => model, "Breadcrumbs", new { CurrentPage = "Request Benchmarks" })
 
 <div class="mb-3">
-    <a class="btn btn-danger btn-sm float-end" asp-action="Clear">Clear</a>
+    <a class="btn btn-danger btn-sm float-end" asp-action="Clear" onclick="return confirm('Are you sure that you want to clear all \'@totalRequests.ToString("N0")\' stored request benchmarks?');">Clear</a>
 </div>
 <br />
 
