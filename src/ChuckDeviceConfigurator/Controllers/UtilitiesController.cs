@@ -17,7 +17,7 @@ using ChuckDeviceController.Extensions.Json;
 using ChuckDeviceController.JobControllers;
 
 [Authorize(Roles = RoleConsts.UtilitiesRole)]
-public class UtilitiesController : Controller
+public class UtilitiesController : BaseMvcController
 {
     private readonly ILogger<UtilitiesController> _logger;
     private readonly ControllerDbContext _deviceContext;
@@ -51,12 +51,14 @@ public class UtilitiesController : Controller
     public ActionResult ClearQuests()
     {
         var model = new ClearQuestsViewModel();
-        var geofences = _deviceContext.Geofences.Where(geofence => geofence.Type == GeofenceType.Geofence)
-                                                .Select(geofence => geofence.Name)
-                                                .ToList();
-        var instances = _deviceContext.Instances.Where(instance => instance.Type == InstanceType.AutoQuest)
-                                                .Select(instance => instance.Name)
-                                                .ToList();
+        var geofences = _deviceContext.Geofences
+            .Where(geofence => geofence.Type == GeofenceType.Geofence)
+            .Select(geofence => geofence.Name)
+            .ToList();
+        var instances = _deviceContext.Instances
+            .Where(instance => instance.Type == InstanceType.AutoQuest)
+            .Select(instance => instance.Name)
+            .ToList();
         ViewBag.Geofences = geofences;
         ViewBag.Instances = instances;
         return View(model);
@@ -76,13 +78,25 @@ public class UtilitiesController : Controller
                 if (jobController is not AutoInstanceController questController)
                 {
                     ModelState.AddModelError("Utilities", $"Failed to find job controller instance with name '{model.InstanceName}'");
+                    CreateNotification(new NotificationViewModel
+                    {
+                        Message = $"Failed to find job controller instance with name '{model.InstanceName}'!",
+                        Icon = NotificationIcon.Error,
+                    });
                     return View(model);
                 }
 
                 // Clear quest instance quests
                 await questController.ClearQuestsAsync();
                 _logger.LogInformation($"All quests have been cleared for instance '{model.InstanceName}'");
+
+                CreateNotification(new NotificationViewModel
+                {
+                    Message = $"All Pokestop quests for instance '{model.InstanceName}' have been cleared!",
+                    Icon = NotificationIcon.Success,
+                });
             }
+
             if (!string.IsNullOrEmpty(model.GeofenceName))
             {
                 // Retrieve geofence from database
@@ -90,6 +104,11 @@ public class UtilitiesController : Controller
                 if (geofence == null)
                 {
                     ModelState.AddModelError("Utilities", $"Failed to find geofence with name '{model.GeofenceName}'");
+                    CreateNotification(new NotificationViewModel
+                    {
+                        Message = $"Failed to find geofence with name '{model.GeofenceName}'!",
+                        Icon = NotificationIcon.Error,
+                    });
                     return View(model);
                 }
 
@@ -97,26 +116,49 @@ public class UtilitiesController : Controller
                 var (multiPolygons, _) = geofence.ConvertToMultiPolygons();
                 if ((multiPolygons?.Count ?? 0) == 0)
                 {
-                    ModelState.AddModelError("Utilities", $"Failed to clear quests for geofence '{model.GeofenceName}', no multi polygons found");
+                    ModelState.AddModelError("Utilities", $"Failed to clear quests for geofence '{model.GeofenceName}', no multi-polygons found");
+                    CreateNotification(new NotificationViewModel
+                    {
+                        Message = $"Failed to clear quests for geofence '{model.GeofenceName}', no multi-polygons found!",
+                        Icon = NotificationIcon.Error,
+                    });
                     return View(model);
                 }
 
                 // Clear quests by geofence
                 await _mapContext.ClearQuestsAsync(multiPolygons!);
                 _logger.LogInformation($"All quests have been cleared in geofence '{model.GeofenceName}'");
+
+                CreateNotification(new NotificationViewModel
+                {
+                    Message = $"All Pokestop quests in geofence '{model.GeofenceName}' have been cleared!",
+                    Icon = NotificationIcon.Success,
+                });
             }
+
             if (string.IsNullOrEmpty(model.InstanceName) && string.IsNullOrEmpty(model.GeofenceName))
             {
                 // Clear all quests
                 await _mapContext.ClearQuestsAsync();
                 _logger.LogInformation($"All quests have been cleared");
+
+                CreateNotification(new NotificationViewModel
+                {
+                    Message = $"All Pokestop quests have been cleared!",
+                    Icon = NotificationIcon.Success,
+                });
             }
 
             return RedirectToAction(nameof(ClearQuests));
         }
         catch
         {
-            ModelState.AddModelError("Utilities", $"Unknown error occurred while clearing quests.");
+            ModelState.AddModelError("Utilities", $"Unknown error occurred while clearing Pokestop quests.");
+            CreateNotification(new NotificationViewModel
+            {
+                Message = $"Unknown error occurred while clearing Pokestop quests!",
+                Icon = NotificationIcon.Error,
+            });
             return View(model);
         }
     }

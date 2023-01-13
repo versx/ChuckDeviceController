@@ -7,5 +7,5 @@ using ChuckDeviceController.Data.Entities;
 public class InstanceDetailsViewModel : Instance
 {
     [DisplayName("Assigned Devices")]
-    public List<Device> Devices { get; set; } = new();
+    public new List<Device> Devices { get; set; } = new();
 }
