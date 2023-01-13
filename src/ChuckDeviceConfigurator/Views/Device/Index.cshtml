@@ -202,12 +202,17 @@
                 ],
                 */
                 columnDefs: [
-                    { responsivePriority: 0, targets: 0 },
-                    { responsivePriority: 2, targets: 1 },
-                    { responsivePriority: 4, targets: 2 },
-                    { responsivePriority: 100, targets: 3 },
-                    { responsivePriority: 10, targets: 4 },
-                    { responsivePriority: 3, targets: 5 },
+                    // Status Uuid InstanceName AccountUsername AccountLevel LastHost LastLocation LastSeen Action
+                    // 0      1    2            3               4            5        6            7        8
+                    // 2      0    3            5               6            8        7            4        1
+                    { responsivePriority: 2, targets: 0 },
+                    { responsivePriority: 0, targets: 1 },
+                    { responsivePriority: 3, targets: 2 },
+                    { responsivePriority: 5, targets: 3 },
+                    { responsivePriority: 6, targets: 4 },
+                    { responsivePriority: 8, targets: 5 },
+                    { responsivePriority: 7, targets: 6 },
+                    { responsivePriority: 4, targets: 7 },
                     { responsivePriority: 1, targets: -1, orderable: false },
                 ],
                 order: [[0, 'asc']],
@@ -232,3 +237,18 @@
         });
     </script>
 }
+
+@*
+        @Html.DisplayNameFor(model => model.Items[0].AccountLevel)
+    </th>
+    <th>
+        @Html.DisplayNameFor(model => model.Items[0].LastHost)
+    </th>
+    <th>
+        @localizer["Last Location"]
+    </th>
+    <th>
+        @Html.DisplayNameFor(model => model.Items[0].LastSeen)
+    </th>
+    <th width="5%">@localizer["Action"]</th>
+*@
