@@ -44,6 +44,11 @@ if exist "%targetDir%/wwwroot/" (
   xcopy /S /E /Y /I "%targetDir%/wwwroot" "%pluginFolder%/wwwroot"
 )
 
+echo Copying './runtimes/*' dependency runtime libraries...
+if exist "%targetDir%/runtimes/" (
+  xcopy /S /E /Y /I "%targetDir%/runtimes" "%pluginFolder%/runtimes"
+)
+
 echo Copying all libraries from plugin bin folder...
 for %%a in (%targetDir%*.dll) do (
   SET name=%%~nxa

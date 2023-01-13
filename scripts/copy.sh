@@ -41,6 +41,11 @@ if [ -d "$targetDir/wwwroot/" ]; then
   cp -R "$targetDir/wwwroot" "$pluginFolder/wwwroot"
 fi
 
+echo "Copying './runtimes/*' dependency runtime libraries..."
+if [ -d "$targetDir/runtimes/" ]; then
+  cp -R "$targetDir/runtimes" "$pluginFolder/runtimes"
+fi
+
 echo "Copying all libraries from plugin bin folder..."
 for entry in "$targetDir"/*.dll; do
     if [[ ! $entry =~ "$cdcLib" ]]; then
