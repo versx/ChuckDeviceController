@@ -232,10 +232,8 @@ var sqliteConnectionString = $"Data Source={Strings.PluginsDatabasePath}";
 builder.Services.AddDbContextFactory<PluginDbContext>(options =>
     options.UseSqlite(sqliteConnectionString), ServiceLifetime.Singleton);
 
-//builder.Services.AddDbContext<ControllerDbContext>(options =>
-//    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName, resiliencyConfig));
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork<ControllerDbContext>>();
-//builder.Services.AddScoped<IUnitOfWork, UnitOfWork<MapDbContext>>();
+builder.Services.AddSingleton<IDapperUnitOfWork, DapperUnitOfWork>();
 
 builder.Services.AddScoped<MySqlConnection>(options =>
 {
@@ -256,7 +254,6 @@ builder.Services.AddSingleton<IMySqlConnectionFactory>(sp =>
     var factory = new MySqlConnectionFactory(config);
     return factory;
 });
-builder.Services.AddSingleton<IDapperUnitOfWork, DapperUnitOfWork>();
 
 #endregion
 

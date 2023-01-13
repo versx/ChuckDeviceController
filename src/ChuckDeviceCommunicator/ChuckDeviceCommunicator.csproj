@@ -23,7 +23,7 @@
   </PropertyGroup>
 	
   <ItemGroup>
-    <PackageReference Include="Grpc.AspNetCore" Version="2.50.0" />
+    <PackageReference Include="Grpc.AspNetCore" Version="2.51.0" />
     <PackageReference Include="NReco.Logging.File" Version="1.1.5" />
   </ItemGroup>
 

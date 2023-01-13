@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 
 using ChuckDeviceController.Data.Abstractions;
 using ChuckDeviceController.Data.Common;
+using ChuckDeviceController.Extensions;
 using ChuckDeviceController.Logging;
 using ChuckDeviceController.Plugin;
 using ChuckDeviceController.PluginManager.Extensions;
@@ -63,7 +64,7 @@ public class PluginLoader<TPlugin> : IPluginLoader
             var pluginInstance = pluginType.CreatePluginInstance(options.ServiceProvider, options.SharedServiceHosts);
             if (pluginInstance == null)
             {
-                _logger.LogError($"Failed to instantiate plugin type instance '{pluginType.Name}'");
+                _logger.LogError("Failed to instantiate plugin type instance '{Name}'", pluginType.Name);
                 continue;
             }
 
@@ -78,10 +79,8 @@ public class PluginLoader<TPlugin> : IPluginLoader
             pluginInstance.SetPluginServiceFields(options.SharedServiceHosts);
             pluginInstance.SetPluginServiceProperties(options.SharedServiceHosts);
 
-            var pluginApiKey = pluginType.GetPluginApiKey();
-            // Check that key exists and is enabled
-            var match = apiKeys.FirstOrDefault(key => key.Key == pluginApiKey && key.IsEnabled);
-            if (match == null)
+            var apiKey = IsApiKeyValid(pluginType, apiKeys);
+            if (apiKey == null)
             {
                 _logger.LogError($"Failed to validate plugin's API key or none set, skipping...");
                 continue;
@@ -90,7 +89,7 @@ public class PluginLoader<TPlugin> : IPluginLoader
             // TODO: Load/fetch current/last plugin state/status
             var pluginHost = new PluginHost(
                 plugin,
-                match,
+                apiKey,
                 new PluginAssembly(pluginResult.Assembly),
                 pluginResult.LoadContext,
                 pluginServiceDescriptors,
@@ -118,5 +117,18 @@ public class PluginLoader<TPlugin> : IPluginLoader
         }
 
         LoadedPlugins = loadedPlugins;
+    }
+
+    private static IApiKey? IsApiKeyValid(Type pluginType, IEnumerable<IApiKey> apiKeys)
+    {
+        var pluginApiKey = pluginType.GetPluginApiKey();
+        // Check that key exists, is enabled, and not expired
+        var now = DateTime.UtcNow.ToTotalSeconds();
+        var match = apiKeys.FirstOrDefault(key =>
+            key.Key == pluginApiKey &&
+            key.IsEnabled &&
+            (key.ExpirationTimestamp > now || key.ExpirationTimestamp == 0)
+        );
+        return match;
     }
 }

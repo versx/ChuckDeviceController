@@ -28,6 +28,8 @@ public static class PluginAssemblyLoadContextExtensions
             });
     }
 
+    #region AddHostServices
+
     public static PluginAssemblyLoadContext AddHostServices(this PluginAssemblyLoadContext loadContext,
            IServiceCollection hostServices,
            IEnumerable<Type>? includeTypes = null,
@@ -80,6 +82,8 @@ public static class PluginAssemblyLoadContextExtensions
                   hostService.ImplementationFactory?.Method.ReturnType!
               });
     }
+
+    #endregion
 
     public static PluginAssemblyLoadContext AddHostTypes(this PluginAssemblyLoadContext loadContext, IEnumerable<Type> hostTypes)
     {

@@ -91,7 +91,7 @@ public class PluginDependencyContextProvider : IPluginDependencyContextProvider
         var depFilePath = Path.Combine(depFolder!, depFileName);
         if (!File.Exists(depFilePath))
         {
-            _logger.LogWarning($"Plugin assembly dependencies file '{depFileName}' does not exist, unable to determine or load all possible dependencies.");
+            _logger.LogWarning("Plugin assembly dependencies file '{DepFileName}' does not exist, unable to determine or load all possible dependencies.", depFileName);
             return null;
         }
 
@@ -105,7 +105,7 @@ public class PluginDependencyContextProvider : IPluginDependencyContextProvider
         if (hostFramework == ".NETCoreApp,Version=v2.0" && pluginFramework == ".NETCoreApp,Version=v7.0" && !ignorePlatformInconsistencies)
         {
             // Migration, return to skip compatibility check
-            _logger.LogDebug($"Host: {hostFramework}, Plugin: {pluginFramework}");
+            _logger.LogDebug("Host: {HostFramework}, Plugin: {PluginFramework}", hostFramework, pluginFramework);
             return;
         }
 
@@ -116,7 +116,7 @@ public class PluginDependencyContextProvider : IPluginDependencyContextProvider
         if (pluginFramework == hostFramework)
             return;
 
-        _logger.LogWarning($"Plugin framework {pluginFramework} does not match host framework {hostFramework}");
+        _logger.LogWarning("Plugin framework {PluginFramework} does not match host framework {HostFramework}", pluginFramework, hostFramework);
 
         var pluginFrameworkSplit = pluginFramework.Split(new[] { VersionSuffix }, StringSplitOptions.RemoveEmptyEntries);
         var hostFrameworkSplit = hostFramework.Split(new[] { VersionSuffix }, StringSplitOptions.RemoveEmptyEntries);
@@ -181,7 +181,7 @@ public class PluginDependencyContextProvider : IPluginDependencyContextProvider
         catch (FileNotFoundException)
         {
             // Should only occur when the assembly is a platform assembly
-            _logger.LogWarning($"Failed to load assembly '{assemblyName.Name}', likely a platform assembly.");
+            _logger.LogWarning("Failed to load assembly '{Name}', likely a platform assembly.", assemblyName.Name);
         }
     }
 

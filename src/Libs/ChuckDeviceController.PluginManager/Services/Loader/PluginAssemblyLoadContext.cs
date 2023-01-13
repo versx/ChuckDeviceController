@@ -85,7 +85,7 @@ public class PluginAssemblyLoadContext : AssemblyLoadContext, IPluginAssemblyLoa
         {
             pluginType,
         };
-        PluginPlatformVersion = PluginPlatformVersion.Empty();// Create("6.0.8", RuntimeType.AspNetCoreApp);
+        PluginPlatformVersion = PluginPlatformVersion.Empty();// Create("7.0.1", RuntimeType.AspNetCoreApp);
         AdditionalProbingPaths = new List<string>();
         IgnorePlatformInconsistencies = ignorePlatformInconsistencies;
 

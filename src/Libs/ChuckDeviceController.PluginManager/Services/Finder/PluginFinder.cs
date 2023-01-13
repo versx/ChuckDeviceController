@@ -85,7 +85,7 @@ public class PluginFinder<TPlugin> where TPlugin : class
         }
         catch (Exception ex)
         {
-            _logger.LogError(exception: ex, $"Error occurred discovering plugins in assembly: '{assemblyFullPath}'");
+            _logger.LogError(ex, "Error occurred discovering plugins in assembly: '{AssemblyFullPath}'", assemblyFullPath);
         }
 
         return pluginFinderResults;
@@ -107,7 +107,7 @@ public class PluginFinder<TPlugin> where TPlugin : class
             var result = LoadPluginAssembly(pluginAssembly, hostFramework!);
             if (result == null)
             {
-                _logger.LogWarning($"Failed to load plugin assembly '{pluginAssembly.AssemblyFullPath}'");
+                _logger.LogWarning("Failed to load plugin assembly '{AssemblyFullPath}'", pluginAssembly.AssemblyFullPath);
                 continue;
             }
 

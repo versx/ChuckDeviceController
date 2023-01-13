@@ -139,7 +139,7 @@ public class PluginManager : IPluginManager
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"An error occurred while calling the 'Configure(IApplicationBuilder)' method for plugin '{pluginName}'.");
+                _logger.LogError(ex, "An error occurred while calling the 'Configure(IApplicationBuilder)' method for plugin '{PluginName}'.", pluginName);
             }
         }
     }
@@ -192,7 +192,7 @@ public class PluginManager : IPluginManager
             //var serviceCollection = new ServiceCollection();
             if (result.Assembly == null)
             {
-                _logger.LogError($"Failed to load assembly for plugin '{result.AssemblyPath}', skipping.");
+                _logger.LogError("Failed to load assembly for plugin '{AssemblyPath}', skipping.", result.AssemblyPath);
                 continue;
             }
 
@@ -201,7 +201,7 @@ public class PluginManager : IPluginManager
             var loadedPlugins = pluginLoader.LoadedPlugins;
             if (!(loadedPlugins?.Any() ?? false))
             {
-                _logger.LogWarning($"No valid plugins found in assembly '{result.AssemblyPath}'");
+                _logger.LogWarning("No valid plugins found in assembly '{AssemblyPath}'", result.AssemblyPath);
                 continue;
             }
 
@@ -235,7 +235,7 @@ public class PluginManager : IPluginManager
         {
             if (result.Assembly == null)
             {
-                _logger.LogError($"Failed to load assembly for plugin '{result.AssemblyPath}', skipping.");
+                _logger.LogError("Failed to load assembly for plugin '{AssemblyPath}', skipping.", result.AssemblyPath);
                 continue;
             }
 
@@ -244,7 +244,7 @@ public class PluginManager : IPluginManager
             var loadedPlugins = pluginLoader.LoadedPlugins;
             if (!loadedPlugins.Any())
             {
-                _logger.LogError($"Failed to find any valid plugins in assembly '{result.AssemblyPath}'");
+                _logger.LogError("Failed to find any valid plugins in assembly '{AssemblyPath}'", result.AssemblyPath);
                 continue;
             }
 
@@ -264,13 +264,13 @@ public class PluginManager : IPluginManager
             if (oldVersion > newVersion)
             {
                 // Existing is newer
-                _logger.LogWarning($"[{plugin.Name}] Existing plugin version is newer than incoming plugin version, skipping registration...");
+                _logger.LogWarning("[{Name}] Existing plugin version is newer than incoming plugin version, skipping registration...", plugin.Name);
                 return;
             }
             else if (oldVersion < newVersion)
             {
                 // Incoming is newer
-                _logger.LogWarning($"[{plugin.Name}] Existing plugin version is newer than incoming plugin version, removing old version and adding new version...");
+                _logger.LogWarning("[{Name}] Existing plugin version is newer than incoming plugin version, removing old version and adding new version...", plugin.Name);
 
                 // Remove existing plugin so we can add newer version of plugin
                 await RemoveAsync(plugin.Name);
@@ -278,7 +278,7 @@ public class PluginManager : IPluginManager
             else
             {
                 // Plugin versions are the same
-                _logger.LogWarning($"[{plugin.Name}] Existing plugin version is the same version as incoming plugin version, skipping registration...");
+                _logger.LogWarning("[{Name}] Existing plugin version is the same version as incoming plugin version, skipping registration...", plugin.Name);
                 return;
             }
         }
@@ -287,12 +287,12 @@ public class PluginManager : IPluginManager
             // First time loading plugin, add to cache
             if (!_plugins.TryAdd(plugin.Name, pluginHost))
             {
-                _logger.LogError($"Failed to load plugin '{plugin.Name}' v{plugin.Version} by {plugin.Author}.");
+                _logger.LogError("Failed to load plugin '{Name}' v{Version} by {Author}.", plugin.Name, plugin.Version, plugin.Author);
                 return;
             }
         }
 
-        _logger.LogInformation($"Plugin '{plugin.Name}' v{plugin.Version} by {plugin.Author} initialized and registered to plugin manager cache.");
+        _logger.LogInformation("Plugin '{Name}' v{Version} by {Author} initialized and registered to plugin manager cache.", plugin.Name, plugin.Version, plugin.Author);
         OnPluginHostAdded(pluginHost);
     }
 
@@ -300,7 +300,7 @@ public class PluginManager : IPluginManager
     {
         if (!_plugins.ContainsKey(pluginName))
         {
-            _logger.LogWarning($"[{pluginName}] Unable to stop plugin, no plugin with that name is currently loaded or registered");
+            _logger.LogWarning("[{PluginName}] Unable to stop plugin, no plugin with that name is currently loaded or registered", pluginName);
             return;
         }
 
@@ -312,7 +312,7 @@ public class PluginManager : IPluginManager
         OnPluginHostStateChanged(pluginHost, previousState);
         //await SaveStateAsync(pluginName, PluginState.Removed);
 
-        _logger.LogInformation($"[{pluginName}] Plugin has been stopped");
+        _logger.LogInformation("[{PluginName}] Plugin has been stopped", pluginName);
         await Task.CompletedTask;
     }
 
@@ -328,7 +328,7 @@ public class PluginManager : IPluginManager
     {
         if (!_plugins.ContainsKey(pluginName))
         {
-            _logger.LogWarning($"[{pluginName}] Unable to reload plugin, no plugin with that name is currently loaded or registered");
+            _logger.LogWarning("[{PluginName}] Unable to reload plugin, no plugin with that name is currently loaded or registered", pluginName);
             return;
         }
 
@@ -360,7 +360,7 @@ public class PluginManager : IPluginManager
         // Register plugin host with plugin manager
         await RegisterPluginAsync((PluginHost)pluginHost);
 
-        _logger.LogInformation($"[{pluginName}] Plugin has been reloaded");
+        _logger.LogInformation("[{PluginName}] Plugin has been reloaded", pluginName);
         await Task.CompletedTask;
     }
 
@@ -376,7 +376,7 @@ public class PluginManager : IPluginManager
     {
         if (!_plugins.ContainsKey(pluginName))
         {
-            _logger.LogWarning($"[{pluginName}] Unable to remove plugin, no plugin with that name is currently loaded or registered");
+            _logger.LogWarning("[{PluginName}] Unable to remove plugin, no plugin with that name is currently loaded or registered", pluginName);
             return;
         }
 
@@ -391,7 +391,7 @@ public class PluginManager : IPluginManager
         pluginHost.SetState(PluginState.Removed);
         if (!_plugins.TryRemove(pluginName, out var _))
         {
-            _logger.LogError($"[{pluginName}] Failed to remove plugin");
+            _logger.LogError("[{PluginName}] Failed to remove plugin", pluginName);
             return;
         }
 
@@ -399,7 +399,7 @@ public class PluginManager : IPluginManager
         OnPluginHostRemoved(pluginHost);
         //await SaveStateAsync(pluginName, PluginState.Removed);
 
-        _logger.LogInformation($"[{pluginName}] Plugin has been removed");
+        _logger.LogInformation("[{PluginName}] Plugin has been removed", pluginName);
         await Task.CompletedTask;
     }
 
@@ -415,7 +415,7 @@ public class PluginManager : IPluginManager
     {
         if (!_plugins.ContainsKey(pluginName))
         {
-            _logger.LogError($"[{pluginName}] Failed to set plugin state, plugin does not exist in cache");
+            _logger.LogError("[{PluginName}] Failed to set plugin state, plugin does not exist in cache", pluginName);
             return;
         }
 

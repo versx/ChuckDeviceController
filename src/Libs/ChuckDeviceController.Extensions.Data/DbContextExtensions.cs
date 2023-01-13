@@ -25,11 +25,11 @@ public static class DbContextExtensions
 
             // Migrate the provided database context
             await dbContext.Database.MigrateAsync();
-            logger.LogInformation($"Successfully migrated database context: {typeof(TDbContext).Name}");
+            logger.LogInformation("Successfully migrated database context: {Name}", typeof(TDbContext).Name);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, $"An error occurred while migrating the database context: {typeof(TDbContext).Name}");
+            logger.LogError(ex, "An error occurred while migrating the database context: {Name}", typeof(TDbContext).Name);
         }
     }
 
@@ -42,7 +42,12 @@ public static class DbContextExtensions
     {
         options.EnableDetailedErrors(detailedErrorsEnabled: true);
         options.UseMySql(connectionString, serverVersion, opt =>
-            opt.GetMySqlOptions(assemblyName, resiliencyOptions));
+        {
+            opt.CommandTimeout(resiliencyOptions.CommandTimeoutS);
+            opt.EnableIndexOptimizedBooleanColumns(true);
+            opt.EnableRetryOnFailure(resiliencyOptions.MaximumRetryCount, TimeSpan.FromSeconds(resiliencyOptions.RetryIntervalS), null);
+            opt.MigrationsAssembly(assemblyName);
+        });
         return options;
     }
 }

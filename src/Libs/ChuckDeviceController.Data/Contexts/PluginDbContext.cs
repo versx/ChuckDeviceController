@@ -12,6 +12,7 @@ public class PluginDbContext : DbContext
          : base(options)
     {
         base.Database.EnsureCreated();
+        base.ChangeTracker.AutoDetectChangesEnabled = false;
         base.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
     }
 

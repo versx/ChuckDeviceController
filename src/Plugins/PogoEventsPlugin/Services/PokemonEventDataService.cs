@@ -184,7 +184,7 @@ public class PokemonEventDataService : IPokemonEventDataService
                         }
                         catch (Exception ex)
                         {
-                            _logger.LogError($"Error: {ex}");
+                            _logger.LogError("Error: {Message}", ex.InnerException?.Message ?? ex.Message);
                         }
                     }
                 }
@@ -257,7 +257,7 @@ public class PokemonEventDataService : IPokemonEventDataService
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error: {ex}");
+            _logger.LogError("Error: {Message}", ex.InnerException?.Message ?? ex.Message);
         }
         return default!;
     }
@@ -287,14 +287,14 @@ public class PokemonEventDataService : IPokemonEventDataService
 
         if (!_discordClient.Guilds.ContainsKey(guildId))
         {
-            _logger.LogError($"Failed to get guild with id '{guildId}'");
+            _logger.LogError("Failed to get guild with id '{GuildId}'", guildId);
             return;
         }
 
         var guild = await _discordClient.GetGuildAsync(guildId, withCounts: true);
         if (!guild.Channels.ContainsKey(guildConfig.EventsCategoryChannelId))
         {
-            _logger.LogError($"Failed to get channel category with id '{guildConfig.EventsCategoryChannelId}' from guild '{guildId}'");
+            _logger.LogError("Failed to get channel category with id '{EventsCategoryChannelId}' from guild '{GuildId}'", guildConfig.EventsCategoryChannelId, guildId);
             return;
         }
 
@@ -336,11 +336,11 @@ public class PokemonEventDataService : IPokemonEventDataService
             // Channel does not exist, create voice channel with permissions
             var permissions = await GetDefaultPermissions(guild.Id, _discordClient.CurrentUser.Id);
             channel = await guild.CreateChannelAsync(channelName, ChannelType.Voice, channelCategory, overwrites: permissions);
-            _logger.LogInformation($"Event voice channel '{channelName}' created successfully");
+            _logger.LogInformation("Event voice channel '{ChannelName}' created successfully", channelName);
         }
         catch (Exception ex)
         {
-            _logger.LogError($"CreateVoiceChannel: {ex}");
+            _logger.LogError("CreateVoiceChannel: {Message}", ex.InnerException?.Message ?? ex.Message);
         }
 
         return channel;
@@ -358,7 +358,7 @@ public class PokemonEventDataService : IPokemonEventDataService
                 // Delete channel since it is a past event
                 if (!await channel.DeleteChannelAsync())
                 {
-                    _logger.LogError($"Failed to delete channel '{channel.Id}'");
+                    _logger.LogError("Failed to delete channel '{Id}'", channel.Id);
                 }
             }
         }
@@ -413,7 +413,7 @@ public class PokemonEventDataService : IPokemonEventDataService
 
     private Task OnClientReady(DiscordClient sender, ReadyEventArgs e)
     {
-        _logger.LogInformation($"Logged in as {sender.CurrentUser.Username}#{sender.CurrentUser.Discriminator} ({sender.CurrentUser.Id})");
+        _logger.LogInformation("Logged in as {Username}#{Discriminator} ({Id})", sender.CurrentUser.Username, sender.CurrentUser.Discriminator, sender.CurrentUser.Id);
 
         //await CreateChannelsAsync();
         if (!ThreadPool.QueueUserWorkItem(async _ => await CreateChannelsAsync()))
