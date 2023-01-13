@@ -176,7 +176,7 @@ public class AutoInstanceController : IJobController
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError($"[{Name}] Failed to get last location for device '{options.Uuid}': {ex}");
+                    _logger.LogError("[{Name}] Failed to get last location for device '{Uuid}': {Message}", Name, options.Uuid, ex.InnerException?.Message ?? ex.Message);
                     return null!;
                 }
 
@@ -231,7 +231,7 @@ public class AutoInstanceController : IJobController
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError($"[{Name}] [{options.Uuid}] Failed to calculate cooldown time for device: {ex}");
+                    _logger.LogError("[{Name}] [{Uuid}] Failed to calculate cooldown time for device: {Message}", Name, options.Uuid, ex.InnerException?.Message ?? ex.Message);
                     var result = _todayStops.TryAdd(pokestop);
                     if (!result)
                     {
@@ -268,7 +268,7 @@ public class AutoInstanceController : IJobController
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError($"[{Name}] [{options.Uuid}] Failed to store cooldown: {ex}");
+                    _logger.LogError("[{Name}] [{Uuid}] Failed to store cooldown: {Message}", Name, options.Uuid, ex.InnerException?.Message ?? ex.Message);
                     var result = _todayStops.TryAdd(pokestop);
                     if (!result)
                     {
@@ -538,7 +538,7 @@ public class AutoInstanceController : IJobController
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError($"[{Name}] Error: {ex}");
+                        _logger.LogError("[{Name}] Error: {Message}", ex.InnerException?.Message ?? ex.Message);
                     }
                 }
 
@@ -673,7 +673,7 @@ public class AutoInstanceController : IJobController
         }
         catch (Exception ex)
         {
-            _logger.LogError($"[{Name}] [{uuid}] Failed to get today stops: {ex}");
+            _logger.LogError("[{Name}] [{Uuid}] Failed to get today stops: {Message}", Name, uuid, ex.InnerException?.Message ?? ex.Message);
             return;
         }
 
@@ -765,7 +765,7 @@ public class AutoInstanceController : IJobController
         }
         catch (Exception ex)
         {
-            _logger.LogError($"[{Name}] [{uuid}] Failed to get account for device in advance: {ex}");
+            _logger.LogError("[{Name}] [{Uuid}] Failed to get account for device in advance: {Message}", ex.InnerException?.Message ?? ex.Message);
         }
 
         return CreateSwitchAccountTask();

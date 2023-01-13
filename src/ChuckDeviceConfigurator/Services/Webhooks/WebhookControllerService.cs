@@ -1,18 +1,16 @@
 ﻿namespace ChuckDeviceConfigurator.Services.Webhooks;
 
-using Microsoft.EntityFrameworkCore;
-
 using ChuckDeviceController.Collections;
-using ChuckDeviceController.Data.Contexts;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Extensions;
+using ChuckDeviceController.Data.Repositories.Dapper;
 
 public class WebhookControllerService : IWebhookControllerService
 {
 	#region Variables
 
 	private readonly ILogger<IWebhookControllerService> _logger;
-	private readonly IDbContextFactory<ControllerDbContext> _factory;
+	private readonly IDapperUnitOfWork _uow;
 	private SafeCollection<Webhook> _webhooks;
 
 	#endregion
@@ -21,10 +19,10 @@ public class WebhookControllerService : IWebhookControllerService
 
 	public WebhookControllerService(
 		ILogger<IWebhookControllerService> logger,
-		IDbContextFactory<ControllerDbContext> factory)
+		IDapperUnitOfWork uow)
 	{
 		_logger = logger;
-		_factory = factory;
+		_uow = uow;
 		_webhooks = new();
 
 		Reload();
@@ -36,7 +34,7 @@ public class WebhookControllerService : IWebhookControllerService
 
 	public void Reload()
 	{
-		var webhooks = GetAll();
+		var webhooks = GetAllAsync().Result;
 		_webhooks = new(webhooks);
 	}
 
@@ -82,15 +80,13 @@ public class WebhookControllerService : IWebhookControllerService
 		return webhooks;
 	}
 
-	public IReadOnlyList<Webhook> GetAll(bool includeGeofenceMultiPolygons = false)
+	public async Task<IEnumerable<Webhook>> GetAllAsync(bool includeGeofenceMultiPolygons = false)
 	{
-		using var context = _factory.CreateDbContext();
-
-		var webhooks = context.Webhooks.ToList();
+		var webhooks = await _uow.Webhooks.FindAllAsync();
 		if (!includeGeofenceMultiPolygons)
 			return webhooks;
 
-		var geofences = context.Geofences.ToList();
+		var geofences = await _uow.Geofences.FindAllAsync();
 		foreach (var webhook in webhooks)
 		{
 			var coordinates = geofences

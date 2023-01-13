@@ -1,17 +1,15 @@
 ﻿namespace ChuckDeviceConfigurator.Services.Geofences;
 
-using Microsoft.EntityFrameworkCore;
-
 using ChuckDeviceController.Collections;
-using ChuckDeviceController.Data.Contexts;
 using ChuckDeviceController.Data.Entities;
+using ChuckDeviceController.Data.Repositories.Dapper;
 
 public class GeofenceControllerService : IGeofenceControllerService
 {
     #region Variables
 
     private readonly ILogger<IGeofenceControllerService> _logger;
-    private readonly IDbContextFactory<ControllerDbContext> _factory;
+    private readonly IDapperUnitOfWork _uow;
 
     private SafeCollection<Geofence> _geofences;
 
@@ -21,10 +19,10 @@ public class GeofenceControllerService : IGeofenceControllerService
 
     public GeofenceControllerService(
         ILogger<IGeofenceControllerService> logger,
-        IDbContextFactory<ControllerDbContext> factory)
+        IDapperUnitOfWork uow)
     {
         _logger = logger;
-        _factory = factory;
+        _uow = uow;
         _geofences = new();
 
         Reload();
@@ -36,7 +34,7 @@ public class GeofenceControllerService : IGeofenceControllerService
 
     public void Reload()
     {
-        var geofences = GetGeofences();
+        var geofences = GetGeofencesAsync().Result;
         _geofences = new(geofences);
     }
 
@@ -85,10 +83,9 @@ public class GeofenceControllerService : IGeofenceControllerService
 
     #region Private Methods
 
-    private List<Geofence> GetGeofences()
+    private async Task<IEnumerable<Geofence>> GetGeofencesAsync()
     {
-        using var context = _factory.CreateDbContext();
-        var geofences = context.Geofences.ToList();
+        var geofences = await _uow.Geofences.FindAllAsync();
         return geofences;
     }
 

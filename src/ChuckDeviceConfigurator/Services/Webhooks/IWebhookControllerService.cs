@@ -7,5 +7,5 @@ using ChuckDeviceController.Data.Entities;
 /// </summary>
 public interface IWebhookControllerService : IControllerService<Webhook, string>
 {
-    IReadOnlyList<Webhook> GetAll(bool includeGeofenceMultiPolygons = false);
+    Task<IEnumerable<Webhook>> GetAllAsync(bool includeGeofenceMultiPolygons = false);
 }

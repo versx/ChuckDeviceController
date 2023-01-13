@@ -1,17 +1,15 @@
 ﻿namespace ChuckDeviceConfigurator.Services.IvLists;
 
-using Microsoft.EntityFrameworkCore;
-
 using ChuckDeviceController.Collections;
-using ChuckDeviceController.Data.Contexts;
 using ChuckDeviceController.Data.Entities;
+using ChuckDeviceController.Data.Repositories.Dapper;
 
 public class IvListControllerService : IIvListControllerService
 {
 	#region Variables
 
 	private readonly ILogger<IIvListControllerService> _logger;
-	private readonly IDbContextFactory<ControllerDbContext> _factory;
+	private readonly IDapperUnitOfWork _uow;
 
 	private SafeCollection<IvList> _ivLists;
 
@@ -21,10 +19,10 @@ public class IvListControllerService : IIvListControllerService
 
 	public IvListControllerService(
 		ILogger<IIvListControllerService> logger,
-		IDbContextFactory<ControllerDbContext> factory)
+		IDapperUnitOfWork uow)
 	{
 		_logger = logger;
-		_factory = factory;
+		_uow = uow;
 		_ivLists = new();
 
 		Reload();
@@ -36,7 +34,7 @@ public class IvListControllerService : IIvListControllerService
 
 	public void Reload()
 	{
-		var ivLists = GetIvLists();
+		var ivLists = GetIvListsAsync().Result;
 		_ivLists = new(ivLists);
 	}
 
@@ -75,7 +73,7 @@ public class IvListControllerService : IIvListControllerService
 	public IReadOnlyList<IvList> GetByNames(IReadOnlyList<string> names)
 	{
 		var ivLists = names
-			.Select(name => GetByName(name))
+			.Select(GetByName)
 			.ToList();
 		return ivLists;
 	}
@@ -84,10 +82,9 @@ public class IvListControllerService : IIvListControllerService
 
 	#region Private Methods
 
-	private List<IvList> GetIvLists()
+	private async Task<IEnumerable<IvList>> GetIvListsAsync()
 	{
-		using var context = _factory.CreateDbContext();
-		var ivLists = context.IvLists.ToList();
+		var ivLists = await _uow.IvLists.FindAllAsync();
 		return ivLists;
 	}
 

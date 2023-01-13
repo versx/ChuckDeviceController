@@ -2,15 +2,13 @@
 
 using System.Collections.Generic;
 
-using Microsoft.EntityFrameworkCore;
-
 using ChuckDeviceConfigurator.Services.Assignments.EventArgs;
 using ChuckDeviceConfigurator.Services.Geofences;
 using ChuckDeviceController.Collections;
 using ChuckDeviceController.Data.Common;
-using ChuckDeviceController.Data.Contexts;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Extensions;
+using ChuckDeviceController.Data.Repositories.Dapper;
 
 public class AssignmentControllerService : IAssignmentControllerService
 {
@@ -19,8 +17,7 @@ public class AssignmentControllerService : IAssignmentControllerService
     #region Variables
 
     private readonly ILogger<IAssignmentControllerService> _logger;
-    private readonly IDbContextFactory<ControllerDbContext> _controllerFactory;
-    private readonly IDbContextFactory<MapDbContext> _mapFactory;
+    private readonly IDapperUnitOfWork _uow;
     private readonly IGeofenceControllerService _geofenceService;
 
     private readonly System.Timers.Timer _timer;
@@ -50,13 +47,11 @@ public class AssignmentControllerService : IAssignmentControllerService
 
     public AssignmentControllerService(
         ILogger<IAssignmentControllerService> logger,
-        IDbContextFactory<ControllerDbContext> controllerFactory,
-        IDbContextFactory<MapDbContext> mapFactory,
+        IDapperUnitOfWork uow,
         IGeofenceControllerService geofenceService)
     {
         _logger = logger;
-        _controllerFactory = controllerFactory;
-        _mapFactory = mapFactory;
+        _uow = uow;
 
         _lastUpdated = -2;
         _assignments = new SafeCollection<Assignment>();
@@ -89,7 +84,7 @@ public class AssignmentControllerService : IAssignmentControllerService
     public void Reload()
     {
         // Reload all available device assignments
-        var assignments = GetAssignments();
+        var assignments = GetAssignmentsAsync().Result;
         _assignments = new(assignments);
     }
 
@@ -176,11 +171,7 @@ public class AssignmentControllerService : IAssignmentControllerService
             .Where(assignment => assignment?.Enabled ?? false)
             .ToList();
 
-        using var context = _controllerFactory.CreateDbContext();
-        var instances = context.Instances
-            .Where(instance => instance.Type == InstanceType.AutoQuest)
-            .ToList();
-
+        var instances = await _uow.Instances.FindAsync(instance => instance.Type == InstanceType.AutoQuest);
         var geofenceNames = instances
             .SelectMany(x => x.Geofences)
             .ToList();
@@ -200,7 +191,6 @@ public class AssignmentControllerService : IAssignmentControllerService
         }
         _logger.LogInformation($"Re-Quest will clear quests for {instancesToClear.Count:N0} instances");
 
-        using var mapContext = _mapFactory.CreateDbContext();
         foreach (var instance in instancesToClear)
         {
             var instanceGeofences = geofences
@@ -209,7 +199,7 @@ public class AssignmentControllerService : IAssignmentControllerService
             if (instanceGeofences?.Any() ?? false)
             {
                 _logger.LogInformation($"Clearing quests for geofences: {string.Join(", ", instanceGeofences.Select(x => x.Name))}");
-                await mapContext.ClearQuestsAsync(instanceGeofences);
+                await _uow.ClearQuestsAsync(instanceGeofences);
             }
 
             // Trigger event to reload quest instances
@@ -239,21 +229,17 @@ public class AssignmentControllerService : IAssignmentControllerService
     public async Task ClearQuestsAsync(IEnumerable<uint> assignmentIds)
     {
         // Clear quests for assignments
-        var assignments = GetAssignments()
-            .Where(x => assignmentIds.Contains(x.Id))
-            .ToList();
+        var assignments = (await GetAssignmentsAsync())
+            .Where(x => assignmentIds.Contains(x.Id));
         await ClearQuestsAsync(assignments);
     }
 
     public async Task ClearQuestsAsync(IEnumerable<Assignment> assignments)
     {
         // Clear quests for assignments
-        using var controllerContext = _controllerFactory.CreateDbContext();
-        using var mapContext = _mapFactory.CreateDbContext();
-
         foreach (var assignment in assignments)
         {
-            var instance = await controllerContext.Instances.FindAsync(assignment.InstanceName);
+            var instance = await _uow.Instances.FindAsync(assignment.InstanceName);
             if (instance == null)
             {
                 // Failed to retrieve instance from database, does it exist?
@@ -272,7 +258,7 @@ public class AssignmentControllerService : IAssignmentControllerService
             // Clear quests for all geofences assigned to instance
             var geofenceNames = geofences.Select(x => x.Name);
             _logger.LogInformation($"Clearing quests for geofences '{string.Join(", ", geofenceNames)}'");
-            await mapContext.ClearQuestsAsync(geofences);
+            await _uow.ClearQuestsAsync(geofences);
 
             _logger.LogInformation($"All quests have been cleared for assignment '{assignment.Id}' (Instance: {instance.Name}, Geofences: {string.Join(", ", instance.Geofences)})");
         }
@@ -387,7 +373,16 @@ public class AssignmentControllerService : IAssignmentControllerService
         }
 
         // Save/update all device's new assigned instance at once.
-        await SaveDevicesAsync(devicesToUpdate);
+        var result = await _uow.Devices.UpdateRangeAsync(devicesToUpdate, mappings: new Dictionary<string, Func<Device, object>>
+        {
+            ["uuid"] = x => x.Uuid,
+            ["instance_name"] = x => x.InstanceName,
+        });
+        if (result <= 0)
+        {
+            // Failed to update devices
+            _logger.LogError($"Failed to update devices assigned instance");
+        }
 
         // Reload all triggered devices.
         foreach (var device in devicesToUpdate)
@@ -402,42 +397,37 @@ public class AssignmentControllerService : IAssignmentControllerService
         var devices = new List<Device>();
         try
         {
-            using (var context = _controllerFactory.CreateDbContext())
+            // If assignment assigned to device, pull from database and add to devices list.
+            if (!string.IsNullOrEmpty(assignment.DeviceUuid))
             {
-                // If assignment assigned to device, pull from database and add to devices list.
-                if (!string.IsNullOrEmpty(assignment.DeviceUuid))
+                var device = await _uow.Devices.FindAsync(assignment.DeviceUuid);
+                if (device != null)
                 {
-                    var device = await context.Devices.FindAsync(assignment.DeviceUuid);
-                    if (device != null)
-                    {
-                        devices.Add(device);
-                    }
+                    devices.Add(device);
+                }
+            }
+
+            // If assignment assigned to device group, pull from database and add all devices
+            // to devices list.
+            if (!string.IsNullOrEmpty(assignment.DeviceGroupName))
+            {
+                // Get device group from database.
+                var deviceGroup = await _uow.DeviceGroups.FindAsync(assignment.DeviceGroupName);
+                if (deviceGroup == null)
+                {
+                    _logger.LogError($"Failed to find device group by name '{assignment.DeviceGroupName}' to retrieve device list for assignment '{assignment.Id}'");
+                    return null;
                 }
 
-                // If assignment assigned to device group, pull from database and add all devices
-                // to devices list.
-                if (!string.IsNullOrEmpty(assignment.DeviceGroupName))
+                // Redundant check since device groups are required to have at least one device,
+                // but better safe than sorry.
+                if ((deviceGroup?.DeviceUuids?.Count ?? 0) > 0)
                 {
-                    // Get device group from database.
-                    var deviceGroup = await context.DeviceGroups.FindAsync(assignment.DeviceGroupName);
-                    if (deviceGroup == null)
+                    // Get device entities from uuids.
+                    var devicesInGroup = await _uow.Devices.FindAsync(d => deviceGroup!.DeviceUuids.Contains(d.Uuid));
+                    if (devicesInGroup?.Any() ?? false)
                     {
-                        _logger.LogError($"Failed to find device group by name '{assignment.DeviceGroupName}' to retrieve device list for assignment '{assignment.Id}'");
-                        return null;
-                    }
-
-                    // Redundant check since device groups are required to have at least one device,
-                    // but better safe than sorry.
-                    if ((deviceGroup?.DeviceUuids?.Count ?? 0) > 0)
-                    {
-                        // Get device entities from uuids.
-                        var devicesInGroup = context.Devices
-                            .Where(d => deviceGroup!.DeviceUuids.Contains(d.Uuid))
-                            .ToList();
-                        if (devicesInGroup != null && devicesInGroup?.Count > 0)
-                        {
-                            devices.AddRange(devicesInGroup);
-                        }
+                        devices.AddRange(devicesInGroup);
                     }
                 }
             }
@@ -449,17 +439,9 @@ public class AssignmentControllerService : IAssignmentControllerService
         return devices;
     }
 
-    private async Task SaveDevicesAsync(List<Device> devices)
+    private async Task<IEnumerable<Assignment>> GetAssignmentsAsync()
     {
-        using var context = _controllerFactory.CreateDbContext();
-        context.UpdateRange(devices);
-        await context.SaveChangesAsync();
-    }
-
-    private List<Assignment> GetAssignments()
-    {
-        using var context = _controllerFactory.CreateDbContext();
-        var assignments = context.Assignments.ToList();
+        var assignments = await _uow.Assignments.FindAllAsync();
         return assignments;
     }
 
