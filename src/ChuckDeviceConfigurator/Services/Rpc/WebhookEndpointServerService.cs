@@ -35,7 +35,7 @@ public class WebhookEndpointServerService : WebhookEndpoint.WebhookEndpointBase
     {
         _logger.LogDebug($"Received fetch webhook endpoints request from: {context.Host}");
 
-        var webhooks = _webhookService.GetAll(includeGeofenceMultiPolygons: true);
+        var webhooks = await _webhookService.GetAllAsync(includeGeofenceMultiPolygons: true);
         if (webhooks == null)
         {
             return await Task.FromResult(new WebhookEndpointResponse

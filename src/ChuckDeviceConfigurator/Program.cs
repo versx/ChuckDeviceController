@@ -219,10 +219,6 @@ builder.Services.Configure<MySqlResiliencyOptions>(config.GetSection("Database")
 #region Database Contexts
 
 // Register data contexts, factories, and pools
-builder.Services.AddDbContextFactory<ControllerDbContext>(options =>
-    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName, resiliencyConfig), ServiceLifetime.Singleton);
-builder.Services.AddDbContextFactory<MapDbContext>(options =>
-    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName, resiliencyConfig), ServiceLifetime.Singleton);
 builder.Services.AddDbContextPool<ControllerDbContext>(options =>
     options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName, resiliencyConfig), resiliencyConfig.MaximumPoolSize);
 builder.Services.AddDbContextPool<MapDbContext>(options =>
@@ -369,10 +365,10 @@ var sharedServiceHosts = new Dictionary<Type, object>
 
 var getApiKeysFunc = new Func<List<ApiKey>>(() =>
 {
-    var controllerContext = serviceProvider.GetRequiredService<IDbContextFactory<ControllerDbContext>>();
-    using var context = controllerContext.CreateDbContext();
-    var apiKeys = context.ApiKeys.ToList();
-    return apiKeys;
+    var factory = new MySqlConnectionFactory(connectionString);
+    var apiKeysRepository = new ApiKeyRepository(factory);
+    var apiKeys = apiKeysRepository.FindAllAsync().Result;
+    return apiKeys.ToList();
 });
 
 // Load plugin states from SQLite database

@@ -8,12 +8,12 @@
 <br />
 @Html.DisplayFor(model => model, "Breadcrumbs", new { CurrentPage = ViewData["Title"] })
 
-<div class="mb-5">
+<div class="mb-3">
     <a class="btn btn-danger btn-sm float-end" asp-action="Reset">@localizer["Reset"]</a>
 </div>
 <br />
 
-<div class="card text-center">
+<div class="card text-center mt-3">
     <div class="card-header text-center"><b>@localizer["Overview"]</b></div>
     <div class="card-body">
         <div class="container">
