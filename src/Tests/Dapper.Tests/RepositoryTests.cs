@@ -46,6 +46,28 @@ internal class RepositoryTests
     }
 
     [Test]
+    public void AnyTests()
+    {
+        var factory = new MySqlConnectionFactory(ConnectionString);
+
+        var incidentRepository = new IncidentRepository(factory);
+        var result = incidentRepository.Any();
+
+        Assert.That(result, Is.True);
+    }
+
+    [Test]
+    public void AnyPredicateTests()
+    {
+        var factory = new MySqlConnectionFactory(ConnectionString);
+
+        var incidentRepository = new IncidentRepository(factory);
+        var result = incidentRepository.Any(x => x.Character > 0);
+
+        Assert.That(result, Is.True);
+    }
+
+    [Test]
     public async Task DapperExtensionsRepositoryTests()
     {
         MicroOrmConfig.SqlProvider = SqlProvider.MySQL;
