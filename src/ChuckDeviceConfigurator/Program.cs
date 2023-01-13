@@ -221,8 +221,6 @@ builder.Services.Configure<MySqlResiliencyOptions>(config.GetSection("Database")
 // Register data contexts, factories, and pools
 builder.Services.AddDbContextPool<ControllerDbContext>(options =>
     options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName, resiliencyConfig), resiliencyConfig.MaximumPoolSize);
-builder.Services.AddDbContextPool<MapDbContext>(options =>
-    options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName, resiliencyConfig), resiliencyConfig.MaximumPoolSize);
 
 var sqliteConnectionString = $"Data Source={Strings.PluginsDatabasePath}";
 builder.Services.AddDbContextFactory<PluginDbContext>(options =>

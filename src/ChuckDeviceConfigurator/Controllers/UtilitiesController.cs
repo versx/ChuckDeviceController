@@ -12,6 +12,7 @@ using ChuckDeviceController.Data.Common;
 using ChuckDeviceController.Data.Contexts;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Extensions;
+using ChuckDeviceController.Data.Repositories;
 using ChuckDeviceController.Extensions;
 using ChuckDeviceController.Extensions.Json;
 using ChuckDeviceController.JobControllers;
@@ -20,20 +21,20 @@ using ChuckDeviceController.JobControllers;
 public class UtilitiesController : BaseMvcController
 {
     private readonly ILogger<UtilitiesController> _logger;
-    private readonly ControllerDbContext _deviceContext;
+    private readonly IUnitOfWork _uow;
     private readonly MapDbContext _mapContext;
     private readonly IJobControllerService _jobControllerService;
     private readonly LeafletMapConfig _mapConfig;
 
     public UtilitiesController(
         ILogger<UtilitiesController> logger,
-        ControllerDbContext deviceContext,
+        IUnitOfWork uow,
         MapDbContext mapContext,
         IJobControllerService jobControllerService,
         IOptions<LeafletMapConfig> mapConfig)
     {
         _logger = logger;
-        _deviceContext = deviceContext;
+        _uow = uow;
         _mapContext = mapContext;
         _jobControllerService = jobControllerService;
         _mapConfig = mapConfig.Value;
@@ -48,19 +49,15 @@ public class UtilitiesController : BaseMvcController
     #region Clear Quests
 
     // GET: UtilitiesController/ClearQuests
-    public ActionResult ClearQuests()
+    public async Task<ActionResult> ClearQuests()
     {
         var model = new ClearQuestsViewModel();
-        var geofences = _deviceContext.Geofences
-            .Where(geofence => geofence.Type == GeofenceType.Geofence)
-            .Select(geofence => geofence.Name)
-            .ToList();
-        var instances = _deviceContext.Instances
-            .Where(instance => instance.Type == InstanceType.AutoQuest)
-            .Select(instance => instance.Name)
-            .ToList();
-        ViewBag.Geofences = geofences;
-        ViewBag.Instances = instances;
+        var geofences = await _uow.Geofences.FindAsync(geofence => geofence.Type == GeofenceType.Geofence);
+        var geofenceNames = geofences.Select(geofence => geofence.Name);
+        var instances = await _uow.Instances.FindAsync(instance => instance.Type == InstanceType.AutoQuest);
+        var instanceNames = instances.Select(instance => instance.Name);
+        ViewBag.Geofences = geofenceNames;
+        ViewBag.Instances = instanceNames;
         return View(model);
     }
 
@@ -100,7 +97,7 @@ public class UtilitiesController : BaseMvcController
             if (!string.IsNullOrEmpty(model.GeofenceName))
             {
                 // Retrieve geofence from database
-                var geofence = await _deviceContext.Geofences.FindAsync(model.GeofenceName);
+                var geofence = await _uow.Geofences.FindByIdAsync(model.GeofenceName);
                 if (geofence == null)
                 {
                     ModelState.AddModelError("Utilities", $"Failed to find geofence with name '{model.GeofenceName}'");
@@ -443,9 +440,10 @@ public class UtilitiesController : BaseMvcController
     #region Reload Instance
 
     // GET: UtilitiesController/ReloadInstance
-    public ActionResult ReloadInstance()
+    public async Task<ActionResult> ReloadInstance()
     {
-        ViewBag.Instances = _deviceContext.Instances.ToList();
+        var instances = await _uow.Instances.FindAllAsync();
+        ViewBag.Instances = instances;
         return View();
     }
 
@@ -461,7 +459,8 @@ public class UtilitiesController : BaseMvcController
             if (jobController == null)
             {
                 ModelState.AddModelError("Utilities", $"Failed to find job controller instance with name '{name}'");
-                ViewBag.Instances = _deviceContext.Instances.ToList();
+                var instances = await _uow.Instances.FindAllAsync();
+                ViewBag.Instances = instances;
                 return View(instanceName);
             }
 
@@ -599,9 +598,10 @@ public class UtilitiesController : BaseMvcController
     #region Route Generator
 
     // GET: UtilitiesController/RouteGenerator
-    public ActionResult RouteGenerator()
+    public async Task<ActionResult> RouteGenerator()
     {
-        var geofenceNames = _deviceContext.Geofences.ToList().Select(x => x.Name);
+        var geofences = await _uow.Geofences.FindAllAsync();;
+        var geofenceNames = geofences.Select(geofence => geofence.Name);
         ViewData["GeofenceNames"] = geofenceNames;
         ViewData["MapConfig"] = _mapConfig.ToJson();
         return View();

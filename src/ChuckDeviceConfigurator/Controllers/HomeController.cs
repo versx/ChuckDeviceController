@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using ChuckDeviceConfigurator.Data;
 using ChuckDeviceConfigurator.ViewModels;
 using ChuckDeviceController.Common;
-using ChuckDeviceController.Data.Contexts;
+using ChuckDeviceController.Data.Repositories.Dapper;
 using ChuckDeviceController.Extensions;
 using ChuckDeviceController.Plugin;
 using ChuckDeviceController.Plugin.EventBus;
@@ -20,23 +20,20 @@ using ChuckDeviceController.PluginManager;
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
-    private readonly ControllerDbContext _deviceContext;
-    private readonly MapDbContext _mapContext;
+    private readonly IDapperUnitOfWork _uow;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IUiHost _uiHost;
     private readonly IEventAggregatorHost _eventAggregatorHost;
 
     public HomeController(
         ILogger<HomeController> logger,
-        ControllerDbContext deviceContext,
-        MapDbContext mapContext,
+        IDapperUnitOfWork uow,
         UserManager<ApplicationUser> userManager,
         IUiHost uiHost,
         IEventAggregatorHost eventAggregatorHost)
     {
         _logger = logger;
-        _deviceContext = deviceContext;
-        _mapContext = mapContext;
+        _uow = uow;
         _userManager = userManager;
         _uiHost = uiHost;
         _eventAggregatorHost = eventAggregatorHost;
@@ -47,32 +44,33 @@ public class HomeController : Controller
         var now = DateTime.UtcNow.ToTotalSeconds();
         var uptime = Strings.Uptime;
         var uptimeLocal = uptime.ToLocalTime();
+
         var model = new DashboardViewModel
         {
-            Accounts = (ulong)_deviceContext.Accounts.LongCount(),
-            Assignments = (ulong)_deviceContext.Assignments.LongCount(),
-            AssignmentGroups = (ulong)_deviceContext.AssignmentGroups.LongCount(),
-            Devices = (ulong)_deviceContext.Devices.LongCount(),
-            DeviceGroups = (ulong)_deviceContext.DeviceGroups.LongCount(),
-            Geofences = (ulong)_deviceContext.Geofences.LongCount(),
-            Instances = (ulong)_deviceContext.Instances.LongCount(),
-            IvLists = (ulong)_deviceContext.IvLists.LongCount(),
+            Accounts = (ulong)_uow.Accounts.Count(),
+            Assignments = (ulong)_uow.Assignments.Count(),
+            AssignmentGroups = (ulong)_uow.AssignmentGroups.Count(),
+            Devices = (ulong)_uow.Devices.Count(),
+            DeviceGroups = (ulong)_uow.DeviceGroups.Count(),
+            Geofences = (ulong)_uow.Geofences.Count(),
+            Instances = (ulong)_uow.Instances.Count(),
+            IvLists = (ulong)_uow.IvLists.Count(),
             Plugins = (ulong)PluginManager.Instance.Plugins.Count,
-            Webhooks = (ulong)_deviceContext.Webhooks.LongCount(),
-            Users = (ulong)_userManager.Users.LongCount(),
+            Webhooks = (ulong)_uow.Webhooks.Count(),
+            Users = (ulong)_userManager.Users.Count(),
 
-            Gyms = (ulong)_mapContext.Gyms.LongCount(),
-            GymDefenders = (ulong)_mapContext.GymDefenders.LongCount(),
-            GymTrainers = (ulong)_mapContext.GymTrainers.LongCount(),
-            Raids = (ulong)_mapContext.Gyms.LongCount(gym => gym.RaidEndTimestamp >= now),
-            Incidents = (ulong)_mapContext.Incidents.LongCount(),
-            Pokemon = (ulong)_mapContext.Pokemon.LongCount(),
-            Pokestops = (ulong)_mapContext.Pokestops.LongCount(),
-            Lures = (ulong)_mapContext.Pokestops.LongCount(pokestop => pokestop.LureExpireTimestamp >= now),
-            Quests = (ulong)_mapContext.Pokestops.LongCount(pokestop => pokestop.QuestType != null || pokestop.AlternativeQuestType != null),
-            Cells = (ulong)_mapContext.Cells.LongCount(),
-            Spawnpoints = (ulong)_mapContext.Spawnpoints.LongCount(),
-            Weather = (ulong)_mapContext.Weather.LongCount(),
+            Cells = (ulong)_uow.Cells.Count(),
+            Gyms = (ulong)_uow.Gyms.Count(),
+            GymDefenders = (ulong)_uow.GymDefenders.Count(),
+            GymTrainers = (ulong)_uow.GymTrainers.Count(),
+            Raids = (ulong)_uow.Gyms.Count(gym => gym.RaidEndTimestamp >= now),
+            Pokestops = (ulong)_uow.Pokestops.Count(),
+            Lures = (ulong)_uow.Pokestops.Count(pokestop => pokestop.LureExpireTimestamp >= now),
+            Incidents = (ulong)_uow.Incidents.Count(),
+            Quests = (ulong)_uow.Pokestops.Count(pokestop => pokestop.QuestType != null || pokestop.AlternativeQuestType != null),
+            Pokemon = (ulong)_uow.Pokemon.Count(),
+            Spawnpoints = (ulong)_uow.Spawnpoints.Count(),
+            Weather = (ulong)_uow.Weather.Count(),
 
             PluginDashboardStats = _uiHost.DashboardStatsItems,
             PluginDashboardTiles = _uiHost.DashboardTiles,

@@ -96,7 +96,7 @@ public class ProtoController : ControllerBase
         // Check if received payload data is empty, if so skip
         if (!(payload.Contents?.Any() ?? false))
         {
-            _logger.LogWarning($"[{payload.Uuid}] Invalid or empty GMO");
+            _logger.LogWarning("[{Uuid}] Invalid or empty GMO", payload.Uuid);
             return null;
         }
 
@@ -115,7 +115,7 @@ public class ProtoController : ControllerBase
         if (!wasAdded)
         {
             // Failed to enqueue item with proto queue
-            _logger.LogError($"[{payload.Uuid}] Failed to enqueue proto data with proto queue");
+            _logger.LogError("[{Uuid}] Failed to enqueue proto data with proto queue", payload.Uuid);
         }
         ProtoDataStatistics.Instance.TotalProtoPayloadsReceived++;
 
@@ -174,12 +174,12 @@ public class ProtoController : ControllerBase
             var result = await EntityRepository.ExecuteAsync(_connection, sql, device);
             if (result < 1)
             {
-                _logger.LogWarning($"Failed to update device '{device.Uuid}'");
+                _logger.LogWarning("Failed to update device '{Uuid}'", device.Uuid);
             }
         }
         catch (Exception ex)
         {
-            _logger.LogError($"SetDeviceLastLocationAsync: {ex.InnerException?.Message ?? ex.Message}");
+            _logger.LogError("SetDeviceLastLocationAsync: {Message}", ex.InnerException?.Message ?? ex.Message);
         }
 
         _semDevices.Release();
@@ -217,18 +217,19 @@ public class ProtoController : ControllerBase
                 var result = await EntityRepository.ExecuteAsync(_connection, SqlQueries.AccountLevelUpdate, account);
                 if (result < 1)
                 {
-                    _logger.LogWarning($"Failed to update level for account '{account.Username}'");
+                    _logger.LogWarning("Failed to update level for account '{Username}'", account.Username);
                 }
             }
 
             if (oldLevel > 0)
             {
-                _logger.LogInformation($"[{uuid}] Account '{username}' on device '{uuid}' leveled up from {oldLevel} to {level} with {trainerXp:N0} XP");
+                _logger.LogInformation("[{Uuid}] Account '{Username}' on device '{Uuid}' leveled up from {OldLevel} to {Level} with {TrainerXp:N0} XP",
+                    uuid, username, uuid, oldLevel, level, trainerXp);
             }
         }
         catch (Exception ex)
         {
-            _logger.LogError($"[{uuid}] Error: {ex.InnerException?.Message ?? ex.Message}");
+            _logger.LogError("[{Uuid}] Error: {Message}", uuid, ex.InnerException?.Message ?? ex.Message);
         }
     }
 
