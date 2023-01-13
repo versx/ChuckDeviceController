@@ -8,6 +8,10 @@ public interface IDapperGenericRepository<TKey, TEntity>
 {
     bool Any(Expression<Func<TEntity, bool>>? predicate = null);
 
+    int Count(
+        Expression<Func<TEntity, bool>>? predicate = null,
+        params Expression<Func<TEntity, object>>[] includes);
+
     Task<IEnumerable<TEntity>> FindAllAsync(
         CancellationToken stoppingToken = default);
 
@@ -20,7 +24,7 @@ public interface IDapperGenericRepository<TKey, TEntity>
         CancellationToken stoppingToken = default);
 
     Task<TEntity> FirstOrDefaultAsync(
-        Expression<Func<TEntity, bool>> predicate,
+        Expression<Func<TEntity, bool>>? predicate = null,
         CancellationToken stoppingToken = default);
 
     Task<int> InsertAsync(

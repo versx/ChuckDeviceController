@@ -15,6 +15,8 @@ using ChuckDeviceController.Data.Factories;
 using ChuckDeviceController.Data.Translators;
 using ChuckDeviceController.Extensions;
 
+// TODO: Get table name from entity table attribute
+
 // Reference: https://itnext.io/generic-repository-pattern-using-dapper-bd48d9cd7ead
 // Reference: https://github.com/phnx47/dapper-repositories
 public abstract class DapperGenericRepository<TKey, TEntity> : IDapperGenericRepository<TKey, TEntity>
@@ -32,6 +34,7 @@ public abstract class DapperGenericRepository<TKey, TEntity> : IDapperGenericRep
     private const string DeleteRangeQuery = "DELETE FROM {0} WHERE {1} IN @{2}";
     private const string WhereQuery = " WHERE {0}=@{1}";
     private const string LimitQuery = " LIMIT {0}";
+    private const string CountQuery = "SELECT COUNT(*) FROM {0}";
 
     #endregion
 
@@ -55,8 +58,6 @@ public abstract class DapperGenericRepository<TKey, TEntity> : IDapperGenericRep
     #endregion
 
     #region Constructors
-
-    // TODO: Get table name from entity table attribute
 
     protected DapperGenericRepository(IMySqlConnectionFactory factory)
         : this(nameof(TEntity).ToLower(), factory)
@@ -93,6 +94,36 @@ public abstract class DapperGenericRepository<TKey, TEntity> : IDapperGenericRep
         sql += string.Format(LimitQuery, 1);
         var result = connection.QueryFirstOrDefault<TEntity>(sql);
         return result != null;
+    }
+
+    public int Count(Expression<Func<TEntity, bool>>? predicate = null, params Expression<Func<TEntity, object>>[] includes)
+    {
+        using var connection = CreateConnectionAsync().Result;
+        var query = _sqlGenerator.GetCount(predicate, includes);
+        var sql = query.SqlBuilder.ToString();
+        var result = connection.ExecuteScalar<int>(sql);
+        return result;
+    }
+
+    #region Select Methods
+
+    public async Task<TEntity> FirstOrDefaultAsync(Expression<Func<TEntity, bool>>? predicate = null, CancellationToken stoppingToken = default)
+    {
+        var properties = GenerateListOfProperties(GetProperties);
+        var columnNames = properties.Keys.ToList();
+        var filterData = new FilterData
+        {
+            SelectInfo = new SelectInfo
+            {
+                Columns = columnNames,
+                Permanent = false,
+            },
+        };
+        var (sql, param) = GenerateSelectQuery(predicate, filterData);
+
+        using var connection = await CreateConnectionAsync(stoppingToken);
+        var result = await connection.QueryFirstOrDefaultAsync<TEntity>(sql, param);
+        return result;
     }
 
     public async Task<IEnumerable<TEntity>> FindAllAsync(CancellationToken stoppingToken = default)
@@ -132,24 +163,9 @@ public abstract class DapperGenericRepository<TKey, TEntity> : IDapperGenericRep
         return result;
     }
 
-    public async Task<TEntity> FirstOrDefaultAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken stoppingToken = default)
-    {
-        var properties = GenerateListOfProperties(GetProperties);
-        var columnNames = properties.Keys.ToList();
-        var filterData = new FilterData
-        {
-            SelectInfo = new SelectInfo
-            {
-                Columns = columnNames,
-                Permanent = false,
-            },
-        };
-        var (sql, param) = GenerateSelectQuery(predicate, filterData);
+    #endregion
 
-        using var connection = await CreateConnectionAsync(stoppingToken);
-        var result = await connection.QueryFirstOrDefaultAsync<TEntity>(sql, param);
-        return result;
-    }
+    #region Insert Methods
 
     public async Task<int> InsertAsync(TEntity entity, CancellationToken stoppingToken = default)
     {
@@ -168,6 +184,10 @@ public abstract class DapperGenericRepository<TKey, TEntity> : IDapperGenericRep
         var result = await connection.ExecuteAsync(insertQuery, entities);
         return result;
     }
+
+    #endregion
+
+    #region Update Methods
 
     public async Task<int> UpdateAsync(TEntity entity, CancellationToken stoppingToken = default)
     {
@@ -222,6 +242,10 @@ public abstract class DapperGenericRepository<TKey, TEntity> : IDapperGenericRep
         return result;
     }
 
+    #endregion
+
+    #region Delete Methods
+
     public async Task<bool> DeleteAsync(TKey id, CancellationToken stoppingToken = default)
     {
         var deleteQuery = GenerateDeleteQuery(id, out var parameters);
@@ -239,6 +263,8 @@ public abstract class DapperGenericRepository<TKey, TEntity> : IDapperGenericRep
         var result = await connection.ExecuteAsync(deleteQuery, parameters);
         return result > 0;
     }
+
+    #endregion
 
     #endregion
 
