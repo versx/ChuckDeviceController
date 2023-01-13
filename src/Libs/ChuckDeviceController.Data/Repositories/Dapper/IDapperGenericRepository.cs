@@ -6,6 +6,8 @@ public interface IDapperGenericRepository<TKey, TEntity>
     where TKey : notnull
     where TEntity : class
 {
+    bool Any(Expression<Func<TEntity, bool>>? predicate = null);
+
     Task<IEnumerable<TEntity>> FindAllAsync(
         CancellationToken stoppingToken = default);
 
