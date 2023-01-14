@@ -9,10 +9,6 @@ using ChuckDeviceController.Data.Common;
 /// </summary>
 public interface IDatabaseHost
 {
-    //IRepository<IAccount, string> Accounts { get; }
-    //IRepository<IPokestop, string> Pokestops { get; }
-    //IRepository<IDevice, string> Devices { get; }
-
     /// <summary>
     /// Gets a list of database entities.
     /// </summary>

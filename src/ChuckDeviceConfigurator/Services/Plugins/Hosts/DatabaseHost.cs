@@ -46,18 +46,14 @@ public class DatabaseHost : IDatabaseHost
         typeof(IWeather),
     };
     private readonly string _connectionString;
-    private readonly IUnitOfWork _uow;
 
     #endregion
 
     #region Constructor
 
-    public DatabaseHost(
-        IConfiguration configuration,
-        IUnitOfWork uow)
+    public DatabaseHost(IConfiguration configuration)
     {
         _connectionString = configuration.GetConnectionString("DefaultConnection")!;
-        _uow = uow;
     }
 
     #endregion
@@ -70,45 +66,49 @@ public class DatabaseHost : IDatabaseHost
     {
         if (_controllerEntityTypes.Contains(typeof(TEntity)))
         {
+            using var context = DbContextFactory.CreateControllerContext(_connectionString);
+
             if (typeof(TEntity) == typeof(IAccount))
-                return await _uow.Accounts.FindByIdAsync(id) as TEntity;
+                return await context.Accounts.FindAsync(id) as TEntity;
             else if (typeof(TEntity) == typeof(IAssignment))
-                return await _uow.Assignments.FindByIdAsync(id) as TEntity;
+                return await context.Assignments.FindAsync(id) as TEntity;
             else if (typeof(TEntity) == typeof(IAssignmentGroup))
-                return await _uow.AssignmentGroups.FindByIdAsync(id) as TEntity;
+                return await context.AssignmentGroups.FindAsync(id) as TEntity;
             else if (typeof(TEntity) == typeof(IDevice))
-                return await _uow.Devices.FindByIdAsync(id.ToString()) as TEntity;
+                return await context.Devices.FindAsync(id.ToString()) as TEntity;
             else if (typeof(TEntity) == typeof(IDeviceGroup))
-                return await _uow.DeviceGroups.FindByIdAsync(id) as TEntity;
+                return await context.DeviceGroups.FindAsync(id) as TEntity;
             else if (typeof(TEntity) == typeof(IGeofence))
-                return await _uow.Geofences.FindByIdAsync(id) as TEntity;
+                return await context.Geofences.FindAsync(id) as TEntity;
             else if (typeof(TEntity) == typeof(IInstance))
-                return await _uow.Instances.FindByIdAsync(id) as TEntity;
+                return await context.Instances.FindAsync(id) as TEntity;
             else if (typeof(TEntity) == typeof(IIvList))
-                return await _uow.IvLists.FindByIdAsync(id) as TEntity;
+                return await context.IvLists.FindAsync(id) as TEntity;
             else if (typeof(TEntity) == typeof(IWebhook))
-                return await _uow.Webhooks.FindByIdAsync(id) as TEntity;
+                return await context.Webhooks.FindAsync(id) as TEntity;
         }
         else if (_mapEntityTypes.Contains(typeof(TEntity)))
         {
+            using var context = DbContextFactory.CreateMapDataContext(_connectionString);
+
             if (typeof(TEntity) == typeof(ICell))
-                return await _uow.Cells.FindByIdAsync(id) as TEntity;
+                return await context.Cells.FindAsync(id) as TEntity;
             else if (typeof(TEntity) == typeof(IGym))
-                return await _uow.Gyms.FindByIdAsync(id) as TEntity;
+                return await context.Gyms.FindAsync(id) as TEntity;
             else if (typeof(TEntity) == typeof(IGymDefender))
-                return await _uow.GymDefenders.FindByIdAsync(id) as TEntity;
+                return await context.GymDefenders.FindAsync(id) as TEntity;
             else if (typeof(TEntity) == typeof(IGymTrainer))
-                return await _uow.GymTrainers.FindByIdAsync(id) as TEntity;
+                return await context.GymTrainers.FindAsync(id) as TEntity;
             else if (typeof(TEntity) == typeof(IIncident))
-                return await _uow.Incidents.FindByIdAsync(id) as TEntity;
+                return await context.Incidents.FindAsync(id) as TEntity;
             else if (typeof(TEntity) == typeof(IPokemon))
-                return await _uow.Pokemon.FindByIdAsync(id) as TEntity;
+                return await context.Pokemon.FindAsync(id) as TEntity;
             else if (typeof(TEntity) == typeof(IPokestop))
-                return await _uow.Pokestops.FindByIdAsync(id) as TEntity;
+                return await context.Pokestops.FindAsync(id) as TEntity;
             else if (typeof(TEntity) == typeof(ISpawnpoint))
-                return await _uow.Spawnpoints.FindByIdAsync(id) as TEntity;
+                return await context.Spawnpoints.FindAsync(id) as TEntity;
             else if (typeof(TEntity) == typeof(IWeather))
-                return await _uow.Weather.FindByIdAsync(id) as TEntity;
+                return await context.Weather.FindAsync(id) as TEntity;
         }
 
         _logger.LogError($"Failed to determine DbSet from provided type '{typeof(TEntity).Name}'");
@@ -123,44 +123,46 @@ public class DatabaseHost : IDatabaseHost
             using var context = DbContextFactory.CreateControllerContext(_connectionString);
 
             if (typeof(TEntity) == typeof(IAccount))
-                return await _uow.Accounts.FindAllAsync() as IReadOnlyList<TEntity>;
+                return await context.Accounts.ToListAsync() as IReadOnlyList<TEntity>;
             else if (typeof(TEntity) == typeof(IAssignment))
-                return await _uow.Assignments.FindAllAsync() as IReadOnlyList<TEntity>;
+                return await context.Assignments.ToListAsync() as IReadOnlyList<TEntity>;
             else if (typeof(TEntity) == typeof(IAssignmentGroup))
-                return await _uow.AssignmentGroups.FindAllAsync() as IReadOnlyList<TEntity>;
+                return await context.AssignmentGroups.ToListAsync() as IReadOnlyList<TEntity>;
             else if (typeof(TEntity) == typeof(IDevice))
-                return await _uow.Devices.FindAllAsync() as IReadOnlyList<TEntity>;
+                return await context.Devices.ToListAsync() as IReadOnlyList<TEntity>;
             else if (typeof(TEntity) == typeof(IDeviceGroup))
-                return await _uow.DeviceGroups.FindAllAsync() as IReadOnlyList<TEntity>;
+                return await context.DeviceGroups.ToListAsync() as IReadOnlyList<TEntity>;
             else if (typeof(TEntity) == typeof(IGeofence))
-                return await _uow.Geofences.FindAllAsync() as IReadOnlyList<TEntity>;
+                return await context.Geofences.ToListAsync() as IReadOnlyList<TEntity>;
             else if (typeof(TEntity) == typeof(IInstance))
-                return await _uow.Instances.FindAllAsync() as IReadOnlyList<TEntity>;
+                return await context.Instances.ToListAsync() as IReadOnlyList<TEntity>;
             else if (typeof(TEntity) == typeof(IIvList))
-                return await _uow.IvLists.FindAllAsync() as IReadOnlyList<TEntity>;
+                return await context.IvLists.ToListAsync() as IReadOnlyList<TEntity>;
             else if (typeof(TEntity) == typeof(IWebhook))
-                return await _uow.Webhooks.FindAllAsync() as IReadOnlyList<TEntity>;
+                return await context.Webhooks.ToListAsync() as IReadOnlyList<TEntity>;
         }
         else if (_mapEntityTypes.Contains(typeof(TEntity)))
         {
+            using var context = DbContextFactory.CreateMapDataContext(_connectionString);
+
             if (typeof(TEntity) == typeof(ICell))
-                return await _uow.Cells.FindAllAsync() as IReadOnlyList<TEntity>;
+                return await context.Cells.ToListAsync() as IReadOnlyList<TEntity>;
             else if (typeof(TEntity) == typeof(IGym))
-                return await _uow.Gyms.FindAllAsync() as IReadOnlyList<TEntity>;
+                return await context.Gyms.ToListAsync() as IReadOnlyList<TEntity>;
             else if (typeof(TEntity) == typeof(IGymDefender))
-                return await _uow.GymDefenders.FindAllAsync() as IReadOnlyList<TEntity>;
+                return await context.GymDefenders.ToListAsync() as IReadOnlyList<TEntity>;
             else if (typeof(TEntity) == typeof(IGymTrainer))
-                return await _uow.GymTrainers.FindAllAsync() as IReadOnlyList<TEntity>;
+                return await context.GymTrainers.ToListAsync() as IReadOnlyList<TEntity>;
             else if (typeof(TEntity) == typeof(IIncident))
-                return await _uow.Incidents.FindAllAsync() as IReadOnlyList<TEntity>;
+                return await context.Incidents.ToListAsync() as IReadOnlyList<TEntity>;
             else if (typeof(TEntity) == typeof(IPokemon))
-                return await _uow.Pokemon.FindAllAsync() as IReadOnlyList<TEntity>;
+                return await context.Pokemon.ToListAsync() as IReadOnlyList<TEntity>;
             else if (typeof(TEntity) == typeof(IPokestop))
-                return await _uow.Pokestops.FindAllAsync() as IReadOnlyList<TEntity>;
+                return await context.Pokestops.ToListAsync() as IReadOnlyList<TEntity>;
             else if (typeof(TEntity) == typeof(ISpawnpoint))
-                return await _uow.Spawnpoints.FindAllAsync() as IReadOnlyList<TEntity>;
+                return await context.Spawnpoints.ToListAsync() as IReadOnlyList<TEntity>;
             else if (typeof(TEntity) == typeof(IWeather))
-                return await _uow.Weather.FindAllAsync() as IReadOnlyList<TEntity>;
+                return await context.Weather.ToListAsync() as IReadOnlyList<TEntity>;
         }
 
         _logger.LogError($"Failed to determine DbSet from provided type '{typeof(TEntity).Name}'");

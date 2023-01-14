@@ -17,6 +17,7 @@ using ChuckDeviceController.Extensions.Http;
 using ChuckDeviceController.Net.Models.Requests;
 using ChuckDeviceController.Net.Models.Responses;
 using ChuckDeviceController.Services.ProtoProcessor;
+using ChuckDeviceController.Data.Repositories.Dapper;
 
 [ApiController]
 public class ProtoController : ControllerBase
@@ -34,6 +35,7 @@ public class ProtoController : ControllerBase
     private readonly SafeCollection<ProtoPayloadQueueItem> _taskQueue;
     private readonly IMemoryCacheService _memCache;
     private readonly MySqlConnection _connection;
+    private readonly IDapperUnitOfWork _uow;
     //private readonly DapperRepository<Device> _deviceRepository;
 
     #endregion
@@ -44,6 +46,7 @@ public class ProtoController : ControllerBase
         ILogger<ProtoController> logger,
         SafeCollection<ProtoPayloadQueueItem> taskQueue,
         IMemoryCacheService memCache,
+        IDapperUnitOfWork uow,
         MySqlConnection connection)
         //DapperRepository<Device> deviceRepository)
     {
@@ -51,6 +54,7 @@ public class ProtoController : ControllerBase
         _taskQueue = taskQueue;
         _memCache = memCache;
         _connection = connection;
+        _uow = uow;
         EntityDataRepository.AddTypeMappers();
         //_deviceRepository = deviceRepository;
         //var device = _deviceRepository.FindById("atv08");
@@ -150,6 +154,13 @@ public class ProtoController : ControllerBase
                     LastLongitude = payload.LongitudeTarget,
                     LastSeen = now,
                 };
+
+                var result = await _uow.Devices.InsertAsync(device);
+                if (result < 1)
+                {
+                    // Failed
+                    _logger.LogError("[{Uuid}] Failed to update device location", payload.Uuid);
+                }
             }
             else
             {
@@ -168,14 +179,22 @@ public class ProtoController : ControllerBase
                     device.LastHost = ipAddr;
                 }
                 device.LastSeen = now;
+
+                var result = await _uow.Devices.UpdateAsync(device);
+                if (result < 1)
+                {
+                    // Failed
+                    _logger.LogError("[{Uuid}] Failed to update device location", payload.Uuid);
+                }
             }
 
-            var sql = string.Format(SqlQueries.DeviceOnMergeUpdate, SqlQueries.DeviceValues);
-            var result = await EntityRepository.ExecuteAsync(_connection, sql, device);
-            if (result < 0)
-            {
-                _logger.LogWarning("[{Uuid}] Failed to update device", device.Uuid);
-            }
+
+            //var sql = string.Format(SqlQueries.DeviceOnMergeUpdate, SqlQueries.DeviceValues);
+            //var result = await EntityRepository.ExecuteAsync(_connection, sql, device);
+            //if (result < 0)
+            //{
+            //    _logger.LogWarning("[{Uuid}] Failed to update device", device.Uuid);
+            //}
         }
         catch (Exception ex)
         {

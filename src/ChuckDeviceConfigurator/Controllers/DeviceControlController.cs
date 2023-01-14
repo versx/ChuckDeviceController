@@ -576,37 +576,5 @@ public class DeviceControlController : ControllerBase
         return accounts.ElementAt(_rand.Next(0, matchCount));
     }
 
-    //private async Task<TEntity?> GetEntityAsync<TKey, TEntity>(ControllerDbContext context, TKey? key, bool skipCache = true)
-    //    where TEntity : class
-    //{
-    //    if (key == null)
-    //    {
-    //        return default;
-    //    }
-
-    //    TEntity? entity = null;
-    //    if (!skipCache)
-    //    {
-    //        entity = _memCache.Get<TKey, TEntity>(key);
-    //    }
-
-    //    entity ??= await context.Set<TEntity>().FindAsync(key);
-    //    return entity;
-    //}
-
-    //private async Task SetEntityAsync<TKey, TEntity>(TKey key, TEntity entity, bool skipCache = true)
-    //    where TEntity : class
-    //{
-    //    //_context.Set<TEntity>().Update(entity);
-    //    //await _context.SaveChangesAsync();
-    //    await _uow.CommitAsync();
-
-    //    if (!skipCache)
-    //    {
-    //        // Update entity in cache
-    //        _memCache.Set(key, entity);
-    //    }
-    //}
-
     #endregion
 }
