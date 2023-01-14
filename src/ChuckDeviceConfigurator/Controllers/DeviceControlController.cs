@@ -120,7 +120,7 @@ public class DeviceControlController : ControllerBase
                  "error_26":
                 return await HandleAccountStatusRequestAsync(device?.Uuid, device?.AccountUsername ?? payload?.Username, payload?.Type);
             case "tutorial_done":
-                return await HandleTutorialStatusRequestAsync(device?.AccountUsername);
+                return await HandleTutorialStatusRequestAsync(device?.AccountUsername ?? payload?.Username);
             case "logged_out":
                 return await HandleLogoutRequestAsync(device);
             case "job_failed":

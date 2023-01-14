@@ -172,7 +172,7 @@ public class ProtoController : ControllerBase
 
             var sql = string.Format(SqlQueries.DeviceOnMergeUpdate, SqlQueries.DeviceValues);
             var result = await EntityRepository.ExecuteAsync(_connection, sql, device);
-            if (result < 1)
+            if (result < 0)
             {
                 _logger.LogWarning("Failed to update device '{Uuid}'", device.Uuid);
             }
