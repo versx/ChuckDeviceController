@@ -183,9 +183,12 @@ public class DeviceControlController : ControllerBase
         }
 
         var ipAddr = Request.GetIPAddress();
-        if (device.LastHost != ipAddr)
+        var now = DateTime.UtcNow.ToTotalSeconds();
+        if (device.LastHost != ipAddr ||
+            device.LastSeen != now)
         {
             device.LastHost = ipAddr;
+            device.LastSeen = now;
             await _uow.Devices.UpdateAsync(device);
             await _uow.CommitAsync();
         }
