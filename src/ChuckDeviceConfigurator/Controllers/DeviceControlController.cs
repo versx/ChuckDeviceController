@@ -410,12 +410,19 @@ public class DeviceControlController : ControllerBase
                 break;
             case "account_warning":
                 account.FirstWarningTimestamp ??= now;
+                account.WarnExpireTimestamp ??= now + Account.WarningPeriodS;
+                account.FailedTimestamp = now;
+                account.Failed = Account.FailedGprRedWarning;
                 break;
             case "account_invalid_credentials":
                 if (account.FirstWarningTimestamp == null || string.IsNullOrEmpty(account.Failed))
                 {
                     account.FailedTimestamp = now;
                     account.Failed = "invalid_credentials";
+                }
+                else
+                {
+                    _logger.LogWarning("[{Uuid}] Account {Username} already failed '{Failed}'. Unable to set 'invalid_credentials'.", uuid, account.Username, account.Failed);
                 }
                 break;
             case "error_26":

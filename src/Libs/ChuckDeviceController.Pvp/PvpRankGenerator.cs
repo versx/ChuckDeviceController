@@ -285,8 +285,9 @@ public class PvpRankGenerator : IPvpRankGenerator
         PvpLeague league)
     {
         var rankings = GetPvpStats(pokemon, form, iv, level, league);
-        var result = rankings.Select(rank => (new PokemonWithFormAndGender { Pokemon = pokemon, Form = form, Gender = gender }, rank))
-                             .ToList();
+        var result = rankings
+            .Select(rank => (new PokemonWithFormAndGender { Pokemon = pokemon, Form = form, Gender = gender }, rank))
+            .ToList();
 
         var pkmn = new PokemonWithFormAndGender { Pokemon = pokemon, Form = form };
         if (!_pokemonBaseStats.ContainsKey(pkmn))
@@ -296,7 +297,10 @@ public class PvpRankGenerator : IPvpRankGenerator
             //return null;
         }
         var baseStats = _pokemonBaseStats[pkmn];
-        var hasNoEvolveForm = (costume ?? PokemonCostume.Unset).ToString().ToLower().Contains(Strings.NoEvolveForm);
+        var hasNoEvolveForm = (costume ?? PokemonCostume.Unset)
+            .ToString()
+            .ToLower()
+            .Contains(Strings.NoEvolveForm);
         var hasCostumeEvoOverride = baseStats.CostumeEvolutionOverride != null &&
             baseStats.CostumeEvolutionOverride.Count > 0 &&
             costume != null && baseStats.CostumeEvolutionOverride.Contains(costume ?? null);

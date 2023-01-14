@@ -18,14 +18,14 @@ public class Account : BaseEntity, IAccount, IWebhookEntity
 {
     #region Constants
 
-    private const uint SuspendedPeriodS = 2592000;
-    private const uint WarningPeriodS = 604800;
-    private const uint CooldownPeriodS = 7200;
-    private const string FailedGprBanned = "GPR_BANNED";
-    private const string FailedGprRedWarning = "GPR_RED_WARNING";
-    private const string FailedBanned = "banned";
-    private const string FailedSuspended = "suspended";
-    private const string FailedInvalidCredentials = "invalid_credentials";
+    public const uint SuspendedPeriodS = 2592000;
+    public const uint WarningPeriodS = 604800;
+    public const uint CooldownPeriodS = 7200;
+    public const string FailedGprBanned = "GPR_BANNED";
+    public const string FailedGprRedWarning = "GPR_RED_WARNING";
+    public const string FailedBanned = "banned";
+    public const string FailedSuspended = "suspended";
+    public const string FailedInvalidCredentials = "invalid_credentials";
 
     public static readonly IEnumerable<string> FailedReasons = new List<string>
     {
@@ -323,18 +323,8 @@ public class Account : BaseEntity, IAccount, IWebhookEntity
         if ((playerData.Warn || playerData.WarnMessageAcknowledged) && string.IsNullOrEmpty(Failed))
         {
             Failed = FailedGprRedWarning;
-            if (warnExpireTimestamp > now)
-            {
-                FirstWarningTimestamp ??= now;
-                FailedTimestamp = now;
-            }
-            else
-            {
-                FirstWarningTimestamp ??= warnExpireTimestamp > 0
-                    ? warnExpireTimestamp - WarningPeriodS
-                    : now - WarningPeriodS;
-                FailedTimestamp = now - WarningPeriodS;
-            }
+            FirstWarningTimestamp ??= now;
+            FailedTimestamp ??= now;
             SendWebhook = true;
             Console.WriteLine($"[{Username}] Account '{playerData.Player.Name}' (Username: {Username}) Has Red Warning");
         }
