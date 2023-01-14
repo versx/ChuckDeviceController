@@ -3,6 +3,8 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Localization;
@@ -277,6 +279,11 @@ builder.Services.AddTransient<IRouteCalculator, RouteCalculator>();
 
 builder.Services.AddScoped<IApiKeyManagerService, ApiKeyManagerService>();
 builder.Services.AddSingleton<ILoginLimiter, LoginLimiter>();
+
+// Reference: https://learn.microsoft.com/en-us/aspnet/core/mvc/views/working-with-forms?view=aspnetcore-7.0#checkbox-hidden-input-rendering
+builder.Services.Configure<MvcViewOptions>(options =>
+    options.HtmlHelperOptions.CheckBoxHiddenInputRenderMode =
+        CheckBoxHiddenInputRenderMode.EndOfForm);
 
 builder.Services.AddGrpc(options =>
 {
