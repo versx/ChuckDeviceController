@@ -64,7 +64,7 @@ public class ConfigurationHost : IConfigurationHost
 
         var basePath = jsonFilePath.GetDirectoryName();
         var config = new ConfigurationBuilder()
-            .SetBasePath(basePath)
+            .SetBasePath(basePath!)
             .AddJsonFile(jsonFilePath)
             .Build();
 

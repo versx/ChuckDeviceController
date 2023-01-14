@@ -42,23 +42,23 @@ public class UnitOfWork<TDbContext> : IUnitOfWork
     public IGenericEntityRepository<Webhook> Webhooks { get; }
 
 
-    //public IGenericEntityRepository<Pokemon> Pokemon { get; }
+    public IGenericEntityRepository<Pokemon> Pokemon { get; }
 
-    //public IGenericEntityRepository<Pokestop> Pokestops { get; }
+    public IGenericEntityRepository<Pokestop> Pokestops { get; }
 
-    //public IGenericEntityRepository<Incident> Incidents { get; }
+    public IGenericEntityRepository<Incident> Incidents { get; }
 
-    //public IGenericEntityRepository<Gym> Gyms { get; }
+    public IGenericEntityRepository<Gym> Gyms { get; }
 
-    //public IGenericEntityRepository<GymDefender> GymDefenders { get; }
+    public IGenericEntityRepository<GymDefender> GymDefenders { get; }
 
-    //public IGenericEntityRepository<GymTrainer> GymTrainers { get; }
+    public IGenericEntityRepository<GymTrainer> GymTrainers { get; }
 
-    //public IGenericEntityRepository<Cell> Cells { get; }
+    public IGenericEntityRepository<Cell> Cells { get; }
 
-    //public IGenericEntityRepository<Weather> Weather { get; }
+    public IGenericEntityRepository<Weather> Weather { get; }
 
-    //public IGenericEntityRepository<Spawnpoint> Spawnpoints { get; }
+    public IGenericEntityRepository<Spawnpoint> Spawnpoints { get; }
 
     public IDbContextTransaction? Transaction => _context.Database.CurrentTransaction;
 
@@ -83,15 +83,15 @@ public class UnitOfWork<TDbContext> : IUnitOfWork
         Webhooks = new GenericEntityRepository<TDbContext, Webhook>(_context);
 
         // Map entity repositories
-        //Pokemon = new PokemonRepository(_context);
-        //Pokestops = new PokestopRepository(_context);
-        //Incidents = new IncidentRepository(_context);
-        //Gyms = new GymRepository(_context);
-        //GymDefenders = new GymDefenderRepository(_context);
-        //GymTrainers = new GymTrainerRepository(_context);
-        //Cells = new CellRepository(_context);
-        //Weather = new WeatherRepository(_context);
-        //Spawnpoints = new SpawnpointRepository(_context);
+        Pokemon = new GenericEntityRepository<TDbContext, Pokemon>(_context);
+        Pokestops = new GenericEntityRepository<TDbContext, Pokestop>(_context);
+        Incidents = new GenericEntityRepository<TDbContext, Incident>(_context);
+        Gyms = new GenericEntityRepository<TDbContext, Gym>(_context);
+        GymDefenders = new GenericEntityRepository<TDbContext, GymDefender>(_context);
+        GymTrainers = new GenericEntityRepository<TDbContext, GymTrainer>(_context);
+        Cells = new GenericEntityRepository<TDbContext, Cell>(_context);
+        Weather = new GenericEntityRepository<TDbContext, Weather>(_context);
+        Spawnpoints = new GenericEntityRepository<TDbContext, Spawnpoint>(_context);
     }
 
     ~UnitOfWork()

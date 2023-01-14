@@ -29,5 +29,24 @@ public interface IUnitOfWork : IBaseUnitOfWork<IDbContextTransaction>
 
     IGenericEntityRepository<Webhook> Webhooks { get; }
 
+
+    IGenericEntityRepository<Cell> Cells { get; }
+
+    IGenericEntityRepository<Gym> Gyms { get; }
+
+    IGenericEntityRepository<GymDefender> GymDefenders { get; }
+
+    IGenericEntityRepository<GymTrainer> GymTrainers { get; }
+
+    IGenericEntityRepository<Incident> Incidents { get; }
+
+    IGenericEntityRepository<Pokestop> Pokestops { get; }
+
+    IGenericEntityRepository<Pokemon> Pokemon { get; }
+
+    IGenericEntityRepository<Spawnpoint> Spawnpoints { get; }
+
+    IGenericEntityRepository<Weather> Weather { get; }
+
     #endregion
 }

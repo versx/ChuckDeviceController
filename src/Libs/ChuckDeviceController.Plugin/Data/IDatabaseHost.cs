@@ -29,7 +29,7 @@ public interface IDatabaseHost
     /// <param name="id">Primary key of the database entity.</param>
     /// <returns>Returns the database entity.</returns>
     Task<TEntity?> FindAsync<TEntity, TKey>(TKey id)
-        where TKey : class
+        where TKey : notnull
         where TEntity : class;
 
     /// <summary>

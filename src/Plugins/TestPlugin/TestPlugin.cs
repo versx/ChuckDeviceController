@@ -533,6 +533,9 @@ public class TestPlugin : IPlugin, IDatabaseEvents, IJobControllerServiceEvents,
         try
         {
             // Retrieve database entities 
+            var assignment = await _databaseHost.FindAsync<IAssignment, uint>((uint)2);
+            _loggingHost.LogInformation($"Assignment: {assignment?.Id}");
+
             var device = await _databaseHost.FindAsync<IDevice, string>("atv08");
             _loggingHost.LogInformation($"Device: {device?.Uuid}");
 
