@@ -57,9 +57,9 @@ public class ConfigurationHost : IConfigurationHost
             return null;
         }
 
-        if (_configurations.ContainsKey(jsonFilePath))
+        if (_configurations.TryGetValue(jsonFilePath, out var value))
         {
-            return GetConfigResult(_configurations[jsonFilePath], sectionName);
+            return GetConfigResult(value, sectionName);
         }
 
         var basePath = jsonFilePath.GetDirectoryName();

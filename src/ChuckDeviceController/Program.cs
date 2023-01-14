@@ -259,9 +259,7 @@ async Task MonitorResults(TimeSpan duration, Stopwatch stopwatch)
     {
         await Task.Delay(TimeSpan.FromSeconds(1));
 
-        var instanceCount = EntityRepository.InstanceCount +
-            MapDbContext.InstanceCount +
-            ControllerDbContext.InstanceCount;
+        var instanceCount = EntityRepository.InstanceCount + MapDbContext.InstanceCount;
         var requestCount = ProtoDataStatistics.Instance.TotalRequestsProcessed;
         var elapsed = stopwatch.Elapsed;
         var currentElapsed = elapsed - lastElapsed;

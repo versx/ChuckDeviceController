@@ -267,7 +267,7 @@ public class TestPlugin : IPlugin, IDatabaseEvents, IJobControllerServiceEvents,
         //});
 
         // Use built in logger from dependency injection
-        appBuilder.Logger.LogInformation($"Logging from the plugin '{Name}'");
+        appBuilder.Logger.LogInformation("Logging from the plugin '{Name}'", Name);
     }
 
     /// <summary>
@@ -533,7 +533,7 @@ public class TestPlugin : IPlugin, IDatabaseEvents, IJobControllerServiceEvents,
         try
         {
             // Retrieve database entities 
-            var device = await _databaseHost.FindAsync<IDevice, string>("SGV7SE");
+            var device = await _databaseHost.FindAsync<IDevice, string>("atv08");
             _loggingHost.LogInformation($"Device: {device?.Uuid}");
 
             var instance = await _databaseHost.FindAsync<IInstance, string>("TestInstance");

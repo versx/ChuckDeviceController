@@ -20,35 +20,6 @@ public static class DbContextFactory
         //new ObjectDataConverter<WebhookData>(),
     };
 
-    public static T CreateDbContext<T>(string connectionString, string? assemblyName = null, bool autoDetectChanges = false)
-        where T : DbContext
-    {
-        try
-        {
-            var optionsBuilder = new DbContextOptionsBuilder<T>();
-            optionsBuilder.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString), options =>
-            {
-                if (!string.IsNullOrEmpty(assemblyName))
-                {
-                    options.MigrationsAssembly(assemblyName);
-                }
-            });
-
-            var ctx = new DbContext(optionsBuilder.Options);
-            ctx.ChangeTracker.AutoDetectChangesEnabled = autoDetectChanges;
-            ctx.ChangeTracker.QueryTrackingBehavior = autoDetectChanges
-                ? QueryTrackingBehavior.TrackAll
-                : QueryTrackingBehavior.NoTracking;
-            return (T)ctx;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[RawSql] Result: {ex.Message}");
-            Environment.Exit(0);
-        }
-        return null;
-    }
-
     public static ControllerDbContext CreateControllerContext(string connectionString)
     {
         try

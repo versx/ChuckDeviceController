@@ -18,7 +18,8 @@ public interface IDatabaseHost
     /// </summary>
     /// <typeparam name="TEntity">Database entity contract type.</typeparam>
     /// <returns>Returns the list of database entities.</returns>
-    Task<IReadOnlyList<TEntity>> FindAllAsync<TEntity>();
+    Task<IReadOnlyList<TEntity>> FindAllAsync<TEntity>()
+        where TEntity : class;
 
     /// <summary>
     /// Gets a database entity by primary key.
@@ -27,7 +28,9 @@ public interface IDatabaseHost
     /// <typeparam name="TKey">Database entity primary key type.</typeparam>
     /// <param name="id">Primary key of the database entity.</param>
     /// <returns>Returns the database entity.</returns>
-    Task<TEntity?> FindAsync<TEntity, TKey>(TKey id);
+    Task<TEntity?> FindAsync<TEntity, TKey>(TKey id)
+        where TKey : class
+        where TEntity : class;
 
     /// <summary>
     /// Gets a list of database entities matching the specified criteria.
@@ -44,6 +47,5 @@ public interface IDatabaseHost
         Expression<Func<TEntity, TKey>>? order = null,
         SortOrderDirection sortDirection = SortOrderDirection.Asc,
         int limit = 1000)
-        where TEntity : class
-        where TKey : notnull;
+        where TEntity : class;
 }

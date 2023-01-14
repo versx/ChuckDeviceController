@@ -303,28 +303,16 @@ if (config.GetValue<bool>("AccountStatusService", false))
 #region Plugins
 
 // Register plugin host handlers
-var uiHost = new UiHost();
-var databaseHost = new DatabaseHost(connectionString);
-var loggingHost = new LoggingHost();
-var fileStorageHost = new FileStorageHost(Strings.PluginsFolder);
-var configurationProviderHost = new ConfigurationHost(Strings.PluginsFolder);
-var geofenceServiceHost = new GeofenceServiceHost(connectionString);
-var routeGeneratorHost = new RouteGenerator();
-var memCacheHost = new MemoryCacheHost();
-var eventAggregatorHost = new EventAggregatorHost();
-eventAggregatorHost.Subscribe(new PluginObserver());
-
-// Register plugin host handlers
-builder.Services.AddSingleton<IConfigurationHost>(configurationProviderHost);
-builder.Services.AddSingleton<IDatabaseHost>(databaseHost);
-builder.Services.AddSingleton<IFileStorageHost>(fileStorageHost);
+builder.Services.AddSingleton<IConfigurationHost, ConfigurationHost>();
+builder.Services.AddSingleton<IDatabaseHost, DatabaseHost>();
+builder.Services.AddSingleton<IFileStorageHost, FileStorageHost>();
 builder.Services.AddSingleton<ILocalizationHost>(Translator.Instance);
-builder.Services.AddSingleton<ILoggingHost>(loggingHost);
-builder.Services.AddSingleton<IUiHost>(uiHost);
-builder.Services.AddSingleton<IGeofenceServiceHost>(geofenceServiceHost);
-builder.Services.AddSingleton<IRoutingHost>(routeGeneratorHost);
-builder.Services.AddSingleton<IEventAggregatorHost>(eventAggregatorHost);
-builder.Services.AddSingleton<IMemoryCacheHost>(memCacheHost);
+builder.Services.AddSingleton<ILoggingHost, LoggingHost>();
+builder.Services.AddSingleton<IUiHost, UiHost>();
+builder.Services.AddSingleton<IGeofenceServiceHost, GeofenceServiceHost>();
+builder.Services.AddSingleton<IRoutingHost, RouteGenerator>();
+builder.Services.AddSingleton<IEventAggregatorHost, EventAggregatorHost>();
+builder.Services.AddSingleton<IMemoryCacheHost, MemoryCacheHost>();
 builder.Services.AddSingleton<IUIconsHost>(UIconsService.Instance);
 builder.Services.AddScoped<IPublisher, PluginPublisher>();
 builder.Services.AddScoped<IAuthorizeHost, AuthorizeHost>();
@@ -337,9 +325,21 @@ var serviceProvider = builder.Services.BuildServiceProvider();
 await SeedDefaultDataAsync(serviceProvider);
 
 var authHost = serviceProvider.GetRequiredService<IAuthorizeHost>();
+var configurationHost = serviceProvider.GetRequiredService<IConfigurationHost>();
+var databaseHost = serviceProvider.GetRequiredService<IDatabaseHost>();
+var eventAggregatorHost = serviceProvider.GetRequiredService<IEventAggregatorHost>();
+var fileStorageHost = serviceProvider.GetRequiredService<IFileStorageHost>();
+var geofenceServiceHost = serviceProvider.GetRequiredService<IGeofenceServiceHost>();
+var uiHost = serviceProvider.GetRequiredService<IUiHost>();
 var jobControllerService = serviceProvider.GetRequiredService<IJobControllerService>();
+var loggingHost = serviceProvider.GetRequiredService<ILoggingHost>();
+var memCacheHost = serviceProvider.GetRequiredService<IMemoryCacheHost>();
+var routeGeneratorHost = serviceProvider.GetRequiredService<IRoutingHost>();
 builder.Services.AddSingleton<IJobControllerServiceHost>(jobControllerService);
 builder.Services.AddSingleton<IInstanceServiceHost>(jobControllerService);
+
+eventAggregatorHost.Subscribe(new PluginObserver());
+
 // Load all devices
 jobControllerService.LoadDevices(serviceProvider);
 
@@ -352,7 +352,7 @@ var sharedServiceHosts = new Dictionary<Type, object>
     { typeof(ILocalizationHost), Translator.Instance },
     { typeof(IUiHost), uiHost },
     { typeof(IFileStorageHost), fileStorageHost },
-    { typeof(IConfigurationHost), configurationProviderHost },
+    { typeof(IConfigurationHost), configurationHost },
     { typeof(IGeofenceServiceHost), geofenceServiceHost },
     { typeof(IInstanceServiceHost), jobControllerService },
     { typeof(IRoutingHost), routeGeneratorHost },

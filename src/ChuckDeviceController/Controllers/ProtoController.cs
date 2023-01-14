@@ -174,12 +174,12 @@ public class ProtoController : ControllerBase
             var result = await EntityRepository.ExecuteAsync(_connection, sql, device);
             if (result < 0)
             {
-                _logger.LogWarning("Failed to update device '{Uuid}'", device.Uuid);
+                _logger.LogWarning("[{Uuid}] Failed to update device", device.Uuid);
             }
         }
         catch (Exception ex)
         {
-            _logger.LogError("SetDeviceLastLocationAsync: {Message}", ex.InnerException?.Message ?? ex.Message);
+            _logger.LogError("[{Uuid}] SetDeviceLastLocationAsync: {Message}", payload.Uuid, ex.InnerException?.Message ?? ex.Message);
         }
 
         _semDevices.Release();
@@ -217,7 +217,7 @@ public class ProtoController : ControllerBase
                 var result = await EntityRepository.ExecuteAsync(_connection, SqlQueries.AccountLevelUpdate, account);
                 if (result < 1)
                 {
-                    _logger.LogWarning("Failed to update level for account '{Username}'", account.Username);
+                    _logger.LogWarning("[{Uuid}] Failed to update level for account '{Username}'", uuid, account.Username);
                 }
             }
 

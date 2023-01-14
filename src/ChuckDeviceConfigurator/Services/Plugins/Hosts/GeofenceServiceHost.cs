@@ -6,7 +6,7 @@ using ChuckDeviceController.Data.Abstractions;
 using ChuckDeviceController.Data.Common;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Extensions;
-using ChuckDeviceController.Data.Factories;
+using ChuckDeviceController.Data.Repositories.Dapper;
 using ChuckDeviceController.Geometry;
 using ChuckDeviceController.Geometry.Models;
 using ChuckDeviceController.Geometry.Models.Abstractions;
@@ -18,15 +18,15 @@ public class GeofenceServiceHost : IGeofenceServiceHost
 
     private static readonly ILogger<IGeofenceServiceHost> _logger =
         new Logger<IGeofenceServiceHost>(LoggerFactory.Create(x => x.AddConsole()));
-    private readonly string _connectionString;
+    private readonly IDapperUnitOfWork _uow;
 
     #endregion
 
     #region Constructors
 
-    public GeofenceServiceHost(string connectionString)
+    public GeofenceServiceHost(IDapperUnitOfWork uow)
     {
-        _connectionString = connectionString;
+        _uow = uow;
     }
 
     #endregion
@@ -35,7 +35,6 @@ public class GeofenceServiceHost : IGeofenceServiceHost
 
     public async Task CreateGeofenceAsync(IGeofence options)
     {
-        using var context = DbContextFactory.CreateControllerContext(_connectionString);
         var geofence = new Geofence
         {
             Name = options.Name,
@@ -46,21 +45,19 @@ public class GeofenceServiceHost : IGeofenceServiceHost
             },
         };
 
-        if (context.Geofences.Any(x => x.Name == options.Name))
+        if (_uow.Geofences.Any(x => x.Name == options.Name))
         {
-            context.Geofences.Update(geofence);
+            await _uow.Geofences.UpdateAsync(geofence);
         }
         else
         {
-            await context.Geofences.AddAsync(geofence);
+            await _uow.Geofences.InsertAsync(geofence);
         }
-        await context.SaveChangesAsync();
     }
 
     public async Task<IGeofence> GetGeofenceAsync(string name)
     {
-        using var context = DbContextFactory.CreateControllerContext(_connectionString);
-        var geofence = await context.Geofences.FindAsync(name);
+        var geofence = await _uow.Geofences.FindAsync(name);
         return geofence;
     }
 
