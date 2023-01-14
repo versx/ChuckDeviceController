@@ -201,9 +201,8 @@ public class UiHost : IUiHost
                 new("Assignments", "Assignment", "Index", displayIndex: 0, icon: "fa-solid fa-fw fa-cog"),
                 new("Assignment Groups", "AssignmentGroup", "Index", displayIndex: 1, icon: "fa-solid fa-fw fa-cogs"),
             }),
-            new("Webhooks", "Webhook", displayIndex: 7, icon: "fa-solid fa-fw fa-circle-nodes"),
-            new("Users", "User", displayIndex: 8, icon: "fa-solid fa-fw fa-users"),
-            new("Utilities", displayIndex: 9, icon: "fa-solid fa-fw fa-toolbox", isDropdown: true, dropdownItems: new List<SidebarItem>
+            new("Users", "User", displayIndex: 7, icon: "fa-solid fa-fw fa-users"),
+            new("Utilities", displayIndex: 8, icon: "fa-solid fa-fw fa-toolbox", isDropdown: true, dropdownItems: new List<SidebarItem>
             {
                 new("Clear Quests", "Utilities", "ClearQuests", displayIndex: 0, icon: "fa-solid fa-fw fa-broom"),
                 new("Convert Forts", "Utilities", "ConvertForts", displayIndex: 1, icon: "fa-solid fa-fw fa-arrows-up-down"),
@@ -213,6 +212,7 @@ public class UiHost : IUiHost
                 new("Re-Quest", "Utilities", "ReQuest", displayIndex: 5, icon: "fa-solid fa-fw fa-clock-rotate-left", isDisabled: true),
                 new("Route Generator", "Utilities", "RouteGenerator", displayIndex: 6, icon: "fa-solid fa-fw fa-route"),
             }),
+            new("Webhooks", "Webhook", displayIndex: 9, icon: "fa-solid fa-fw fa-circle-nodes"),
         };
         await AddSidebarItemsAsync(sidebarItems);
 
