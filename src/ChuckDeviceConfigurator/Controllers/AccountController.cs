@@ -13,7 +13,7 @@ using ChuckDeviceController.Extensions;
 
 //[FormatFilter]
 [Authorize(Roles = RoleConsts.AccountsRole)]
-public class AccountController : Controller
+public class AccountController : BaseMvcController
 {
     private readonly ILogger<AccountController> _logger;
     private readonly IUnitOfWork _uow;
@@ -204,9 +204,15 @@ public class AccountController : Controller
             {
                 // No accounts provided
                 ModelState.AddModelError("Account", $"No accounts provided or parsable, please double check your format.");
+                CreateNotification(new NotificationViewModel
+                {
+                    Message = $"Failed to parse accounts to import!",
+                    Icon = NotificationIcon.Error,
+                });
                 return View();
             }
 
+            var accountsToAdd = new List<Account>();
             foreach (var line in accountsList)
             {
                 // Support `, : ;` delimiters
@@ -235,15 +241,28 @@ public class AccountController : Controller
                         ? null
                         : group,
                 };
-
-                await _uow.Accounts.AddAsync(account);
-                await _uow.CommitAsync();
+                accountsToAdd.Add(account);
             }
+
+            await _uow.Accounts.AddRangeAsync(accountsToAdd);
+            await _uow.CommitAsync();
+
+            CreateNotification(new NotificationViewModel
+            {
+                Message = $"Imported '{accountsToAdd:N0}' level {level} accounts successfully!",
+                Icon = NotificationIcon.Success,
+            });
+
             return RedirectToAction(nameof(Index));
         }
         catch
         {
             ModelState.AddModelError("Account", $"Unknown error occurred while importing new accounts.");
+            CreateNotification(new NotificationViewModel
+            {
+                Message = $"Unknown error occurred while importing new accounts!",
+                Icon = NotificationIcon.Error,
+            });
             return View();
         }
     }
@@ -273,6 +292,11 @@ public class AccountController : Controller
             {
                 // Failed to retrieve account from database, does it exist?
                 ModelState.AddModelError("Account", $"Account does not exist with id '{id}'.");
+                CreateNotification(new NotificationViewModel
+                {
+                    Message = $"Account does not exist with id '{id}'!",
+                    Icon = NotificationIcon.Error,
+                });
                 return View();
             }
 
@@ -293,11 +317,22 @@ public class AccountController : Controller
             await _uow.Accounts.UpdateAsync(account);
             await _uow.CommitAsync();
 
+            CreateNotification(new NotificationViewModel
+            {
+                Message = $"Updated account '{account.Username}' successfully!",
+                Icon = NotificationIcon.Success,
+            });
+
             return RedirectToAction(nameof(Index));
         }
         catch
         {
             ModelState.AddModelError("Account", $"Unknown error occurred while editing account '{id}'.");
+            CreateNotification(new NotificationViewModel
+            {
+                Message = $"Unknown error occurred while editing account '{id}'!",
+                Icon = NotificationIcon.Error,
+            });
             return View();
         }
     }
@@ -327,6 +362,11 @@ public class AccountController : Controller
             {
                 // Failed to retrieve account from database, does it exist?
                 ModelState.AddModelError("Account", $"Account does not exist with id '{id}'.");
+                CreateNotification(new NotificationViewModel
+                {
+                    Message = $"Account does not exist with id '{id}'!",
+                    Icon = NotificationIcon.Error,
+                });
                 return View();
             }
 
@@ -334,11 +374,22 @@ public class AccountController : Controller
             await _uow.Accounts.RemoveAsync(account);
             await _uow.CommitAsync();
 
+            CreateNotification(new NotificationViewModel
+            {
+                Message = $"Successfully deleted account account '{id}'!",
+                Icon = NotificationIcon.Success,
+            });
+
             return RedirectToAction(nameof(Index));
         }
         catch
         {
             ModelState.AddModelError("Account", $"Unknown error occurred while deleting account '{id}'.");
+            CreateNotification(new NotificationViewModel
+            {
+                Message = $"Unknown error occurred while editing account '{id}'!",
+                Icon = NotificationIcon.Error,
+            });
             return View();
         }
     }
