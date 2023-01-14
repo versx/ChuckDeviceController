@@ -71,6 +71,7 @@ public class AssignmentGroupController : BaseMvcController
         {
             // Failed to retrieve assignment group from database, does it exist?
             ModelState.AddModelError("AssignmentGroup", $"Assignment group does not exist with id '{id}'.");
+            CreateErrorNotification($"Assignment group does not exist with id '{id}'.");
             return View();
         }
 
@@ -123,14 +124,16 @@ public class AssignmentGroupController : BaseMvcController
         {
             var name = Convert.ToString(collection["Name"]);
             var assignments = collection["AssignmentIds"].ToList();
-            var assignmentIds = assignments.Select(x => Convert.ToUInt32(x))
-                                           .ToList();
+            var assignmentIds = assignments
+                .Select(x => Convert.ToUInt32(x))
+                .ToList();
             var enabled = collection["Enabled"].Contains("true") || collection["Enabled"].Contains("on");
 
             if (_uow.AssignmentGroups.Any(assignmentGroup => assignmentGroup.Name == name))
             {
                 // Assignment group exists already by name
                 ModelState.AddModelError("AssignmentGroup", $"Assignment group with name '{name}' already exists.");
+                CreateErrorNotification($"Assignment group with name '{name}' already exists.");
                 return View();
             }
 
@@ -138,6 +141,7 @@ public class AssignmentGroupController : BaseMvcController
             {
                 // At least one assignment is required to create the assignment group
                 ModelState.AddModelError("AssignmentGroup", $"At least one assignment is required to create the assignment group.");
+                CreateErrorNotification($"At least one assignment is required to create the assignment group.");
                 return View();
             }
 
@@ -152,11 +156,14 @@ public class AssignmentGroupController : BaseMvcController
             await _uow.AssignmentGroups.AddAsync(assignmentGroup);
             await _uow.CommitAsync();
 
+            CreateSuccessNotification($"Created assignment group '{name}' successfully!");
+
             return RedirectToAction(nameof(Index));
         }
         catch
         {
             ModelState.AddModelError("AssignmentGroup", $"Unknown error occurred while creating new assignment group.");
+            CreateErrorNotification($"Unknown error occurred while creating new assignment group.");
             return View();
         }
     }
@@ -169,6 +176,7 @@ public class AssignmentGroupController : BaseMvcController
         {
             // Failed to retrieve assignment group from database, does it exist?
             ModelState.AddModelError("AssignmentGroup", $"Assignment group does not exist with id '{id}'.");
+            CreateErrorNotification($"Assignment group does not exist with id '{id}'.");
             return View();
         }
 
@@ -200,19 +208,22 @@ public class AssignmentGroupController : BaseMvcController
             {
                 // Failed to retrieve assignment group from database, does it exist?
                 ModelState.AddModelError("AssignmentGroup", $"Assignment group does not exist with id '{id}'.");
+                CreateErrorNotification($"Assignment group does not exist with id '{id}'.");
                 return View();
             }
 
             var name = Convert.ToString(collection["Name"]);
             var assignments = collection["AssignmentIds"].ToList();
-            var assignmentIds = assignments.Select(x => Convert.ToUInt32(x))
-                                           .ToList();
+            var assignmentIds = assignments
+                .Select(x => Convert.ToUInt32(x))
+                .ToList();
             var enabled = collection["Enabled"].Contains("true") || collection["Enabled"].Contains("on");
 
             if (_uow.AssignmentGroups.Any(assignmentGroup => assignmentGroup.Name == name && assignmentGroup.Name != id))
             {
                 // Assignment group exists already by name
                 ModelState.AddModelError("AssignmentGroup", $"Assignment group with name '{name}' already exists.");
+                CreateErrorNotification($"Assignment group with name '{name}' already exists.");
                 return View();
             }
 
@@ -220,6 +231,7 @@ public class AssignmentGroupController : BaseMvcController
             {
                 // At least one assignment is required to create the assignment group
                 ModelState.AddModelError("AssignmentGroup", $"At least one assignment is required to create the assignment group.");
+                CreateErrorNotification($"At least one assignment is required to create the assignment group.");
                 return View();
             }
 
@@ -231,11 +243,14 @@ public class AssignmentGroupController : BaseMvcController
             await _uow.AssignmentGroups.UpdateAsync(assignmentGroup);
             await _uow.CommitAsync();
 
+            CreateSuccessNotification($"Updated assignment group '{name}' successfully!");
+
             return RedirectToAction(nameof(Index));
         }
         catch
         {
             ModelState.AddModelError("AssignmentGroup", $"Unknown error occurred while editing assignment group '{id}'.");
+            CreateErrorNotification($"Unknown error occurred while editing assignment group '{id}'.");
             return View();
         }
     }
@@ -248,6 +263,7 @@ public class AssignmentGroupController : BaseMvcController
         {
             // Failed to retrieve assignment group from database, does it exist?
             ModelState.AddModelError("AssignmentGroup", $"Assignment group does not exist with id '{id}'.");
+            CreateErrorNotification($"Assignment group does not exist with id '{id}'.");
             return View();
         }
         return View(assignmentGroup);
@@ -265,6 +281,7 @@ public class AssignmentGroupController : BaseMvcController
             {
                 // Failed to retrieve assignment group from database, does it exist?
                 ModelState.AddModelError("AssignmentGroup", $"Assignment group does not exist with id '{id}'.");
+                CreateErrorNotification($"Assignment group does not exist with id '{id}'.");
                 return View();
             }
 
@@ -272,11 +289,14 @@ public class AssignmentGroupController : BaseMvcController
             await _uow.AssignmentGroups.RemoveAsync(assignmentGroup);
             await _uow.CommitAsync();
 
+            CreateSuccessNotification($"Deleted assignment group '{id}' successfully!");
+
             return RedirectToAction(nameof(Index));
         }
         catch
         {
             ModelState.AddModelError("AssignmentGroup", $"Unknown error occurred while deleting assignment group '{id}'.");
+            CreateErrorNotification($"Unknown error occurred while deleting assignment group '{id}'.");
             return View();
         }
     }
@@ -291,23 +311,28 @@ public class AssignmentGroupController : BaseMvcController
             {
                 // Failed to retrieve assignment group from database, does it exist?
                 ModelState.AddModelError("AssignmentGroup", $"Assignment group does not exist with id '{id}'.");
+                CreateErrorNotification($"Assignment group does not exist with id '{id}'.");
                 return View(assignmentGroup);
             }
 
             if (!assignmentGroup.Enabled)
             {
                 ModelState.AddModelError("AssignmentGroup", $"Assignment group with id '{id}' is disabled, unable to start assignment group.");
+                CreateErrorNotification($"Assignment group with id '{id}' is disabled, unable to start assignment group.");
                 return View(assignmentGroup);
             }
 
             // Start all device assignments in assignment group
             await _assignmentService.StartAssignmentGroupAsync(assignmentGroup);
 
+            CreateSuccessNotification($"Started assignment group '{id}' successfully!");
+
             return RedirectToAction(nameof(Index));
         }
         catch
         {
             ModelState.AddModelError("AssignmentGroup", $"Unknown error occurred while starting assignment group '{id}'.");
+            CreateErrorNotification($"Unknown error occurred while starting assignment group '{id}'.");
             return View();
         }
     }
@@ -322,29 +347,28 @@ public class AssignmentGroupController : BaseMvcController
             {
                 // Failed to retrieve assignment group from database, does it exist?
                 ModelState.AddModelError("AssignmentGroup", $"Assignment group does not exist with name '{id}'.");
+                CreateErrorNotification($"Assignment group does not exist with name '{id}'.");
                 return View();
             }
 
             if (!assignmentGroup.Enabled)
             {
                 ModelState.AddModelError("AssignmentGroup", $"Assignment group with id '{id}' is disabled, unable to start re-quest for assignment group.");
+                CreateErrorNotification($"Assignment group with id '{id}' is disabled, unable to start re-quest for assignment group.");
                 return View(assignmentGroup);
             }
 
             // Start re-quest for all device assignments in assignment group
             await _assignmentService.ReQuestAssignmentsAsync(assignmentGroup.AssignmentIds);
 
-            CreateNotification(new NotificationViewModel
-            {
-                Message = $"Re-quest has started for assignment group '{id}'.",
-                Icon = NotificationIcon.Success,
-            });
+            CreateSuccessNotification($"Re-quest has started for assignment group '{id}' successfully!");
 
             return RedirectToAction(nameof(Index));
         }
         catch //(Exception ex)
         {
             ModelState.AddModelError("AssignmentGroup", $"Unknown error occurred while starting re-quest for assignment group {id}.");
+            CreateErrorNotification($"Unknown error occurred while starting re-quest for assignment group {id}.");
             return View();
         }
     }

@@ -112,6 +112,7 @@ public class AssignmentController : BaseMvcController
             {
                 // Assignment exists already with provided details
                 ModelState.AddModelError("Assignment", $"Assignment already exists for device with provided details.");
+                CreateErrorNotification($"Assignment already exists for device with provided details.");
                 return View();
             }
 
@@ -147,11 +148,14 @@ public class AssignmentController : BaseMvcController
 
             _assignmentService.Add(assignment);
 
+            CreateSuccessNotification($"Assignment created successfully for device  exists for device with provided details.");
+
             return RedirectToAction(nameof(Index));
         }
         catch
         {
             ModelState.AddModelError("Assignment", $"Unknown error occurred while creating new assignment.");
+            CreateErrorNotification($"Unknown error occurred while creating new assignment.");
             return View();
         }
     }
@@ -187,6 +191,7 @@ public class AssignmentController : BaseMvcController
             {
                 // Failed to retrieve assignment from database, does it exist?
                 ModelState.AddModelError("Assignment", $"Assignment does not exist with id '{id}'.");
+                CreateErrorNotification($"Assignment does not exist with id '{id}'.");
                 return View();
             }
 
@@ -220,6 +225,7 @@ public class AssignmentController : BaseMvcController
             {
                 // Assignment exists already with provided details
                 ModelState.AddModelError("Assignment", $"Assignment already exists for device with provided details.");
+                CreateErrorNotification($"Assignment already exists for device with provided details.");
                 return View();
             }
 
@@ -236,11 +242,14 @@ public class AssignmentController : BaseMvcController
 
             _assignmentService.Edit(assignment, id);
 
+            CreateSuccessNotification($"Successfully edited assignment");
+
             return RedirectToAction(nameof(Index));
         }
         catch
         {
             ModelState.AddModelError("Assignment", $"Unknown error occurred while editing assignment '{id}'.");
+            CreateErrorNotification($"Unknown error occurred while editing assignment '{id}'.");
             return View();
         }
     }
@@ -270,6 +279,7 @@ public class AssignmentController : BaseMvcController
             {
                 // Failed to retrieve geofence from database, does it exist?
                 ModelState.AddModelError("Assignment", $"Assignment does not exist with id '{id}'.");
+                CreateErrorNotification($"Assignment does not exist with id '{id}'.");
                 return View(assignment);
             }
 
@@ -279,11 +289,14 @@ public class AssignmentController : BaseMvcController
 
             _assignmentService.Delete(assignment);
 
+            CreateSuccessNotification($"Successfully deleted assignment with id '{id}'.");
+
             return RedirectToAction(nameof(Index));
         }
         catch
         {
             ModelState.AddModelError("Assignment", $"Unknown error occurred while deleting assignment '{id}'.");
+            CreateErrorNotification($"Unknown error occurred while deleting assignment '{id}'.");
             return View();
         }
     }
@@ -301,11 +314,14 @@ public class AssignmentController : BaseMvcController
             // Reload assignments in the assignment service to reflect the changes.
             _assignmentService.Reload();
 
+            CreateSuccessNotification($"Deleted all assignments successfully!");
+
             return RedirectToAction(nameof(Index));
         }
         catch
         {
             ModelState.AddModelError("Assignment", $"Unknown error occurred while deleting all assignments.");
+            CreateErrorNotification($"Unknown error occurred while deleting all assignments.");
             return RedirectToAction(nameof(Index));
         }
     }
@@ -320,23 +336,21 @@ public class AssignmentController : BaseMvcController
             {
                 // Failed to retrieve assignment from database, does it exist?
                 ModelState.AddModelError("Assignment", $"Assignment does not exist with id '{id}'.");
+                CreateErrorNotification($"Assignment does not exist with id '{id}'.");
                 return View(assignment);
             }
 
             // Start device assignment
             await _assignmentService.StartAssignmentAsync(assignment);
 
-            CreateNotification(new NotificationViewModel
-            {
-                Message = $"Assignment with id '{id}' has been started.",
-                Icon = NotificationIcon.Success,
-            });
+            CreateSuccessNotification($"Assignment with id '{id}' has been started.");
 
             return RedirectToAction(nameof(Index));
         }
         catch
         {
             ModelState.AddModelError("Assignment", $"Unknown error occurred while starting assignment '{id}'.");
+            CreateErrorNotification($"Unknown error occurred while starting assignment '{id}'.");
             return View();
         }
     }
@@ -351,23 +365,21 @@ public class AssignmentController : BaseMvcController
             {
                 // Failed to retrieve assignment from database, does it exist?
                 ModelState.AddModelError("Assignment", $"Assignment does not exist with id '{id}'.");
+                CreateErrorNotification($"Assignment does not exist with id '{id}'.");
                 return View();
             }
 
             // Start re-quest for assignment
             await _assignmentService.ReQuestAssignmentAsync(assignment.Id);
 
-            CreateNotification(new NotificationViewModel
-            {
-                Message = $"Assignment with id '{id}' has started re-quest for instance '{assignment.InstanceName}'.",
-                Icon = NotificationIcon.Success,
-            });
+            CreateSuccessNotification($"Assignment with id '{id}' has started re-quest for instance '{assignment.InstanceName}'.");
 
             return RedirectToAction(nameof(Index));
         }
         catch //(Exception ex)
         {
             ModelState.AddModelError("Assignment", $"Unknown error occurred while starting re-quest for assignment {id}.");
+            CreateErrorNotification($"Unknown error occurred while starting re-quest for assignment {id}.");
             return View();
         }
     }
@@ -381,16 +393,13 @@ public class AssignmentController : BaseMvcController
         {
             // Failed to retrieve assignment from database, does it exist?
             ModelState.AddModelError("Assignment", $"Assignment does not exist with id '{id}'.");
+            CreateErrorNotification($"Assignment does not exist with id '{id}'.");
             return View();
         }
 
         await _assignmentService.ClearQuestsAsync(assignment);
 
-        CreateNotification(new NotificationViewModel
-        {
-            Message = $"Quests have been cleared for assignment with id '{id}' and instance '{assignment.InstanceName}'.",
-            Icon = NotificationIcon.Success,
-        });
+        CreateSuccessNotification($"Quests have been cleared for assignment with id '{id}' and instance '{assignment.InstanceName}'.");
 
         return RedirectToAction(nameof(Index));
     }

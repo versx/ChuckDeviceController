@@ -103,11 +103,7 @@ public class DeviceController : BaseMvcController
             {
                 // Device exists already by name
                 ModelState.AddModelError("Device", $"Device with UUID '{uuid}' already exists.");
-                CreateNotification(new NotificationViewModel
-                {
-                    Message = $"Device with id '{uuid}' already exists.",
-                    Icon = NotificationIcon.Error,
-                });
+                CreateErrorNotification($"Device with id '{uuid}' already exists.");
 
                 var accountsInUse = (await _uow.Devices.FindAllAsync())
                     .Select(device => device.AccountUsername)
@@ -136,11 +132,7 @@ public class DeviceController : BaseMvcController
 
             if (ModelState.IsValid)
             {
-                CreateNotification(new NotificationViewModel
-                {
-                    Message = $"Device '{device.Uuid}' has been created successfully!",
-                    Icon = NotificationIcon.Success,
-                });
+                CreateSuccessNotification($"Device '{device.Uuid}' has been created successfully!");
             }
 
             return RedirectToAction(nameof(Index));
@@ -148,11 +140,7 @@ public class DeviceController : BaseMvcController
         catch
         {
             ModelState.AddModelError("Device", $"Unknown error occurred while creating new device.");
-            CreateNotification(new NotificationViewModel
-            {
-                Message = $"Unknown error occurred while creating device '{deviceModel.Uuid}'.",
-                Icon = NotificationIcon.Error,
-            });
+            CreateErrorNotification($"Unknown error occurred while creating device '{deviceModel.Uuid}'.");
 
             var accountsInUse = (await _uow.Devices.FindAllAsync())
                 .Select(device => device.AccountUsername)
@@ -204,11 +192,7 @@ public class DeviceController : BaseMvcController
             {
                 // Failed to retrieve device from database, does it exist?
                 ModelState.AddModelError("Device", $"Device does not exist with id '{id}'.");
-                CreateNotification(new NotificationViewModel
-                {
-                    Message = $"Device with id '{id}' does not exist.",
-                    Icon = NotificationIcon.Error,
-                });
+                CreateErrorNotification($"Device with id '{id}' does not exist.");
                 return View();
             }
 
@@ -237,11 +221,7 @@ public class DeviceController : BaseMvcController
 
             if (ModelState.IsValid)
             {
-                CreateNotification(new NotificationViewModel
-                {
-                    Message = $"Device '{device.Uuid}' has been updated successfully!",
-                    Icon = NotificationIcon.Success,
-                });
+                CreateSuccessNotification($"Device '{device.Uuid}' has been updated successfully!");
             }
 
             return RedirectToAction(nameof(Index));
@@ -249,11 +229,7 @@ public class DeviceController : BaseMvcController
         catch
         {
             ModelState.AddModelError("Device", $"Unknown error occurred while editing device '{id}'.");
-            CreateNotification(new NotificationViewModel
-            {
-                Message = $"Unknown error occurred while editing device '{id}'.",
-                Icon = NotificationIcon.Error,
-            });
+            CreateErrorNotification($"Unknown error occurred while editing device '{id}'.");
             return View();
         }
     }
@@ -288,11 +264,7 @@ public class DeviceController : BaseMvcController
             {
                 // Failed to retrieve device from database, does it exist?
                 ModelState.AddModelError("Device", $"Device does not exist with id '{id}'.");
-                CreateNotification(new NotificationViewModel
-                {
-                    Message = $"Device with id '{id}' does not exist.",
-                    Icon = NotificationIcon.Error,
-                });
+                CreateErrorNotification($"Device with id '{id}' does not exist.");
                 return View();
             }
 
@@ -306,11 +278,7 @@ public class DeviceController : BaseMvcController
 
             if (ModelState.IsValid)
             {
-                CreateNotification(new NotificationViewModel
-                {
-                    Message = $"Device '{device.Uuid}' has been deleted successfully!",
-                    Icon = NotificationIcon.Success,
-                });
+                CreateSuccessNotification($"Device '{device.Uuid}' has been deleted successfully!");
             }
 
             return RedirectToAction(nameof(Index));
@@ -318,11 +286,7 @@ public class DeviceController : BaseMvcController
         catch
         {
             ModelState.AddModelError("Device", $"Unknown error occurred while deleting device '{id}'.");
-            CreateNotification(new NotificationViewModel
-            {
-                Message = $"Unknown error occurred while deleting device '{id}'.",
-                Icon = NotificationIcon.Error,
-            });
+            CreateErrorNotification($"Unknown error occurred while deleting device '{id}'.");
             return View();
         }
     }

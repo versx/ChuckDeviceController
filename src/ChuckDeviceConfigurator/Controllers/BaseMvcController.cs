@@ -24,4 +24,24 @@ public class BaseMvcController : Controller
         var notifications = json?.ToString()?.FromJson<List<NotificationViewModel>>() ?? new();
         return PartialView("_NotificationsPartial", notifications);
     }
+
+    [NonAction]
+    public void CreateSuccessNotification(string message)
+    {
+        CreateNotification(new NotificationViewModel
+        {
+            Message = message,
+            Icon = NotificationIcon.Success,
+        });
+    }
+
+    [NonAction]
+    public void CreateErrorNotification(string message)
+    {
+        CreateNotification(new NotificationViewModel
+        {
+            Message = message,
+            Icon = NotificationIcon.Error,
+        });
+    }
 }

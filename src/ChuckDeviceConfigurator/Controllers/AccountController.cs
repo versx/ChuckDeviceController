@@ -204,11 +204,7 @@ public class AccountController : BaseMvcController
             {
                 // No accounts provided
                 ModelState.AddModelError("Account", $"No accounts provided or parsable, please double check your format.");
-                CreateNotification(new NotificationViewModel
-                {
-                    Message = $"Failed to parse accounts to import!",
-                    Icon = NotificationIcon.Error,
-                });
+                CreateErrorNotification($"Failed to parse accounts to import!");
                 return View();
             }
 
@@ -247,22 +243,14 @@ public class AccountController : BaseMvcController
             await _uow.Accounts.AddRangeAsync(accountsToAdd);
             await _uow.CommitAsync();
 
-            CreateNotification(new NotificationViewModel
-            {
-                Message = $"Imported '{accountsToAdd:N0}' level {level} accounts successfully!",
-                Icon = NotificationIcon.Success,
-            });
+            CreateSuccessNotification($"Imported '{accountsToAdd:N0}' level {level} accounts successfully!");
 
             return RedirectToAction(nameof(Index));
         }
         catch
         {
             ModelState.AddModelError("Account", $"Unknown error occurred while importing new accounts.");
-            CreateNotification(new NotificationViewModel
-            {
-                Message = $"Unknown error occurred while importing new accounts!",
-                Icon = NotificationIcon.Error,
-            });
+            CreateErrorNotification($"Unknown error occurred while importing new accounts!");
             return View();
         }
     }
@@ -292,11 +280,7 @@ public class AccountController : BaseMvcController
             {
                 // Failed to retrieve account from database, does it exist?
                 ModelState.AddModelError("Account", $"Account does not exist with id '{id}'.");
-                CreateNotification(new NotificationViewModel
-                {
-                    Message = $"Account does not exist with id '{id}'!",
-                    Icon = NotificationIcon.Error,
-                });
+                CreateErrorNotification($"Account does not exist with id '{id}'!");
                 return View();
             }
 
@@ -317,22 +301,14 @@ public class AccountController : BaseMvcController
             await _uow.Accounts.UpdateAsync(account);
             await _uow.CommitAsync();
 
-            CreateNotification(new NotificationViewModel
-            {
-                Message = $"Updated account '{account.Username}' successfully!",
-                Icon = NotificationIcon.Success,
-            });
+            CreateSuccessNotification($"Updated account '{account.Username}' successfully!");
 
             return RedirectToAction(nameof(Index));
         }
         catch
         {
             ModelState.AddModelError("Account", $"Unknown error occurred while editing account '{id}'.");
-            CreateNotification(new NotificationViewModel
-            {
-                Message = $"Unknown error occurred while editing account '{id}'!",
-                Icon = NotificationIcon.Error,
-            });
+            CreateErrorNotification($"Unknown error occurred while editing account '{id}'!");
             return View();
         }
     }
@@ -362,11 +338,7 @@ public class AccountController : BaseMvcController
             {
                 // Failed to retrieve account from database, does it exist?
                 ModelState.AddModelError("Account", $"Account does not exist with id '{id}'.");
-                CreateNotification(new NotificationViewModel
-                {
-                    Message = $"Account does not exist with id '{id}'!",
-                    Icon = NotificationIcon.Error,
-                });
+                CreateErrorNotification($"Account does not exist with id '{id}'!");
                 return View();
             }
 
@@ -374,22 +346,14 @@ public class AccountController : BaseMvcController
             await _uow.Accounts.RemoveAsync(account);
             await _uow.CommitAsync();
 
-            CreateNotification(new NotificationViewModel
-            {
-                Message = $"Successfully deleted account account '{id}'!",
-                Icon = NotificationIcon.Success,
-            });
+            CreateSuccessNotification($"Successfully deleted account account '{id}'!");
 
             return RedirectToAction(nameof(Index));
         }
         catch
         {
             ModelState.AddModelError("Account", $"Unknown error occurred while deleting account '{id}'.");
-            CreateNotification(new NotificationViewModel
-            {
-                Message = $"Unknown error occurred while editing account '{id}'!",
-                Icon = NotificationIcon.Error,
-            });
+            CreateErrorNotification($"Unknown error occurred while editing account '{id}'!");
             return View();
         }
     }
