@@ -131,7 +131,7 @@ internal class RepositoryTests
         var pokestopRepository = new PokestopRepository(factory);
         //var pokestops = await pokestopRepository.FindAllAsync();
         var pokestops = await pokestopRepository.FindAsync(x => x.QuestType != null || x.AlternativeQuestType != null);
-        var result = await pokestopRepository.UpdateRangeAsync(pokestops, mappings: new Dictionary<string, Func<Pokestop, object>>
+        var result = await pokestopRepository.UpdateRangeAsync(pokestops, mappings: new Dictionary<string, Func<Pokestop, object?>>
         {
             ["id"] = x => x.Id,
             ["quest_conditions"] = x => null!,
@@ -455,7 +455,7 @@ internal class RepositoryTests
             var stopRepo = new PokestopRepository(factory);
             var pokestop = await stopRepo.FindAsync("123_test");
 
-            var affectedRows = await stopRepo.UpdateAsync(pokestop, new Dictionary<string, Func<Pokestop, object>>()
+            var affectedRows = await stopRepo.UpdateAsync(pokestop, new Dictionary<string, Func<Pokestop, object?>>
             {
                 ["updated"] = x => now,
                 ["power_up_level"] = x => 15,

@@ -199,7 +199,7 @@ public abstract class DapperGenericRepository<TKey, TEntity> : IDapperGenericRep
 
     public async Task<int> UpdateAsync(
         TEntity entity,
-        Dictionary<string, Func<TEntity, object>> mappings,
+        Dictionary<string, Func<TEntity, object?>> mappings,
         CancellationToken stoppingToken = default)
     {
         var updateQuery = GenerateUpdateQuery(entity, mappings, out var parameters);
@@ -223,7 +223,7 @@ public abstract class DapperGenericRepository<TKey, TEntity> : IDapperGenericRep
 
     public async Task<int> UpdateRangeAsync(
         IEnumerable<TEntity> entities,
-        Dictionary<string, Func<TEntity, object>> mappings,
+        Dictionary<string, Func<TEntity, object?>> mappings,
         CancellationToken stoppingToken = default)
     {
         var updateQuery = new List<string>();
@@ -353,7 +353,7 @@ public abstract class DapperGenericRepository<TKey, TEntity> : IDapperGenericRep
 
     private string GenerateUpdateQuery(
         TEntity entity,
-        Dictionary<string, Func<TEntity, object>> mappings,
+        Dictionary<string, Func<TEntity, object?>> mappings,
         out DynamicParameters parameters)
     {
         var updateQuery = new StringBuilder(string.Format(UpdateQuery, _tableName));

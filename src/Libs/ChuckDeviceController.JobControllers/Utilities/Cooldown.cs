@@ -80,7 +80,7 @@ public static class Cooldown
             return;
         }
 
-        var result = await uow.Accounts.UpdateAsync(account, new Dictionary<string, Func<Account, object>>
+        var result = await uow.Accounts.UpdateAsync(account, new Dictionary<string, Func<Account, object?>>
         {
             ["username"] = x => account.Username,
             ["last_encounter_lat"] = x => location.Latitude,
@@ -110,7 +110,7 @@ public static class Cooldown
             return;
         }
 
-        var result = await uow.Accounts.UpdateAsync(account, new Dictionary<string, Func<Account, object>>
+        var result = await uow.Accounts.UpdateAsync(account, new Dictionary<string, Func<Account, object?>>
         {
             ["username"] = x => account.Username,
             ["spins"] = x => ++account.Spins,

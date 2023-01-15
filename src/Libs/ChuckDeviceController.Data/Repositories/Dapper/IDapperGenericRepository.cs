@@ -105,7 +105,7 @@ public interface IDapperGenericRepository<TKey, TEntity>
     /// <returns></returns>
     Task<int> UpdateAsync(
         TEntity entity,
-        Dictionary<string, Func<TEntity, object>> mappings,
+        Dictionary<string, Func<TEntity, object?>> mappings,
         CancellationToken stoppingToken = default);
 
     /// <summary>
@@ -127,7 +127,7 @@ public interface IDapperGenericRepository<TKey, TEntity>
     /// <returns></returns>
     Task<int> UpdateRangeAsync(
         IEnumerable<TEntity> entities,
-        Dictionary<string, Func<TEntity, object>> mappings,
+        Dictionary<string, Func<TEntity, object?>> mappings,
         CancellationToken stoppingToken = default);
 
     /// <summary>

@@ -373,7 +373,7 @@ public class AssignmentControllerService : IAssignmentControllerService
         }
 
         // Save/update all device's new assigned instance at once.
-        var result = await _uow.Devices.UpdateRangeAsync(devicesToUpdate, mappings: new Dictionary<string, Func<Device, object>>
+        var result = await _uow.Devices.UpdateRangeAsync(devicesToUpdate, mappings: new Dictionary<string, Func<Device, object?>>
         {
             ["uuid"] = x => x.Uuid,
             ["instance_name"] = x => x.InstanceName,
