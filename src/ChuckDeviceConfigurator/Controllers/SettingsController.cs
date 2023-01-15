@@ -36,6 +36,9 @@ public class SettingsController : Controller
     {
         var settings = LoadSettingsConfig();
         var model = new SettingsManager(settings);
+
+        ViewBag.SettingsTabs = _uiHost.SettingsTabs;
+        ViewBag.SettingsProperties = _uiHost.SettingsProperties;
         return View(model);
     }
 

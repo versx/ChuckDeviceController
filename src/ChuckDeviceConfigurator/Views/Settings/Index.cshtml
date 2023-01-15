@@ -10,10 +10,13 @@
 @{
     ViewData["Title"] = localizer["Settings"];
 
-    var tabsJson = Html.RenderAction("GetSettingsTabs", "Helper");
-    var tabs = Convert.ToString(tabsJson)?.FromJson<List<SettingsTab>>();
-    var propertiesJson = Html.RenderAction("GetSettingsProperties", "Helper");
-    var properties = Convert.ToString(propertiesJson)?.FromJson<Dictionary<string, List<SettingsProperty>>>();
+    //var tabsJson = Html.RenderAction("GetSettingsTabs", "Helper");
+    //var tabs = Convert.ToString(tabsJson)?.FromJson<List<SettingsTab>>();
+    //var propertiesJson = Html.RenderAction("GetSettingsProperties", "Helper");
+    //var properties = Convert.ToString(propertiesJson)?.FromJson<Dictionary<string, List<SettingsProperty>>>();
+
+    var tabs = (List<SettingsTab>)ViewBag.SettingsTabs;
+    var properties = (Dictionary<string, List<SettingsProperty>>)ViewBag.SettingsProperties;
 
     async Task AddProperty(SettingsProperty property)
     {

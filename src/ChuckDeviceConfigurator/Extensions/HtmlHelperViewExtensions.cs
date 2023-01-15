@@ -5,7 +5,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
-// Credits: https://stackoverflow.com/a/66258565
+/// <summary>
+/// Credits: https://stackoverflow.com/a/66258565
+/// </summary>
 public static class HtmlHelperViewExtensions
 {
     public static IHtmlContent RenderAction(this IHtmlHelper helper, string action, object? parameters = null)
@@ -40,13 +42,13 @@ public static class HtmlHelperViewExtensions
 
     private static async Task<IHtmlContent> RenderActionAsync(this IHtmlHelper helper, string action, string controller, string area, object? parameters = null)
     {
-        // fetching required services for invocation
-        var currentHttpContext = helper.ViewContext?.HttpContext;
+        // Fetching required services for invocation
+        var currentHttpContext = helper.ViewContext.HttpContext;
         var httpContextFactory = GetServiceOrFail<IHttpContextFactory>(currentHttpContext);
         var actionInvokerFactory = GetServiceOrFail<IActionInvokerFactory>(currentHttpContext);
         var actionSelector = GetServiceOrFail<IActionDescriptorCollectionProvider>(currentHttpContext);
 
-        // creating new action invocation context
+        // Creating new action invocation context
         var routeData = new RouteData();
         var routeParams = new RouteValueDictionary(parameters ?? new { });
         var routeValues = new RouteValueDictionary(new { area, controller, action });
@@ -54,16 +56,17 @@ public static class HtmlHelperViewExtensions
 
         newHttpContext.Response.Body = new MemoryStream();
 
-        foreach (var router in helper.ViewContext!.RouteData.Routers)
+        foreach (var router in helper.ViewContext.RouteData.Routers)
+        {
             routeData.PushState(router, null, null);
-
+        }
         routeData.PushState(null, routeValues, null);
         routeData.PushState(null, routeParams, null);
 
         var actionDescriptor = actionSelector.ActionDescriptors.Items.Where(i => i.RouteValues["controller"] == controller && i.RouteValues["action"] == action).First();
         var actionContext = new ActionContext(newHttpContext, routeData, actionDescriptor);
 
-        // invoke action and retreive the response body
+        // Invoke action and retreive the response body
         var invoker = actionInvokerFactory.CreateInvoker(actionContext);
         var content = string.Empty;
 

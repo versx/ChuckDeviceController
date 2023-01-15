@@ -21,8 +21,12 @@ using ChuckDeviceController.Net.Models.Responses;
 [ApiController]
 public class DeviceControlController : ControllerBase
 {
+    #region Constants
+
     private const string ContentTypeJson = "application/json";
     private const ushort AccountLastUsedS = 1800; // 30 minutes
+
+    #endregion
 
     #region Variables
 

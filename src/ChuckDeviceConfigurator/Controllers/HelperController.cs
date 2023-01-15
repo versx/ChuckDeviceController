@@ -12,22 +12,14 @@ using ChuckDeviceController.Plugin;
 [Produces(MediaTypeNames.Application.Json)]
 public class HelperController : ControllerBase
 {
-    private const string DefaultTheme = "light";
-
-    //private readonly ILogger<HelperController> _logger;
     private readonly IUnitOfWork _uow;
-    private readonly IConfiguration _configuration;
     private readonly IUiHost _uiHost;
 
     public HelperController(
-        //ILogger<HelperController> logger,
         IUnitOfWork uow,
-        IConfiguration configuration,
         IUiHost uiHost)
     {
-        //_logger = logger;
         _uow = uow;
-        _configuration = configuration;
         _uiHost = uiHost;
     }
 
@@ -37,44 +29,26 @@ public class HelperController : ControllerBase
         return new JsonResult(_uiHost.SidebarItems);
     }
 
-    [HttpGet("GetTheme")]
-    public IActionResult GetTheme()
-    {
-        var theme = _configuration.GetValue<string>("Theme") ?? DefaultTheme;
-        return new JsonResult(theme);
-    }
+    //[HttpGet("GetSettingsProperties")]
+    //public IActionResult GetSettingsProperties()
+    //{
+    //    foreach (var (key, value) in _uiHost.SettingsProperties)
+    //    {
+    //        var properties = _uiHost.SettingsProperties[key];
+    //        var grouped = properties.GroupBy(g => g.Group, g => g, (group, settings) => new
+    //        {
+    //            Group = group,
+    //            Settings = settings,
+    //        });
+    //    }
 
-    [HttpGet("GetTiles")]
-    public IActionResult GetTiles()
-    {
-        return new JsonResult(_uiHost.DashboardTiles);
-    }
-
-    [HttpGet("GetSettingsTabs")]
-    public IActionResult GetSettingsTabs()
-    {
-        return new JsonResult(_uiHost.SettingsTabs);
-    }
-
-    [HttpGet("GetSettingsProperties")]
-    public IActionResult GetSettingsProperties()
-    {
-        foreach (var (key, value) in _uiHost.SettingsProperties)
-        {
-            var properties = _uiHost.SettingsProperties[key];
-            var grouped = properties.GroupBy(g => g.Group, g => g, (group, settings) => new
-            {
-                Group = group,
-                Settings = settings,
-            });
-        }
-
-        return new JsonResult(_uiHost.SettingsProperties);
-    }
+    //    return new JsonResult(_uiHost.SettingsProperties);
+    //}
 
     [HttpGet("GetGeofenceData")]
     public async Task<IActionResult> GetGeofenceData(string name)
     {
+        // Called from geofence generator when 'Import' button is triggered
         var geofence = await _uow.Geofences.FindByIdAsync(name);
         if (geofence == null)
         {
