@@ -41,7 +41,6 @@ public class HelperController : ControllerBase
     //            Settings = settings,
     //        });
     //    }
-
     //    return new JsonResult(_uiHost.SettingsProperties);
     //}
 

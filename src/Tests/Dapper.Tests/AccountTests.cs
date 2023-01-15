@@ -1,23 +1,13 @@
 ﻿namespace Dapper.Tests;
 
-using System.ComponentModel.DataAnnotations.Schema;
-
-using MySqlConnector;
-
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Extensions;
 
 internal class AccountTests
 {
-    private const string ConnectionString = "";
-
-    private MySqlConnection _connection;
-
     [SetUp]
     public void Setup()
     {
-        _connection = new MySqlConnection(ConnectionString);
-        //Task.Run(_connection.OpenAsync).Wait();
     }
 
     [Test]

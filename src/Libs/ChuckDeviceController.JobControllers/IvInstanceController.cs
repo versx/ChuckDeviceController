@@ -120,7 +120,7 @@ public class IvInstanceController : IJobController, ILureInstanceController, ISc
         {
             var coord = ScanNextCoordinates.Dequeue();
             var scanNextTask = CreateScanNextTask(coord);
-            _logger.LogInformation($"[{Name}] [{options.Uuid}] Executing ScanNext API job at '{coord}'");
+            _logger.LogInformation("[{Name}] [{Uuid}] Executing ScanNext API job at '{Coord}'", Name, options.Uuid, coord);
             return await Task.FromResult(scanNextTask);
         }
 
@@ -185,7 +185,7 @@ public class IvInstanceController : IJobController, ILureInstanceController, ISc
 
     public Task ReloadAsync()
     {
-        _logger.LogDebug($"[{Name}] Reloading instance");
+        _logger.LogDebug("[{Name}] Reloading instance", Name);
 
         // Clear existing lists
         _pokemonQueue.Clear();
@@ -202,7 +202,7 @@ public class IvInstanceController : IJobController, ILureInstanceController, ISc
         {
             if (!_checkThread.Join(DefaultTerminateThreadTimeoutMs))
             {
-                _logger.LogError($"[{Name}] Failed to terminate IV queue thread");
+                _logger.LogError("[{Name}] Failed to terminate IV queue thread", Name);
             }
         }
         _checkThread = new Thread(new ThreadStart(CheckScannedPokemonHistory));
@@ -213,7 +213,7 @@ public class IvInstanceController : IJobController, ILureInstanceController, ISc
 
     public Task StopAsync()
     {
-        _logger.LogDebug($"[{Name}] Stopping instance");
+        _logger.LogDebug("[{Name}] Stopping instance", Name);
 
         //_timer.Stop();
 
@@ -225,7 +225,7 @@ public class IvInstanceController : IJobController, ILureInstanceController, ISc
             if (!_checkThread.Join(DefaultTerminateThreadTimeoutMs))
             {
                 // Unable to terminate thread after timeout period
-                _logger.LogError($"[{Name}] Failed to terminate IV queue thread");
+                _logger.LogError("[{Name}] Failed to terminate IV queue thread", Name);
             }
             _checkThread = null;
         }
@@ -304,7 +304,7 @@ public class IvInstanceController : IJobController, ILureInstanceController, ISc
         var lastIndex = _pokemonQueue.LastIndexOf(pokemon, GetPriorityIndex);
         if (_pokemonQueue.Count >= QueueLimit && lastIndex == null)
         {
-            _logger.LogWarning($"[{Name}] Queue is full!");
+            _logger.LogWarning("[{Name}] IV Queue is full!", Name);
         }
         else if (_pokemonQueue.Count >= QueueLimit)
         {
@@ -457,11 +457,11 @@ public class IvInstanceController : IJobController, ILureInstanceController, ISc
             {
                 if (pokemonReal.AttackIV == null)
                 {
-                    _logger.LogInformation($"[{Name}] Checked Pokemon {pokemonReal.Id} doesn't have IV");
+                    _logger.LogInformation("[{Name}] Checked Pokemon {Id} doesn't have IV", Name, pokemonReal.Id);
                 }
                 else
                 {
-                    _logger.LogInformation($"[{Name}] Checked Pokemon {pokemonReal.Id} has IV");
+                    _logger.LogInformation("[{Name}] Checked Pokemon {Id} has IV", Name, pokemonReal.Id);
                 }
             }
 

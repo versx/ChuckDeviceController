@@ -54,13 +54,14 @@ public class ConnectionLeakWatcher : IDisposable
         Name = name;
         StackTrace = Environment.StackTrace;
 
-        _logger.LogDebug($"[{_connectionId}] {Name} Connection opened");
+        _logger.LogDebug("[{_connectionId}] {Name} Connection opened", _connectionId, Name);
 
         _timer = new Timer(_ =>
         {
             // The timeout expired without the connection being closed. Write to debug output the stack trace
             // of the connection creation to assist in pinpointing the problem
-            _logger.LogWarning($"[{_connectionId}] {Name} Suspected connection leak after {connectionTimeoutS} seconds with origin:\n{StackTrace}");
+            _logger.LogWarning("[{_connectionId}] {Name} Suspected connection leak after {ConnectionTimeoutS} seconds with origin:\n{StackTrace}",
+                _connectionId, Name, connectionTimeoutS, StackTrace);
             // That's it - we're done. Clean up by calling Dispose.
             Dispose();
         }, null, _connectionTimeoutS * 1000, Timeout.Infinite);
@@ -74,7 +75,7 @@ public class ConnectionLeakWatcher : IDisposable
         if (stateChangeEventArgs.CurrentState == ConnectionState.Closed)
         {
             // The connection was closed within the timeout
-            _logger.LogDebug($"[{_connectionId}] {Name} Connection closed");
+            _logger.LogDebug("[{_connectionId}] {Name} Connection closed", _connectionId, Name);
             // That's it - we're done. Clean up by calling Dispose.
             Dispose();
         }

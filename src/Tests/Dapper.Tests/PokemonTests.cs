@@ -5,9 +5,8 @@ using System.Data;
 using Dapper;
 using MySqlConnector;
 
-using ChuckDeviceController.Data.Common;
+using ChuckDeviceController.Common;
 using ChuckDeviceController.Data.Entities;
-using ChuckDeviceController.Data.Repositories;
 using ChuckDeviceController.Data.TypeHandlers;
 using ChuckDeviceController.Extensions;
 
@@ -31,7 +30,7 @@ internal class PokemonTests
         var tableName = typeof(Pokemon).GetTableAttribute();
         var keyName = typeof(Pokemon).GetKeyAttribute();
 
-        EntityDataRepository.SetTypeMap<Pokemon>();
+        DapperTypeMappings.SetTypeMap<Pokemon>();
 
         SqlMapper.AddTypeHandler(typeof(SeenType), SeenTypeTypeHandler.Default);
         SqlMapper.AddTypeHandler(new JsonTypeHandler<List<Dictionary<string, dynamic>>>());

@@ -16,7 +16,6 @@ public class MemoryBenchmarkPlugin : IPlugin
     #region Variables
 
     private readonly IUiHost _uiHost;
-    private readonly IAuthorizeHost _authHost;
 
     #endregion
 
@@ -34,10 +33,9 @@ public class MemoryBenchmarkPlugin : IPlugin
 
     #region Constructor
 
-    public MemoryBenchmarkPlugin(IUiHost uiHost, IAuthorizeHost authHost)
+    public MemoryBenchmarkPlugin(IUiHost uiHost)
     {
         _uiHost = uiHost;
-        _authHost = authHost;
     }
 
     #endregion

@@ -91,13 +91,13 @@ public class BootstrapInstanceController : BaseSmartInstanceController, IScanNex
         {
             var coord = ScanNextCoordinates.Dequeue();
             var scanNextTask = CreateScanNextTask(coord);
-            _logger.LogInformation($"[{Name}] [{options.Uuid}] Executing ScanNext API job at '{coord}'");
+            _logger.LogInformation("[{Name}] [{Uuid}] Executing ScanNext API job at '{Coord}'", Name, options.Uuid, coord);
             return await Task.FromResult(scanNextTask);
         }
 
         if ((Coordinates?.Count ?? 0) == 0)
         {
-            _logger.LogWarning($"[{Name}] [{options.Uuid}] Instance does not contain any coordinates, returning empty task for device");
+            _logger.LogWarning("[{Name}] [{Uuid}] Instance does not contain any coordinates, returning empty task for device", Name, options.Uuid);
             return null!;
         }
 
@@ -107,7 +107,7 @@ public class BootstrapInstanceController : BaseSmartInstanceController, IScanNex
         // Check if we were unable to retrieve a coordinate to send
         if (currentCoord == null)
         {
-            _logger.LogWarning($"[{Name}] [{options.Uuid}] Failed to retrieve next scan coordinate");
+            _logger.LogWarning("[{Name}] [{Uuid}] Failed to retrieve next scan coordinate", Name, options.Uuid);
             return null!;
         }
 
@@ -139,7 +139,7 @@ public class BootstrapInstanceController : BaseSmartInstanceController, IScanNex
 
     public override Task ReloadAsync()
     {
-        _logger.LogDebug($"[{Name}] Reloading instance");
+        _logger.LogDebug("[{Name}] Reloading instance", Name);
 
         // Clear all existing devices from route index cache
         _currentUuid.Clear();
@@ -151,7 +151,7 @@ public class BootstrapInstanceController : BaseSmartInstanceController, IScanNex
 
     public override Task StopAsync()
     {
-        _logger.LogDebug($"[{Name}] Stopping instance");
+        _logger.LogDebug("[{Name}] Stopping instance", Name);
 
         // Clear all existing devices from route index cache
         _currentUuid.Clear();
@@ -205,7 +205,7 @@ public class BootstrapInstanceController : BaseSmartInstanceController, IScanNex
 
         stopwatch.Stop();
         var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);
-        _logger.LogInformation($"[{Name}] Bootstrap route generation took {totalSeconds}s");
+        _logger.LogInformation("[{Name}] Bootstrap route generation took {TotalSeconds}s", Name, totalSeconds);
 
         if ((bootstrapRoute?.Count ?? 0) == 0)
         {
@@ -230,7 +230,7 @@ public class BootstrapInstanceController : BaseSmartInstanceController, IScanNex
 
             stopwatch.Stop();
             totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);
-            _logger.LogInformation($"[{Name}] Bootstrap route optimization took {totalSeconds}s");
+            _logger.LogInformation("[{Name}] Bootstrap route optimization took {TotalSeconds}s", Name, totalSeconds);
 
             return optimizedRoute;
         }

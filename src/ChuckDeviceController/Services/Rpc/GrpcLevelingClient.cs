@@ -4,14 +4,14 @@ using ChuckDeviceController.Protos;
 
 public class GrpcLevelingClient : IGrpcClient<Leveling.LevelingClient, TrainerInfoRequest, TrainerInfoResponse>
 {
-    private readonly ILogger<GrpcLevelingClient> _logger;
+    //private readonly ILogger<GrpcLevelingClient> _logger;
     private readonly Leveling.LevelingClient _client;
 
     public GrpcLevelingClient(
-        ILogger<GrpcLevelingClient> logger,
+        //ILogger<GrpcLevelingClient> logger,
         Leveling.LevelingClient client)
     {
-        _logger = logger;
+        //_logger = logger;
         _client = client;
     }
 

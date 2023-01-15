@@ -258,23 +258,23 @@ public class RouteOptimizer : IRouteOptimizer
         return result;
     }
 
-    private static double Haversine(ICoordinate coord1, ICoordinate coord2)
-    {
-        const int radius = 6378137; // approximation of Earth's radius
-        //var radius = 6371000;
-        var latFrom = coord1.Latitude * Math.PI / 180;
-        var lngFrom = coord1.Longitude * Math.PI / 180;
-        var latTo = coord2.Latitude * Math.PI / 180;
-        var lngTo = coord2.Longitude * Math.PI / 180;
-        var latDelta = latTo - latFrom;
-        var lngDelta = lngTo - lngFrom;
-        var latSin = Math.Pow(Math.Sin(latDelta / 2), 2);
-        var lngSin = Math.Pow(Math.Sin(lngDelta / 2), 2);
-        var sqrt = Math.Sqrt(latSin + Math.Cos(latFrom) * Math.Cos(latTo) * lngSin);
-        var angle = 2 * Math.Asin(sqrt);
-        var value = angle * radius;
-        return value;
-    }
+    //private static double Haversine(ICoordinate coord1, ICoordinate coord2)
+    //{
+    //    const int radius = 6378137; // approximation of Earth's radius
+    //    //var radius = 6371000;
+    //    var latFrom = coord1.Latitude * Math.PI / 180;
+    //    var lngFrom = coord1.Longitude * Math.PI / 180;
+    //    var latTo = coord2.Latitude * Math.PI / 180;
+    //    var lngTo = coord2.Longitude * Math.PI / 180;
+    //    var latDelta = latTo - latFrom;
+    //    var lngDelta = lngTo - lngFrom;
+    //    var latSin = Math.Pow(Math.Sin(latDelta / 2), 2);
+    //    var lngSin = Math.Pow(Math.Sin(lngDelta / 2), 2);
+    //    var sqrt = Math.Sqrt(latSin + Math.Cos(latFrom) * Math.Cos(latTo) * lngSin);
+    //    var angle = 2 * Math.Asin(sqrt);
+    //    var value = angle * radius;
+    //    return value;
+    //}
 
     #endregion
 }

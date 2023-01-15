@@ -1,6 +1,6 @@
 ﻿namespace Tests;
 
-using ChuckDeviceController.Data.Common;
+using ChuckDeviceController.Common;
 
 internal class BitwiseTests
 {

@@ -50,7 +50,7 @@ public class DynamicRouteInstanceController : CircleInstanceController
 
     private List<ICoordinate> GenerateDynamicRoute()
     {
-        _logger.LogInformation($"[{Name}] Generating dynamic route...");
+        _logger.LogInformation("[{Name}] Generating dynamic route...", Name);
 
         var stopwatch = new System.Diagnostics.Stopwatch();
         stopwatch.Start();
@@ -66,7 +66,7 @@ public class DynamicRouteInstanceController : CircleInstanceController
 
         stopwatch.Stop();
         var totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);
-        _logger.LogInformation($"[{Name}] Dynamic route generation took {totalSeconds}s");
+        _logger.LogInformation("[{Name}] Dynamic route generation took {TotalSeconds}s", Name, totalSeconds);
 
         if (OptimizeDynamicRoute)
         {
@@ -77,7 +77,7 @@ public class DynamicRouteInstanceController : CircleInstanceController
 
             stopwatch.Stop();
             totalSeconds = Math.Round(stopwatch.Elapsed.TotalSeconds, 4);
-            _logger.LogInformation($"[{Name}] Dynamic route optimization took {totalSeconds}s");
+            _logger.LogInformation("[{Name}] Dynamic route optimization took {TotalSeconds}s", Name, totalSeconds);
 
             return optimized.ToList();
         }
