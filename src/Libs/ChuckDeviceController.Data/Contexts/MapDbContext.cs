@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 using Microsoft.EntityFrameworkCore;
 
+using ChuckDeviceController.Common;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Factories;
 
@@ -236,8 +237,8 @@ public class MapDbContext : DbContext
                   .HasComputedColumnSql("(`atk_iv` + `def_iv` + `sta_iv`) * 100 / 45");
             entity.Property(p => p.SeenType)
                   .HasConversion(
-                       x => Entities.Pokemon.SeenTypeToString(x),
-                       x => Entities.Pokemon.StringToSeenType(x)
+                       x => SeenType.SeenTypeToString(x),
+                       x => SeenType.StringToSeenType(x)
                    );
             entity.Property(p => p.PvpRankings)
                   .HasConversion(

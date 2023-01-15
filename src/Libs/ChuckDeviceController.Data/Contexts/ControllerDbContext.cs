@@ -141,8 +141,8 @@ public class ControllerDbContext : DbContext
         {
             entity.Property(p => p.Type)
                   .HasConversion(
-                       x => Geofence.GeofenceTypeToString(x),
-                       x => Geofence.StringToGeofenceType(x)
+                       x => GeofenceType.GeofenceTypeToString(x),
+                       x => GeofenceType.StringToGeofenceType(x)
                    );
             entity.Property(p => p.Data)
                   .HasConversion(DbContextFactory.CreateJsonValueConverter<GeofenceData?>(new[] { new ObjectDataConverter<GeofenceData>() }));
@@ -152,8 +152,8 @@ public class ControllerDbContext : DbContext
         {
             entity.Property(p => p.Type)
                   .HasConversion(
-                       x => Instance.InstanceTypeToString(x),
-                       x => Instance.StringToInstanceType(x)
+                       x => InstanceType.InstanceTypeToString(x),
+                       x => InstanceType.StringToInstanceType(x)
                    );
             entity.Property(p => p.Data)
                   .HasConversion(DbContextFactory.CreateJsonValueConverter<InstanceData?>(new[] { new ObjectDataConverter<InstanceData>() }));

@@ -177,16 +177,13 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
     public bool IsEvent { get; set; }
 
     [Column("seen_type")]
-    public SeenType SeenType { get; set; }
+    public SeenType SeenType { get; set; } = SeenType.Unset;
 
     [
         Column("pvp"),
         DefaultValue(null),
     ]
     public Dictionary<string, dynamic>? PvpRankings { get; set; } = null!;
-
-    [NotMapped]
-    public bool HasChanges { get; set; }
 
     [NotMapped]
     public bool HasIvChanges { get; set; }
@@ -355,20 +352,20 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
         var lon = Convert.ToDouble(encounterData.Pokemon.Longitude);
 
         if (pokemonId != PokemonId ||
-            cp != CP ||
-            move1 != Move1 ||
-            move2 != Move2 ||
-            size != Size ||
-            weight != Weight ||
+            CP != cp ||
+            Move1 != move1 ||
+            Move2 != move2 ||
+            Size != size ||
+            Weight != weight ||
+            Height != height ||
             AttackIV != atkIv ||
             DefenseIV != defIv ||
             StaminaIV != staIv ||
-            Costume != Costume ||
+            Costume != costume ||
             Form != form ||
             Gender != gender ||
             Weather != weather)
         {
-            HasChanges = true;
             HasIvChanges = true;
         }
 
@@ -381,6 +378,7 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
         Move2 = move2;
         Size = size;
         Weight = weight;
+        Height = height;
         AttackIV = atkIv;
         DefenseIV = defIv;
         StaminaIV = staIv;
@@ -438,20 +436,20 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
         var weather = Convert.ToUInt16(diskEncounterData.Pokemon.PokemonDisplay.WeatherBoostedCondition);
 
         if (pokemonId != PokemonId ||
-            cp != CP ||
-            move1 != Move1 ||
-            move2 != Move2 ||
-            size != Size ||
-            weight != Weight ||
+            CP != cp ||
+            Move1 != move1 ||
+            Move2 != move2 ||
+            Size != size ||
+            Weight != weight ||
+            Height != height ||
             AttackIV != atkIv ||
             DefenseIV != defIv ||
             StaminaIV != staIv ||
-            Costume != Costume ||
+            Costume != costume ||
             Form != form ||
             Gender != gender ||
             Weather != weather)
         {
-            HasChanges = true;
             HasIvChanges = true;
         }
 
@@ -463,6 +461,7 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
         Move2 = move2;
         Size = size;
         Weight = weight;
+        Height = height;
         AttackIV = atkIv;
         DefenseIV = defIv;
         StaminaIV = staIv;
@@ -658,20 +657,7 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
             {
                 Console.WriteLine($"Pokemon {Id} changed weather boost state. Clearing IVs.");
                 setIvForWeather = true;
-                AttackIV = null;
-                DefenseIV = null;
-                StaminaIV = null;
-                CP = null;
-                Weight = null;
-                Height = null;
-                Size = null;
-                Move1 = null;
-                Move2 = null;
-                Level = null;
-                Capture1 = null;
-                Capture2 = null;
-                Capture3 = null;
-                PvpRankings = null;
+                ClearEncounterDetails();
 
                 Console.WriteLine($"Weather-Boosted state changed. Clearing IVs");
             }
@@ -930,10 +916,12 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
     private void ClearEncounterDetails()
     {
         CP = null;
+        Level = null;
         Move1 = null;
         Move2 = null;
         Height = null;
         Weight = null;
+        Size = null;
         AttackIV = null;
         DefenseIV = null;
         StaminaIV = null;
@@ -941,6 +929,7 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
         Capture1 = null;
         Capture2 = null;
         Capture3 = null;
+        IsShiny = false;
         PvpRankings = null;
     }
 
@@ -1028,6 +1017,9 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
             Username = username,
             CellId = cellId,
             IsExpireTimestampVerified = false,
+            SeenType = string.IsNullOrEmpty(pokestopId)
+                ? SeenType.NearbyCell
+                : SeenType.NearbyStop,
         };
         pokemon.SetPokemonDisplay(pokemon.PokemonId, nearbyPokemon.PokemonDisplay);
 
@@ -1124,14 +1116,6 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
 
     #endregion
 
-    #region Helper Methods
-
-    public static string SeenTypeToString(SeenType type) => type.ToString();
-
-    public static SeenType StringToSeenType(string seenType) => (SeenType)seenType;
-
-    #endregion
-
     #region IEquatable Implementation
 
     public bool Equals(Pokemon? other)
@@ -1156,6 +1140,7 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
             SpawnId == other.SpawnId &&
             Size == other.Size &&
             Weight == other.Weight &&
+            Height == other.Height &&
             CellId == other.CellId &&
             Weather == other.Weather &&
             Username == other.Username &&

@@ -1,4 +1,6 @@
-﻿namespace ChuckDeviceController.Common;
+﻿using System.ComponentModel;
+
+namespace ChuckDeviceController.Common;
 
 //using System.ComponentModel.DataAnnotations;
 //using System.Text.Json.Serialization;
@@ -75,45 +77,35 @@ public readonly struct InstanceType
         Custom,
     };
 
+    [DisplayName("Circle Pokemon")]
     public static InstanceType CirclePokemon => "CirclePokemon";
 
+    [DisplayName("Dynamic Route")]
     public static InstanceType DynamicRoute => "DynamicRoute";
 
+    [DisplayName("Circle Raid")]
     public static InstanceType CircleRaid => "CircleRaid";
 
+    [DisplayName("Smart Raid")]
     public static InstanceType SmartRaid => "SmartRaid";
 
+    [DisplayName("Auto-Quest")]
     public static InstanceType AutoQuest => "AutoQuest";
 
+    [DisplayName("Pokemon IV")]
     public static InstanceType PokemonIV => "PokemonIV";
 
+    [DisplayName("Bootstrapper")]
     public static InstanceType Bootstrap => "Bootstrap";
 
+    [DisplayName("Find TTH")]
     public static InstanceType FindTth => "FindTth";
 
+    [DisplayName("Leveling")]
     public static InstanceType Leveling => "Leveling";
 
+    [DisplayName("Custom")]
     public static InstanceType Custom => "Custom";
-
-    //public static InstanceType CirclePokemon => "circle_pokemon";
-
-    //public static InstanceType DynamicRoute => "dynamic_route";
-
-    //public static InstanceType CircleRaid => "circle_raid";
-
-    //public static InstanceType SmartRaid => "smart_raid";
-
-    //public static InstanceType AutoQuest => "auto_quest";
-
-    //public static InstanceType PokemonIV => "pokemon_iv";
-
-    //public static InstanceType Bootstrap => "bootstrap";
-
-    //public static InstanceType FindTth => "find_tth";
-
-    //public static InstanceType Leveling => "leveling";
-
-    //public static InstanceType Custom => "custom";
 
     #endregion
 
@@ -141,6 +133,30 @@ public readonly struct InstanceType
     public override string ToString()
     {
         return _value;
+    }
+
+    #endregion
+
+    #region Helper Methods
+
+    public static string InstanceTypeToString(InstanceType type) => type.ToString();
+
+    public static InstanceType StringToInstanceType(string instanceType)
+    {
+        return instanceType switch
+        {
+            "AutoQuest" => AutoQuest,
+            "CirclePokemon" => CirclePokemon,
+            "DynamicRoute" => DynamicRoute,
+            "CircleRaid" => CircleRaid,
+            "SmartRaid" => SmartRaid,
+            "PokemonIV" => PokemonIV,
+            "Bootstrap" => Bootstrap,
+            "FindTth" => FindTth,
+            "Leveling" => Leveling,
+            "Custom" => Custom,
+            _ => CirclePokemon,
+        };
     }
 
     #endregion

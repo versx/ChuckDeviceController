@@ -5,7 +5,6 @@ using System.Data;
 using Dapper;
 
 using ChuckDeviceController.Common;
-using ChuckDeviceController.Data.Entities;
 
 public class InstanceTypeTypeHandler : SqlMapper.TypeHandler<InstanceType>
 {
@@ -18,12 +17,12 @@ public class InstanceTypeTypeHandler : SqlMapper.TypeHandler<InstanceType>
         {
             return default!;
         }
-        var instanceType = Instance.StringToInstanceType(val);
+        var instanceType = InstanceType.StringToInstanceType(val);
         return instanceType;
     }
 
     public override void SetValue(IDbDataParameter parameter, InstanceType value)
     {
-        parameter.Value = Instance.InstanceTypeToString(value) ?? null;
+        parameter.Value = InstanceType.InstanceTypeToString(value) ?? null;
     }
 }

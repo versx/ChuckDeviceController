@@ -99,4 +99,12 @@ public readonly struct SeenType
     }
 
     #endregion
+
+    #region Helper Methods
+
+    public static string SeenTypeToString(SeenType type) => type.ToString();
+
+    public static SeenType StringToSeenType(string seenType) => (SeenType)seenType;
+
+    #endregion
 }

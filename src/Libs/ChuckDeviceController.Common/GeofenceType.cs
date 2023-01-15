@@ -59,4 +59,20 @@ public readonly struct GeofenceType
     }
 
     #endregion
+
+    #region Helper Methods
+
+    public static string GeofenceTypeToString(GeofenceType type) => type.ToString();
+
+    public static GeofenceType StringToGeofenceType(string geofenceType) => (GeofenceType)geofenceType;
+    //{
+    //    return geofenceType switch
+    //    {
+    //        "Circle" => Circle,
+    //        "Geofence" => Geofence,
+    //        _ => Circle,
+    //    };
+    //}
+
+    #endregion
 }

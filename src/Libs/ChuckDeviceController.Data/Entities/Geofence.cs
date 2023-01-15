@@ -63,18 +63,4 @@ public class Geofence : BaseEntity, IGeofence
     }
 
     #endregion
-
-    #region Helper Methods
-
-    public static string GeofenceTypeToString(GeofenceType type) => type.ToString();
-
-    public static GeofenceType StringToGeofenceType(string geofenceType) =>
-        geofenceType switch
-        {
-            "Circle" => GeofenceType.Circle,
-            "Geofence" => GeofenceType.Geofence,
-            _ => GeofenceType.Circle,
-        };
-
-    #endregion
 }

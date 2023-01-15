@@ -105,7 +105,7 @@ public class SmartRaidInstanceController : IJobController
         if (coord == null)
         {
             // Unable to retrieve coordinate for next gym to check
-            _logger.LogWarning($"[{Name}] [{options.Uuid}] Failed to retrieve gym coordinates for next job task.");
+            _logger.LogWarning("[{Name}] [{Uuid}] Failed to retrieve gym coordinates for next job task.", Name, options.Uuid);
             return null!;
         }
 
@@ -163,7 +163,7 @@ public class SmartRaidInstanceController : IJobController
 
     public async Task ReloadAsync()
     {
-        _logger.LogDebug($"[{Name}] Reloading instance");
+        _logger.LogDebug("[{Name}] Reloading instance", Name);
 
         // Clear gyms cache and load gyms again
         _smartRaidGyms.Clear();
@@ -176,7 +176,7 @@ public class SmartRaidInstanceController : IJobController
 
     public async Task StopAsync()
     {
-        _logger.LogDebug($"[{Name}] Stopping instance");
+        _logger.LogDebug("[{Name}] Stopping instance", Name);
 
         _timer.Stop();
         await Task.CompletedTask;
@@ -244,7 +244,7 @@ public class SmartRaidInstanceController : IJobController
             }
             catch (Exception ex)
             {
-                _logger.LogError($"LoadGymsAsync: {ex}");
+                _logger.LogError("LoadGymsAsync: {Message}", ex.InnerException?.Message ?? ex.Message);
                 // Sleep for 5 seconds
                 //Thread.Sleep(5000);
                 await Task.Delay(TimeSpan.FromSeconds(5));
@@ -357,7 +357,7 @@ public class SmartRaidInstanceController : IJobController
             if (!(gyms?.Any() ?? false))
             {
                 // Failed to get gyms by ids
-                _logger.LogWarning($"[{Name}] Nearby gyms list is empty.");
+                _logger.LogWarning("[{Name}] Nearby gyms list is empty.", Name);
                 Thread.Sleep(5000);
                 return;
             }
@@ -371,7 +371,7 @@ public class SmartRaidInstanceController : IJobController
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error: {ex}");
+            _logger.LogError("Error: {Message}", ex.InnerException?.Message ?? ex.Message);
         }
     }
 
