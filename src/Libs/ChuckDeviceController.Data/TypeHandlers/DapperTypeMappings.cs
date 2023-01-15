@@ -35,6 +35,7 @@ public static class DapperTypeMappings
         SqlMapper.AddTypeHandler(new JsonTypeHandler<List<Dictionary<string, dynamic>>>()); // Quest.Rewards / Quest.Conditions
         SqlMapper.AddTypeHandler(new JsonTypeHandler<Dictionary<string, dynamic>>()); // Pokemon.Pvp
 
+        SqlMapper.AddTypeHandler(typeof(GeofenceType), GeofenceTypeTypeHandler.Default);
         SqlMapper.AddTypeHandler(typeof(InstanceType), InstanceTypeTypeHandler.Default);
         SqlMapper.AddTypeHandler(typeof(SeenType), SeenTypeTypeHandler.Default);
         //SqlMapper.AddTypeHandler(typeof(WebhookTypeTypeHandler), WebhookTypeTypeHandler.Default);
