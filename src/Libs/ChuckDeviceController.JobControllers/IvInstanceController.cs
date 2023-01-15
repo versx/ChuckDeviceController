@@ -17,6 +17,7 @@ using ChuckDeviceController.Geometry.Models.Abstractions;
 using ChuckDeviceController.JobControllers.Models;
 using ChuckDeviceController.JobControllers.Tasks;
 using ChuckDeviceController.JobControllers.Utilities;
+using ChuckDeviceController.Plugin;
 
 // TODO: Refactor PokemonIV job controller logic
 public class IvInstanceController : IJobController, ILureInstanceController, IScanNextInstanceController
@@ -32,6 +33,7 @@ public class IvInstanceController : IJobController, ILureInstanceController, ISc
     #region Variables
 
     private readonly ILogger<IvInstanceController> _logger;
+    private readonly IJobControllerServiceHost _jobControllerService;
     private readonly IDapperUnitOfWork _uow;
     //private readonly PokemonPriorityQueue<Pokemon> _pokemonQueue;
     private readonly SortedPriorityQueue<Pokemon> _pokemonQueue;
@@ -54,6 +56,8 @@ public class IvInstanceController : IJobController, ILureInstanceController, ISc
 
     public string Name { get; }
 
+    public string Description => $"Rare Pokemon spawns priority list based scanner.";
+
     public IReadOnlyList<IMultiPolygon> MultiPolygons { get; }
 
     public ushort MinimumLevel { get; }
@@ -72,6 +76,8 @@ public class IvInstanceController : IJobController, ILureInstanceController, ISc
 
     public Queue<ICoordinate> ScanNextCoordinates { get; } = new();
 
+    public string SecondaryInstanceName { get; }
+
     #endregion
 
     #region Constructor
@@ -80,7 +86,8 @@ public class IvInstanceController : IJobController, ILureInstanceController, ISc
         Instance instance,
         IDapperUnitOfWork uow,
         IReadOnlyList<IMultiPolygon> multiPolygons,
-        List<string> pokemonIds)
+        List<string> pokemonIds,
+        IJobControllerServiceHost jobControllerService)
     {
         Name = instance.Name;
         MultiPolygons = multiPolygons;
@@ -91,8 +98,10 @@ public class IvInstanceController : IJobController, ILureInstanceController, ISc
         QueueLimit = instance.Data?.IvQueueLimit ?? Strings.DefaultIvQueueLimit;
         PokemonIds = pokemonIds;
         EnableLureEncounters = instance.Data?.EnableLureEncounters ?? Strings.DefaultEnableLureEncounters;
+        SecondaryInstanceName = instance.Data?.SecondaryInstanceName ?? Strings.DefaultSecondaryInstanceName;
 
         _logger = new Logger<IvInstanceController>(LoggerFactory.Create(x => x.AddConsole()));
+        _jobControllerService = jobControllerService;
         _uow = uow;
         _pokemonQueue = new SortedPriorityQueue<Pokemon>(QueueLimit, new PokemonComparer(PokemonIds));
         _scannedPokemon = new PokemonPriorityQueue<ScannedPokemon>();
@@ -121,7 +130,7 @@ public class IvInstanceController : IJobController, ILureInstanceController, ISc
             var coord = ScanNextCoordinates.Dequeue();
             var scanNextTask = CreateScanNextTask(coord);
             _logger.LogInformation("[{Name}] [{Uuid}] Executing ScanNext API job at '{Coord}'", Name, options.Uuid, coord);
-            return await Task.FromResult(scanNextTask);
+            return scanNextTask;
         }
 
         //Pokemon? pokemon = null;
@@ -136,8 +145,18 @@ public class IvInstanceController : IJobController, ILureInstanceController, ISc
 
         if (!_pokemonQueue.Any())
         {
-            return null!;
+            if (string.IsNullOrEmpty(SecondaryInstanceName))
+                return null!;
+
+            // Check SecondaryInstanceName for secondary job controller instance by name
+            var secJobController = _jobControllerService.Instances.GetValueOrDefault(SecondaryInstanceName);
+            if (secJobController == null)
+                return null!;
+
+            var secTask = await secJobController.GetTaskAsync(options);
+            return secTask;
         }
+
         var pokemon = _pokemonQueue.Dequeue();
         if (pokemon == null)
         {
@@ -157,7 +176,7 @@ public class IvInstanceController : IJobController, ILureInstanceController, ISc
         }
 
         var task = CreateIvTask(pokemon);
-        return await Task.FromResult(task);
+        return task;
     }
 
     public async Task<string> GetStatusAsync()

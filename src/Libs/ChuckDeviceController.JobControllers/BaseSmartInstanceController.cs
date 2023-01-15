@@ -36,6 +36,8 @@ public abstract class BaseSmartInstanceController : IJobController, ILureInstanc
 
     public string Name { get; }
 
+    public virtual string Description { get; } = null!;
+
     public abstract IReadOnlyList<ICoordinate> Coordinates { get; internal set; }
 
     public CircleInstanceType CircleType { get; }

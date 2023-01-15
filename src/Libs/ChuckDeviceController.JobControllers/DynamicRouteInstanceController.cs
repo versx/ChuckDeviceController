@@ -20,6 +20,8 @@ public class DynamicRouteInstanceController : CircleInstanceController
 
     #region Properties
 
+    public override string Description => $"Dynamically generated routing for raids and Pokemon spawns.";
+
     public IReadOnlyList<IMultiPolygon> MultiPolygons { get; }
 
     public bool OptimizeDynamicRoute { get; }

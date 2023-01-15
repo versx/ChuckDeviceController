@@ -20,6 +20,10 @@ public class CircleInstanceController : BaseSmartInstanceController, IScanNextIn
 
     #region Properties
 
+    public override string Description => CircleType == CircleInstanceType.Pokemon
+        ? "Plotted circles to find Pokemon spawns."
+        : "Plotted circles to find raids.";
+
     public override IReadOnlyList<ICoordinate> Coordinates { get; internal set; }
 
     public Queue<ICoordinate> ScanNextCoordinates { get; } = new();

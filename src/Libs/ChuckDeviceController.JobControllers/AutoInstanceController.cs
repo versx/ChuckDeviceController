@@ -48,6 +48,8 @@ public class AutoInstanceController : IJobController
 
     public string Name { get; }
 
+    public string Description => $"Pokestop field research quest scanner.";
+
     public IReadOnlyList<IMultiPolygon> MultiPolygons { get; }
 
     public ushort MinimumLevel { get; }

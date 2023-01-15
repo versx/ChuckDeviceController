@@ -100,6 +100,8 @@ public class LevelingInstanceController : IJobController
 
     public string Name { get; }
 
+    public string Description => $"Trainer account level increaser.";
+
     public IReadOnlyList<IMultiPolygon> MultiPolygons { get; internal set; }
 
     public ushort MinimumLevel { get; }

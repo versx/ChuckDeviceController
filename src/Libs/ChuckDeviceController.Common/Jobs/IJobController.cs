@@ -14,6 +14,11 @@ public interface IJobController : IEventInstanceController
     string Name { get; }
 
     /// <summary>
+    /// Gets the description of the job controller.
+    /// </summary>
+    string Description { get; }
+
+    /// <summary>
     /// Gets the minimum level an account must meet in order to
     /// use this job controller.
     /// </summary>

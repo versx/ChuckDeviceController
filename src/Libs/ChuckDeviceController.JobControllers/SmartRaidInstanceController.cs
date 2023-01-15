@@ -53,6 +53,8 @@ public class SmartRaidInstanceController : IJobController
 
     public string Name { get; }
 
+    public string Description => $"Smart raid scanner which calculates when to check times.";
+
     //public IReadOnlyList<Coordinate> Coordinates { get; }
 
     public IReadOnlyList<IMultiPolygon> MultiPolygons { get; }

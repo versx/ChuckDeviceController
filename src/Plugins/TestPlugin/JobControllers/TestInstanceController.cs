@@ -33,6 +33,8 @@ public class TestInstanceController : IJobController, IJobControllerCoordinates,
 
     public string Name { get; }
 
+    public string Description => "Test job controller.";
+
     public IReadOnlyList<ICoordinate> Coordinates { get; }
 
     public ushort MinimumLevel { get; }

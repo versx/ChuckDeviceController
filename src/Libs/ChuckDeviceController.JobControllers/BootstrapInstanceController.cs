@@ -30,6 +30,8 @@ public class BootstrapInstanceController : BaseSmartInstanceController, IScanNex
 
     #region Properties
 
+    public override string Description => $"Quickly scan at area based on custom circle plot sizes.";
+
     public override IReadOnlyList<ICoordinate> Coordinates { get; internal set; }
 
     public bool FastBootstrapMode { get; }

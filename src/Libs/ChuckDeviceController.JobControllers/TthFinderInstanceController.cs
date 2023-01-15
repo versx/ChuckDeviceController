@@ -53,6 +53,8 @@ public class TthFinderInstanceController : IJobController
 
     public string Name { get; }
 
+    public string Description => $"Unknown spawnpoint scanner and monitor.";
+
     public IReadOnlyList<IMultiPolygon> MultiPolygons { get; }
 
     public IReadOnlyList<ICoordinate> SpawnpointCoordinates { get; private set; }
