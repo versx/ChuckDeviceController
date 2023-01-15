@@ -4,10 +4,10 @@
 @using ChuckDeviceController.Extensions.Json
 @using ChuckDeviceController.Plugin
 @inject SignInManager<ApplicationUser> SignInManager
+@inject IConfiguration configuration
 @{
     const string DarkTheme = "dark";
-    var themeData = Html.RenderAction("GetTheme", "Helper");
-    var theme = Convert.ToString(themeData)?.FromJson<string>() ?? DarkTheme;
+    var theme = configuration.GetValue<string>("Theme") ?? Strings.DefaultTheme;
 }
 
 <!DOCTYPE html>

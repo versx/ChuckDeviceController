@@ -65,6 +65,8 @@ public static partial class Strings
 
     #endregion
 
+    public const string DefaultTheme = "light";
+
     #region Url Links
 
     public const string PokemonImageUrl = "https://raw.githubusercontent.com/WatWowMap/wwm-uicons/main/pokemon/";
