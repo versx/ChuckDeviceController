@@ -595,8 +595,8 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
                     ProtoDataStatistics.Instance.TotalSpawnpointsProcessed++;
                 }
 
-                Pokemon? oldPokemon = null;
-                //var oldPokemon = await EntityRepository.GetEntityAsync<string, Pokemon>(connection, pokemon.Id, _memCache, skipCache: true, setCache: false);
+                //Pokemon? oldPokemon = null;
+                var oldPokemon = await EntityRepository.GetEntityAsync<string, Pokemon>(connection, pokemon.Id, _memCache, skipCache: true, setCache: false);
                 await pokemon.UpdateAsync(oldPokemon, _memCache, updateIv: false, setPvpRankings: new Action<Pokemon>(SetPvpRankings));
                 AddEntity(SqlQueryType.PokemonIgnoreOnMerge, pokemon);
                 ProtoDataStatistics.Instance.TotalWildPokemonProcessed++;
@@ -626,7 +626,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
             await SendWebhooksAsync(WebhookType.Pokemon, webhooks);
 
             // Send pokemon to Configurator endpoint for IV stats
-            await SendPokemonAsync(webhooks);
+            await SendScannedPokemonAsync(webhooks);
         }
     }
 
@@ -664,13 +664,11 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
                     continue;
                 }
 
-                Pokemon? oldPokemon = null;
-                //var oldPokemon = await EntityRepository.GetEntityAsync<string, Pokemon>(connection, pokemon.Id, _memCache, skipCache: true, setCache: false);
+                //Pokemon? oldPokemon = null;
+                var oldPokemon = await EntityRepository.GetEntityAsync<string, Pokemon>(connection, pokemon.Id, _memCache, skipCache: true, setCache: false);
                 await pokemon.UpdateAsync(oldPokemon, _memCache, updateIv: false, setPvpRankings: new Action<Pokemon>(SetPvpRankings));
                 AddEntity(SqlQueryType.PokemonIgnoreOnMerge, pokemon);
                 ProtoDataStatistics.Instance.TotalNearbyPokemonProcessed++;
-
-                //_logger.LogInformation($"[{requestId}] Updated nearby pokemon {index:N0}/{count:N0}");
 
                 if (pokemon.SendWebhook)
                 {
@@ -697,7 +695,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
             await SendWebhooksAsync(WebhookType.Pokemon, webhooks);
 
             // Send pokemon to Configurator endpoint for IV stats
-            await SendPokemonAsync(webhooks);
+            await SendScannedPokemonAsync(webhooks);
         }
     }
 
@@ -775,7 +773,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
             await SendWebhooksAsync(WebhookType.Pokemon, webhooks);
 
             // Send pokemon to Configurator endpoint for IV stats
-            await SendPokemonAsync(webhooks);
+            await SendScannedPokemonAsync(webhooks);
         }
     }
 
@@ -1221,7 +1219,6 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
                 var isEvent = encounter.isEvent;
                 var encounterId = data.Pokemon.EncounterId.ToString();
                 var pokemon = await EntityRepository.GetEntityAsync<string, Pokemon>(connection, encounterId, _memCache, skipCache: true, setCache: false);
-                //var isNew = false;
                 if (pokemon == null)
                 {
                     // New Pokemon
@@ -1229,10 +1226,8 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
                     await UpdateCellAsync(cellId.Id);
 
                     pokemon = Pokemon.ParsePokemonFromWild(data.Pokemon, cellId.Id, username, isEvent);
-                    //isNew = true;
                 }
                 pokemon.AddEncounter(data, username, isEvent: false, setPvpRankings: new Action<Pokemon>(SetPvpRankings));
-
                 var spawnpoint = await pokemon.ParseSpawnpointAsync(connection, _memCache, data.Pokemon.TimeTillHiddenMs, timestampMs);
                 if (spawnpoint != null)
                 {
@@ -1270,7 +1265,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
             await SendWebhooksAsync(WebhookType.Pokemon, webhooks);
 
             // Send pokemon to Configurator endpoint for IV stats
-            await SendPokemonAsync(webhooks);
+            await SendScannedPokemonAsync(webhooks);
         }
     }
 
@@ -1340,7 +1335,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
             await SendWebhooksAsync(WebhookType.Pokemon, webhooks);
 
             // Send pokemon to Configurator endpoint for IV stats
-            await SendPokemonAsync(webhooks);
+            await SendScannedPokemonAsync(webhooks);
         }
     }
 
@@ -1553,7 +1548,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
         });
     }
 
-    private async Task SendPokemonAsync(List<Pokemon> pokemon)
+    private async Task SendScannedPokemonAsync(IEnumerable<Pokemon> pokemon)
     {
         var newPokemon = pokemon
             .Where(pkmn => pkmn.IsNewPokemon)
