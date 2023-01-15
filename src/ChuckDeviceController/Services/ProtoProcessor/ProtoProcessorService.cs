@@ -24,6 +24,8 @@ public class ProtoProcessorService : TimedHostedService, IProtoProcessorService
     private const ushort DefaultMaxEmptyCellsCount = 3;
     private const uint DefaultArCacheLimit = 1000;
     private const int DefaultProcessingWaitTimeS = 3;
+    private const int DefaultConcurrencyLevel = 25;
+    private const ushort DefaultCapacity = ushort.MaxValue; // TODO: Move to shared class between ProtoController and ProtoProcessorService
 
     #endregion
 
@@ -35,6 +37,7 @@ public class ProtoProcessorService : TimedHostedService, IProtoProcessorService
     private readonly IGrpcClient<Payload.PayloadClient, PayloadRequest, PayloadResponse> _grpcProtoClient;
     private readonly IGrpcClient<Leveling.LevelingClient, TrainerInfoRequest, TrainerInfoResponse> _grpcLevelingClient;
 
+    private static readonly ConcurrentDictionary<string, ulong> _xpCache = new(DefaultConcurrencyLevel, DefaultCapacity);
     private static readonly ConcurrentDictionary<ulong, int> _emptyCells = new();
     private static readonly ConcurrentDictionary<string, bool> _canStoreData = new();
     private static readonly TimedMapCollection<string, bool> _arQuestActualMap = new(DefaultArCacheLimit);
@@ -139,7 +142,7 @@ public class ProtoProcessorService : TimedHostedService, IProtoProcessorService
         }
 
         var uuid = payload.Payload.Uuid;
-        var username = payload.Payload.Username;
+        var username = payload.Payload.Username ?? "";
         var level = payload.Payload.Level;
         var xp = payload.Payload.TrainerXp ?? 0;
         var timestamp = payload.Payload.Timestamp ?? DateTime.UtcNow.ToTotalSeconds();
@@ -151,6 +154,23 @@ public class ProtoProcessorService : TimedHostedService, IProtoProcessorService
         //var containsGmo = false;
 
         // TODO: Send gRPC/Rest request to fetch if controller for device IsEvent
+
+        if (_xpCache.TryGetValue(username, out var oldXp))
+        {
+            // Trainer XP in cache, check if new XP value is greater than previous
+            if (oldXp < xp)
+            {
+                if (!_xpCache.TryUpdate(username, xp, oldXp))
+                {
+                    // Failed to update cached XP value
+                    _logger.LogWarning("[{Uuid}] Failed to update cached XP value '{Xp}' for account '{Username}'", uuid, xp, username);
+                }
+            }
+        }
+        else
+        {
+            _xpCache.AddOrUpdate(username, xp, (key, oldValue) => oldValue = xp);
+        }
 
         var processedProtos = new List<dynamic>();
         var contents = payload?.Payload?.Contents ?? new List<ProtoData>();
@@ -210,9 +230,14 @@ public class ProtoProcessorService : TimedHostedService, IProtoProcessorService
                             if (itemData == null)
                                 continue;
 
-                            if ((itemData.PlayerStats?.Experience ?? 0) > 0)
+                            if ((itemData.PlayerStats?.Experience ?? 0) > 0 &&
+                                !string.IsNullOrEmpty(username))
                             {
-                                xp = Convert.ToUInt64(itemData.PlayerStats!.Experience);
+                                var experience = Convert.ToUInt64(itemData.PlayerStats!.Experience);
+                                _xpCache.AddOrUpdate(username, experience, (key, oldValue) => experience > oldValue
+                                    ? experience
+                                    : oldValue
+                                );
                             }
 
                             var quests = itemData.Quests?.Quest;
@@ -382,6 +407,7 @@ public class ProtoProcessorService : TimedHostedService, IProtoProcessorService
                             _logger.LogWarning("[{Uuid}] Invalid GymStatusAndDefenders provided, skipping...\n: {Ggi}", uuid, ggi);
                             continue;
                         }
+
                         var fortId = ggi.GymStatusAndDefenders.PokemonFortProto.FortId;
                         var gymDefenders = ggi.GymStatusAndDefenders.GymDefender;
                         if (gymDefenders == null)
@@ -426,7 +452,7 @@ public class ProtoProcessorService : TimedHostedService, IProtoProcessorService
             var json = new { username, xp, level }.ToJson();
             if (!string.IsNullOrEmpty(json))
             {
-                await SendPlayerInfoAsync(username, json);
+                await SendPlayerInfoAsync(username!, json);
             }
         }
 
