@@ -10,7 +10,6 @@ using ChuckDeviceController.Collections;
 using ChuckDeviceController.Common;
 using ChuckDeviceController.Common.Jobs;
 using ChuckDeviceController.Common.Tasks;
-using ChuckDeviceController.Data.Common;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Extensions;
 using ChuckDeviceController.Data.Repositories.Dapper;

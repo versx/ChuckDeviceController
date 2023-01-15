@@ -2,7 +2,7 @@
 
 using Microsoft.Extensions.Logging;
 
-using ChuckDeviceController.Data.Common;
+using ChuckDeviceController.Common;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Geometry.Models.Abstractions;
 using ChuckDeviceController.Plugin;

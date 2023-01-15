@@ -1,6 +1,6 @@
 ﻿namespace ChuckDeviceController.Data.Extensions;
 
-using ChuckDeviceController.Data.Common;
+using ChuckDeviceController.Common;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Repositories.Dapper;
 using ChuckDeviceController.Geometry;

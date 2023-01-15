@@ -6,12 +6,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 using ChuckDeviceConfigurator.Services.Jobs;
-using ChuckDeviceConfigurator.Utilities;
 using ChuckDeviceConfigurator.ViewModels;
 using ChuckDeviceController.Caching.Memory;
 using ChuckDeviceController.Common;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Repositories;
+using ChuckDeviceController.Plugin.Helpers;
 
 [Controller]
 [Authorize(Roles = RoleConsts.DevicesRole)]

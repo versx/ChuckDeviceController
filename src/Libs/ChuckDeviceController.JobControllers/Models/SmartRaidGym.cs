@@ -1,6 +1,6 @@
 ﻿namespace ChuckDeviceController.JobControllers.Models;
 
-using ChuckDeviceController.Data.Abstractions;
+using ChuckDeviceController.Common.Abstractions;
 using ChuckDeviceController.Geometry.Models.Abstractions;
 
 internal class SmartRaidGym

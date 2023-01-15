@@ -8,13 +8,12 @@ using ChuckDeviceConfigurator.Services.Jobs;
 using ChuckDeviceConfigurator.ViewModels;
 using ChuckDeviceController.Common;
 using ChuckDeviceController.Configuration;
-using ChuckDeviceController.Data.Common;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Extensions;
+using ChuckDeviceController.Data.Repositories.Dapper;
 using ChuckDeviceController.Extensions;
 using ChuckDeviceController.Extensions.Json;
 using ChuckDeviceController.JobControllers;
-using ChuckDeviceController.Data.Repositories.Dapper;
 
 [Authorize(Roles = RoleConsts.UtilitiesRole)]
 public class UtilitiesController : BaseMvcController

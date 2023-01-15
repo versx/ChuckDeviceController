@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
 using ChuckDeviceController.Common;
-using ChuckDeviceController.Data.Common;
 using ChuckDeviceController.Plugin;
 
 using Configuration;

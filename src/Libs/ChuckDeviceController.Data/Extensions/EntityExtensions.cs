@@ -1,6 +1,6 @@
 ﻿namespace ChuckDeviceController.Data.Extensions;
 
-using ChuckDeviceController.Data.Abstractions;
+using ChuckDeviceController.Common.Abstractions;
 using ChuckDeviceController.Geometry.Models;
 
 public static class EntityExtensions

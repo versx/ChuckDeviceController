@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-using ChuckDeviceController.Data.Abstractions;
+using ChuckDeviceController.Common.Abstractions;
 
 [Table("assignment")]
 public class Assignment : BaseEntity, IAssignment

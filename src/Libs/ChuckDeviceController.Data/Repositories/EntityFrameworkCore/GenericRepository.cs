@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 
 using Microsoft.EntityFrameworkCore;
 
-public class GenericRepository<TDbContext, TEntity> : IGenericRepository<TEntity>, IGenericRepositoryAsync<TEntity>
+public class GenericRepository<TDbContext, TEntity> : IGenericRepository<TEntity>
     where TDbContext : DbContext
     where TEntity : class
 {
@@ -14,8 +14,6 @@ public class GenericRepository<TDbContext, TEntity> : IGenericRepository<TEntity
     {
         _context = context;
     }
-
-    #region Synchronous Repository Pattern
 
     public bool Any(Expression<Func<TEntity, bool>> expression)
     {
@@ -29,58 +27,6 @@ public class GenericRepository<TDbContext, TEntity> : IGenericRepository<TEntity
         if (filter != null) entity = query.FirstOrDefault(filter);
         return entity;
     }
-
-    public IEnumerable<TEntity> Find(
-        Expression<Func<TEntity, bool>>? filter = null,
-        Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null)
-    {
-        IQueryable<TEntity> query = _context.Set<TEntity>();
-
-        if (filter != null) query = query.Where(filter);
-        if (orderBy != null) query = orderBy(query);
-
-        return query;
-    }
-
-    public IEnumerable<TEntity> FindAll()
-    {
-        return _context.Set<TEntity>().ToList();
-    }
-    public TEntity? FindById<TKey>(TKey id)
-    {
-        return _context.Set<TEntity>().Find(id);
-    }
-
-    public void Add(TEntity entity)
-    {
-        _context.Set<TEntity>().Add(entity);
-    }
-    public void AddRange(IEnumerable<TEntity> entities)
-    {
-        _context.Set<TEntity>().AddRange(entities);
-    }
-
-    public void Remove(TEntity entity)
-    {
-        _context.Set<TEntity>().Remove(entity);
-    }
-    public void RemoveRange(IEnumerable<TEntity> entities)
-    {
-        _context.Set<TEntity>().RemoveRange(entities);
-    }
-
-    public void Update(TEntity entity)
-    {
-        _context.Set<TEntity>().Update(entity);
-    }
-    public void UpdateRange(IEnumerable<TEntity> entities)
-    {
-        _context.Set<TEntity>().UpdateRange(entities);
-    }
-
-    #endregion
-
-    #region Asynchronous Repository Pattern
 
     public async Task<IEnumerable<TEntity>> FindAsync(
         //Expression<Func<TEntity, bool>>? filter = null,
@@ -134,6 +80,4 @@ public class GenericRepository<TDbContext, TEntity> : IGenericRepository<TEntity
         _context.Set<TEntity>().UpdateRange(entities);
         await Task.CompletedTask;
     }
-
-    #endregion
 }

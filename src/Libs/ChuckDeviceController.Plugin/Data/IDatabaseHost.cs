@@ -2,7 +2,7 @@
 
 using System.Linq.Expressions;
 
-using ChuckDeviceController.Data.Common;
+using ChuckDeviceController.Common;
 
 /// <summary>
 /// Plugin host handler contract used to interact with the database entities.

@@ -1,6 +1,6 @@
 ﻿namespace ChuckDeviceController.PluginManager;
 
-using ChuckDeviceController.Data.Common;
+using ChuckDeviceController.Common;
 
 public sealed class PluginHostAddedEventArgs : EventArgs
 {

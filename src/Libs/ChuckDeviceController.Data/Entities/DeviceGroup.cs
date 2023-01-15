@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-using ChuckDeviceController.Data.Abstractions;
+using ChuckDeviceController.Common.Abstractions;
 
 [Table("device_group")]
 public class DeviceGroup : BaseEntity, IDeviceGroup

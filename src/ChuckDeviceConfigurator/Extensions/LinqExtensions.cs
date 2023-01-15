@@ -2,7 +2,7 @@
 
 using System.Linq.Expressions;
 
-using ChuckDeviceController.Data.Common;
+using ChuckDeviceController.Common;
 
 public static class LinqExtensions
 {

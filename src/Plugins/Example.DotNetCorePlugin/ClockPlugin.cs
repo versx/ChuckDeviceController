@@ -3,7 +3,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
-using ChuckDeviceController.Data.Common;
+using ChuckDeviceController.Common;
 using ChuckDeviceController.Plugin;
 
 /// <summary>

@@ -113,7 +113,7 @@ Action<IApplicationBuilder> HandleProxiedEndpoint(string endpoint)
                 .ForwardTo(endpoint)
                 .AddXForwardedHeaders()
                 .Send();
-            logger.LogDebug($"Status: {response.StatusCode}, Reason: {response.ReasonPhrase}");
+            logger.LogDebug("Status: {StatusCode}, Reason: {ReasonPhrase}", response.StatusCode, response.ReasonPhrase);
             return response;
         });
     return proxyHandler;
@@ -121,9 +121,9 @@ Action<IApplicationBuilder> HandleProxiedEndpoint(string endpoint)
 
 void PrintHeader()
 {
-    logger.LogInformation($"Proxy relay server is listening at {proxyConfig!.Urls}");
-    logger.LogInformation($"All requests to endpoint '/raw' will be proxied to the following:\n\t - {proxyConfig!.RawEndpoint}");
-    logger.LogInformation($"All requests to endpoint '/controler' and '/controller' will be proxied to the following:\n\t - {proxyConfig!.ControllerEndpoint}");
+    logger.LogInformation("Proxy relay server is listening at {Urls}", proxyConfig!.Urls);
+    logger.LogInformation("All requests to endpoint '/raw' will be proxied to the following:\n\t - {RawEndpoint}", proxyConfig!.RawEndpoint);
+    logger.LogInformation("All requests to endpoint '/controler' and '/controller' will be proxied to the following:\n\t - {ControllerEndpoint}", proxyConfig!.ControllerEndpoint);
 }
 
 #endregion

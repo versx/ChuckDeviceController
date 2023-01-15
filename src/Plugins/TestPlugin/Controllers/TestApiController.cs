@@ -51,7 +51,7 @@ public class TestApiController : ControllerBase
     {
         foreach (var coord in _coords)
         {
-            _logger.LogInformation($"Coord: {coord}");
+            _logger.LogInformation("Coord: {Coord}", coord);
         }
 
         // Should return: '[{ "lat": 1.1, "lon": 1.1 }, { "lat": 2.2, "lon": 2.2 }, etc]'
@@ -82,7 +82,7 @@ public class TestApiController : ControllerBase
     {
         foreach (var coord in coords)
         {
-            _logger.LogInformation($"Received coord: {coord}");
+            _logger.LogInformation("Received coord: {Coord}", coord);
         }
         // Add coordinates from response body to existing cached list
         _coords.AddRange(_coords);

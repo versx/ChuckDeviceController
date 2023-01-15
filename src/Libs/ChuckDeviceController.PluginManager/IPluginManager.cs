@@ -4,8 +4,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 
-using ChuckDeviceController.Data.Abstractions;
-using ChuckDeviceController.Data.Common;
+using ChuckDeviceController.Common;
+using ChuckDeviceController.Common.Abstractions;
 
 public interface IPluginManager
 {

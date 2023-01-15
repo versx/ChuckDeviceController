@@ -11,7 +11,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ChuckDeviceController.Data.Abstractions\ChuckDeviceController.Data.Abstractions.csproj" />
     <ProjectReference Include="..\ChuckDeviceController.Geometry.Models\ChuckDeviceController.Geometry.Models.csproj" />
   </ItemGroup>
 </Project>

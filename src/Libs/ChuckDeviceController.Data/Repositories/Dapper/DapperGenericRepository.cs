@@ -13,6 +13,7 @@ using MySqlConnector;
 
 using ChuckDeviceController.Data.Factories;
 using ChuckDeviceController.Data.Translators;
+using ChuckDeviceController.Data.TypeHandlers;
 using ChuckDeviceController.Extensions;
 
 // TODO: Get table name from entity table attribute
@@ -41,6 +42,7 @@ public abstract class DapperGenericRepository<TKey, TEntity> : IDapperGenericRep
     #region Variables
 
     private static IEnumerable<PropertyInfo> GetProperties => typeof(TEntity).GetProperties();
+    private static readonly Func<Type, string> GetTableName = (o) => typeof(TEntity).GetTableAttribute() ?? nameof(TEntity).ToLower();
     private static readonly Func<string, string> ParamTemplateFunc = new(property => $"@{property}");
     private static readonly IEnumerable<string> _reservedKeywords = new[]
     {
@@ -50,7 +52,7 @@ public abstract class DapperGenericRepository<TKey, TEntity> : IDapperGenericRep
     };
 
     private readonly IMySqlConnectionFactory _factory = null!;
-    private readonly SqlGenerator<TEntity> _sqlGenerator;
+    private readonly ISqlGenerator<TEntity> _sqlGenerator;
     private readonly MySqlQueryTranslator _translator;
     private readonly string _tableName;
     private readonly string _keyName;
@@ -60,13 +62,13 @@ public abstract class DapperGenericRepository<TKey, TEntity> : IDapperGenericRep
     #region Constructors
 
     protected DapperGenericRepository(IMySqlConnectionFactory factory)
-        : this(nameof(TEntity).ToLower(), factory)
+        : this(GetTableName(typeof(TEntity)), factory)
     {
     }
 
     protected DapperGenericRepository(string tableName, IMySqlConnectionFactory factory)
     {
-        EntityDataRepository.AddTypeMappers();
+        DapperTypeMappings.AddTypeMappers();
 
         _tableName = tableName;
         _factory = factory;
@@ -339,7 +341,7 @@ public abstract class DapperGenericRepository<TKey, TEntity> : IDapperGenericRep
             if (!IsPrimaryKey(property))
             {
                 var paramName = ParamTemplateFunc(property.Name);
-                updateQuery.Append($"{columnKey}=@{paramName},");
+                updateQuery.Append($"{columnKey}={paramName},");
             }
         }
 

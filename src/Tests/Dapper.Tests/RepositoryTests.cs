@@ -2,13 +2,9 @@
 
 using System.Diagnostics;
 
-using MicroOrm.Dapper.Repositories.Config;
-using MicroOrm.Dapper.Repositories.SqlGenerator;
-
-using ChuckDeviceController.Data.Common;
+using ChuckDeviceController.Common;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Factories;
-using ChuckDeviceController.Data.Repositories;
 using ChuckDeviceController.Data.Repositories.Dapper;
 using ChuckDeviceController.Data.TypeHandlers;
 using ChuckDeviceController.Extensions;
@@ -20,21 +16,21 @@ internal class RepositoryTests
     [SetUp]
     public void Setup()
     {
-        //EntityDataRepository.SetTypeMap<Account>();
-        //EntityDataRepository.SetTypeMap<ApiKey>();
-        //EntityDataRepository.SetTypeMap<Assignment>();
-        //EntityDataRepository.SetTypeMap<AssignmentGroup>();
-        //EntityDataRepository.SetTypeMap<Device>();
-        //EntityDataRepository.SetTypeMap<DeviceGroup>();
-        //EntityDataRepository.SetTypeMap<Geofence>();
-        //EntityDataRepository.SetTypeMap<Instance>();
-        //EntityDataRepository.SetTypeMap<IvList>();
-        //EntityDataRepository.SetTypeMap<Webhook>();
+        //DapperTypeMappings.SetTypeMap<Account>();
+        //DapperTypeMappings.SetTypeMap<ApiKey>();
+        //DapperTypeMappings.SetTypeMap<Assignment>();
+        //DapperTypeMappings.SetTypeMap<AssignmentGroup>();
+        //DapperTypeMappings.SetTypeMap<Device>();
+        //DapperTypeMappings.SetTypeMap<DeviceGroup>();
+        //DapperTypeMappings.SetTypeMap<Geofence>();
+        //DapperTypeMappings.SetTypeMap<Instance>();
+        //DapperTypeMappings.SetTypeMap<IvList>();
+        //DapperTypeMappings.SetTypeMap<Webhook>();
 
-        EntityDataRepository.SetTypeMap<Cell>();
-        EntityDataRepository.SetTypeMap<Pokestop>();
+        DapperTypeMappings.SetTypeMap<Cell>();
+        DapperTypeMappings.SetTypeMap<Pokestop>();
 
-        ////EntityDataRepository.AddTypeMappers();
+        ////DapperTypeMappings.AddTypeMappers();
         SqlMapper.AddTypeHandler(typeof(InstanceTypeTypeHandler), InstanceTypeTypeHandler.Default);
         //SqlMapper.AddTypeHandler(typeof(WebhookTypeTypeHandler), WebhookTypeTypeHandler.Default);
         SqlMapper.AddTypeHandler(new JsonTypeHandler<List<string>>()); // Instance.Geofences / Webhook.Geofences / IvList.PokemonIds
@@ -68,45 +64,18 @@ internal class RepositoryTests
     }
 
     [Test]
-    public async Task DapperExtensionsRepositoryTests()
-    {
-        MicroOrmConfig.SqlProvider = SqlProvider.MySQL;
-        MicroOrmConfig.AllowKeyAsIdentity = true;
-        MicroOrmConfig.UseQuotationMarks = true;
-
-        var factory = new MySqlConnectionFactory(ConnectionString);
-
-        var deviceRepository = new BaseEntityRepository<Device>(factory);
-        var device = await deviceRepository.FindByIdAsync("atv08");
-        var devices = await deviceRepository.FindAllAsync();
-
-        var instanceRepository = new BaseEntityRepository<Instance>(factory);
-        var instance = await instanceRepository.FindByIdAsync("0Findy");
-
-        var webhookRepository = new BaseEntityRepository<Webhook>(factory);
-        //var webhook = await webhookRepository.FindAsync(x => x.Data != null);
-        var webhook = await webhookRepository.FindByIdAsync("TestTest");
-
-        var ivListRepository = new BaseEntityRepository<IvList>(factory);
-        //var ivList = await ivListRepository.FindAsync(x => x.PokemonIds.Count > 0);
-        var ivList = await ivListRepository.FindAsync(x => x.PokemonIds != null);
-
-        Assert.Pass();
-    }
-
-    [Test]
     public async Task GenericDapperRepositoryTests()
     {
-        EntityDataRepository.SetTypeMap<Account>();
-        EntityDataRepository.SetTypeMap<ApiKey>();
-        EntityDataRepository.SetTypeMap<Assignment>();
-        EntityDataRepository.SetTypeMap<AssignmentGroup>();
-        EntityDataRepository.SetTypeMap<Device>();
-        EntityDataRepository.SetTypeMap<DeviceGroup>();
-        EntityDataRepository.SetTypeMap<Geofence>();
-        EntityDataRepository.SetTypeMap<Instance>();
-        EntityDataRepository.SetTypeMap<IvList>();
-        EntityDataRepository.SetTypeMap<Webhook>();
+        DapperTypeMappings.SetTypeMap<Account>();
+        DapperTypeMappings.SetTypeMap<ApiKey>();
+        DapperTypeMappings.SetTypeMap<Assignment>();
+        DapperTypeMappings.SetTypeMap<AssignmentGroup>();
+        DapperTypeMappings.SetTypeMap<Device>();
+        DapperTypeMappings.SetTypeMap<DeviceGroup>();
+        DapperTypeMappings.SetTypeMap<Geofence>();
+        DapperTypeMappings.SetTypeMap<Instance>();
+        DapperTypeMappings.SetTypeMap<IvList>();
+        DapperTypeMappings.SetTypeMap<Webhook>();
 
         var factory = new MySqlConnectionFactory(ConnectionString);
 
@@ -207,12 +176,12 @@ internal class RepositoryTests
         var factory = new MySqlConnectionFactory(ConnectionString);
 
         var accountRepository = new AccountRepository(factory);
-        var accounts = await GetNewAccountAsync(accountRepository);
+        var account = await GetNewAccountAsync(accountRepository);
 
-        Assert.Pass();
+        Assert.That(account, Is.Not.Null);
     }
 
-    private async Task<Account?> GetNewAccountAsync(AccountRepository accountRepository,
+    private static async Task<Account?> GetNewAccountAsync(AccountRepository accountRepository,
         ushort minLevel = 0, ushort maxLevel = 35, bool ignoreWarning = false, uint spins = 3500,
         bool noCooldown = true, string? group = null, ushort cooldownLimitS = 7200,
         uint suspensionTimeLimitS = 2592000)

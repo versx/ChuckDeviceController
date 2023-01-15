@@ -292,7 +292,7 @@ public class PvpRankGenerator : IPvpRankGenerator
         var pkmn = new PokemonWithFormAndGender { Pokemon = pokemon, Form = form };
         if (!_pokemonBaseStats.ContainsKey(pkmn))
         {
-            _logger.LogWarning($"Pokemon base stats manifest does not contains Pokemon '{pkmn.Pokemon}_{pkmn.Form}_{pkmn.Gender}', skipping...");
+            _logger.LogWarning("Pokemon base stats manifest does not contains Pokemon '{Pokemon}_{Form}_{Gender}', skipping...", pkmn.Pokemon, pkmn.Form, pkmn.Gender);
             return result;
             //return null;
         }
@@ -495,7 +495,7 @@ public class PvpRankGenerator : IPvpRankGenerator
                 var pokemon = pokemonName.GetPokemonFromName();
                 if (pokemon == HoloPokemonId.Missingno)
                 {
-                    _logger.LogDebug($"Failed to get Pokemon for '{pokemonName}'");
+                    _logger.LogDebug("Failed to get Pokemon for '{PokemonName}'", pokemonName);
                     continue;
                 }
 
@@ -506,7 +506,7 @@ public class PvpRankGenerator : IPvpRankGenerator
                     var formId = formName.GetFormFromName();
                     if (formId == PokemonForm.Unset)
                     {
-                        _logger.LogDebug($"Failed to get form for '{formName}'");
+                        _logger.LogDebug("Failed to get form for '{FormName}'", formName);
                         continue;
                     }
                     form = formId;

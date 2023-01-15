@@ -4,7 +4,7 @@ using System.Data;
 
 using Dapper;
 
-using ChuckDeviceController.Data.Common;
+using ChuckDeviceController.Common;
 using ChuckDeviceController.Data.Entities;
 
 public class InstanceTypeTypeHandler : SqlMapper.TypeHandler<InstanceType>

@@ -5,8 +5,8 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
-using ChuckDeviceController.Data.Abstractions;
-using ChuckDeviceController.Data.Common;
+using ChuckDeviceController.Common;
+using ChuckDeviceController.Common.Abstractions;
 
 [Table("api_key")]
 public class ApiKey : BaseEntity, IApiKey

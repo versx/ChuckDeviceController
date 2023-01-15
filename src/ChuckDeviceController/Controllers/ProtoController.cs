@@ -2,7 +2,6 @@
 
 using System.Collections.Concurrent;
 
-using MicroOrm.Dapper.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using MySqlConnector;
 using POGOProtos.Rpc;
@@ -12,19 +11,24 @@ using ChuckDeviceController.Collections;
 using ChuckDeviceController.Data;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Repositories;
+using ChuckDeviceController.Data.Repositories.Dapper;
+using ChuckDeviceController.Data.TypeHandlers;
 using ChuckDeviceController.Extensions;
 using ChuckDeviceController.Extensions.Http;
 using ChuckDeviceController.Net.Models.Requests;
 using ChuckDeviceController.Net.Models.Responses;
 using ChuckDeviceController.Services.ProtoProcessor;
-using ChuckDeviceController.Data.Repositories.Dapper;
 
 [ApiController]
 public class ProtoController : ControllerBase
 {
+    #region Constants
+
     private const int DefaultConcurrencyLevel = 25;
     private const ushort DefaultCapacity = ushort.MaxValue;
     private const string ContentTypeJson = "application/json";
+
+    #endregion
 
     #region Variables
 
@@ -36,7 +40,6 @@ public class ProtoController : ControllerBase
     private readonly IMemoryCacheService _memCache;
     private readonly MySqlConnection _connection;
     private readonly IDapperUnitOfWork _uow;
-    //private readonly DapperRepository<Device> _deviceRepository;
 
     #endregion
 
@@ -46,19 +49,16 @@ public class ProtoController : ControllerBase
         ILogger<ProtoController> logger,
         SafeCollection<ProtoPayloadQueueItem> taskQueue,
         IMemoryCacheService memCache,
-        IDapperUnitOfWork uow,
-        MySqlConnection connection)
-        //DapperRepository<Device> deviceRepository)
+        MySqlConnection connection,
+        IDapperUnitOfWork uow)
     {
         _logger = logger;
         _taskQueue = taskQueue;
         _memCache = memCache;
         _connection = connection;
         _uow = uow;
-        EntityDataRepository.AddTypeMappers();
-        //_deviceRepository = deviceRepository;
-        //var device = _deviceRepository.FindById("atv08");
-        //Console.WriteLine($"Device: {device}");
+
+        DapperTypeMappings.AddTypeMappers();
     }
 
     #endregion
@@ -143,6 +143,7 @@ public class ProtoController : ControllerBase
             //\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b
 
             device = await EntityRepository.GetEntityAsync<string, Device>(_connection, payload.Uuid, _memCache, skipCache: false, setCache: true);
+            //device = await _uow.Devices.FindAsync(payload.Uuid);
             if (device == null)
             {
                 device = new Device
@@ -226,6 +227,7 @@ public class ProtoController : ControllerBase
 
             // Attempt to fetch account
             var account = await EntityRepository.GetEntityAsync<string, Account>(_connection, username, _memCache, skipCache: false, setCache: true);
+            //var account = await _uow.Accounts.FindAsync(username);
             if (account == null)
                 return;
 
@@ -234,6 +236,11 @@ public class ProtoController : ControllerBase
                 // Update account level
                 account.Level = level;
                 var result = await EntityRepository.ExecuteAsync(_connection, SqlQueries.AccountLevelUpdate, account);
+                //var result = await _uow.Accounts.UpdateAsync(account, mappings: new Dictionary<string, Func<Account, object>>
+                //{
+                //    ["username"] = x => account.Username,
+                //    ["level"] = x => level,
+                //});
                 if (result < 1)
                 {
                     _logger.LogWarning("[{Uuid}] Failed to update level for account '{Username}'", uuid, account.Username);

@@ -1,8 +1,8 @@
 ﻿namespace ChuckDeviceController.Plugin;
 
+using ChuckDeviceController.Common;
+using ChuckDeviceController.Common.Abstractions;
 using ChuckDeviceController.Common.Jobs;
-using ChuckDeviceController.Data.Abstractions;
-using ChuckDeviceController.Data.Common;
 
 /// <summary>
 /// Plugin host handler contract used to interact with and manage the

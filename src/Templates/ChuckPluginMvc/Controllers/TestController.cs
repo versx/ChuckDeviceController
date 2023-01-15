@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 using ChuckDeviceController.Common;
-using ChuckDeviceController.Data.Abstractions;
+using ChuckDeviceController.Common.Abstractions;
 using ChuckDeviceController.Plugin;
 
 /// <summary>

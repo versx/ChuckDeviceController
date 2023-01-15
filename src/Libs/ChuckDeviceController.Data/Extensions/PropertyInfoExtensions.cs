@@ -7,7 +7,7 @@ using System.Reflection;
 using Team = POGOProtos.Rpc.Team;
 using WeatherCondition = POGOProtos.Rpc.GameplayWeatherProto.Types.WeatherCondition;
 
-using ChuckDeviceController.Data.Common;
+using ChuckDeviceController.Common;
 using ChuckDeviceController.Extensions.Json;
 
 public static class PropertyInfoExtensions

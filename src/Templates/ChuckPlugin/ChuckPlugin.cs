@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-using ChuckDeviceController.Data.Common;
+using ChuckDeviceController.Common;
 using ChuckDeviceController.Plugin;
 using ChuckDeviceController.Plugin.Services;
 
@@ -177,7 +177,7 @@ public class ChuckPlugin : IPlugin, IDatabaseEvents, IJobControllerServiceEvents
             await httpContext.Response.WriteAsync($"{httpContext.Request.RouteValues["greeting"]}, {httpContext.Request.RouteValues["name"]}!"));
 
         // Use built in logger
-        appBuilder.Logger.LogInformation($"Logging from the plugin '{Name}'");
+        appBuilder.Logger.LogInformation("Logging from the plugin '{Name}'", Name);
     }
 
     /// <summary>

@@ -8,14 +8,13 @@ using static POGOProtos.Rpc.PokemonDisplayProto.Types;
 using ChuckDeviceConfigurator.Localization;
 using ChuckDeviceConfigurator.Services.Jobs;
 using ChuckDeviceConfigurator.Services.TimeZone;
-using ChuckDeviceConfigurator.Utilities;
 using ChuckDeviceConfigurator.ViewModels;
 using ChuckDeviceController.Common;
-using ChuckDeviceController.Data.Common;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Repositories;
 using ChuckDeviceController.Extensions.Json;
 using ChuckDeviceController.JobControllers.Models;
+using ChuckDeviceController.Plugin.Helpers;
 
 [Authorize(Roles = RoleConsts.InstancesRole)]
 public class InstanceController : Controller

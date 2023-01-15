@@ -2,8 +2,8 @@
 
 using Microsoft.Extensions.Logging;
 
-using ChuckDeviceController.Data.Abstractions;
-using ChuckDeviceController.Data.Common;
+using ChuckDeviceController.Common;
+using ChuckDeviceController.Common.Abstractions;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Extensions.Json;
 using ChuckDeviceController.Geometry.Models;
@@ -198,7 +198,7 @@ public static class GeofenceExtensions
         }
         catch (Exception ex)
         {
-            _logger.LogError($"ParseGeofenceArea: {ex}");
+            _logger.LogError("ParseGeofenceArea: {Message}", ex.InnerException?.Message ?? ex.Message);
             return default;
         }
     }

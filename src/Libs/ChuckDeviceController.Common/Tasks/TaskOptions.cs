@@ -1,6 +1,6 @@
 ﻿namespace ChuckDeviceController.Common.Tasks;
 
-using ChuckDeviceController.Data.Abstractions;
+using ChuckDeviceController.Common.Abstractions;
 
 /// <summary>
 /// Job controller instance task options used when requesting a

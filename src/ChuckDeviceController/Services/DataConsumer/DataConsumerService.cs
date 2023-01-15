@@ -348,7 +348,7 @@ public class DataConsumerService : TimedHostedService, IDataConsumerService
             if (Options.ShowProcessingTimes)
             {
                 sw.Start();
-                _logger.LogTrace($"[{requestId}] Prepared {entityCount:N0} data entities for MySQL database upsert...");
+                _logger.LogTrace("[{RequestId}] Prepared {EntityCount:N0} data entities for MySQL database upsert...", requestId, entityCount);
             }
 
             var sqls = _bulk.PrepareSqlQuery(entitiesToUpsert, (int)Options.Queue.MaximumBatchSize);
@@ -364,7 +364,7 @@ public class DataConsumerService : TimedHostedService, IDataConsumerService
             var batchCount = sqls.Count(); //results.Sum(x => x.BatchCount);
             var expectedCount = entityCount; //results.Sum(x => x.ExpectedCount);
 
-            PrintBenchmarkResults(requestId, DataLogLevel.Summary,
+            PrintBenchmarkResults(requestId,
                 new BenchmarkResults(
                     rowsAffected, expectedCount, batchCount,
                     "total entities", totalSeconds, sw),
@@ -376,7 +376,7 @@ public class DataConsumerService : TimedHostedService, IDataConsumerService
         }
         catch (Exception ex)
         {
-            _logger.LogError($"[{requestId}] ConsumeDataAsync: {ex.InnerException?.Message ?? ex.Message}");
+            _logger.LogError("[{RequestId}] ConsumeDataAsync: {Message}", requestId, ex.InnerException?.Message ?? ex.Message);
         }
     }
 
@@ -435,7 +435,7 @@ public class DataConsumerService : TimedHostedService, IDataConsumerService
     //    return null;
     //}
 
-    private void PrintBenchmarkResults(string requestId, DataLogLevel logLevel, BenchmarkResults results, SortedDictionary<SqlQueryType, ConcurrentBag<BaseEntity>> entities)
+    private void PrintBenchmarkResults(string requestId, BenchmarkResults results, SortedDictionary<SqlQueryType, ConcurrentBag<BaseEntity>> entities)
     {
         var time = string.Empty;
         if (Options.ShowProcessingTimes)
@@ -485,11 +485,11 @@ public class DataConsumerService : TimedHostedService, IDataConsumerService
         var usage = $"{count:N0}/{Options.Queue.MaximumCapacity:N0}";
         if (count >= Options.Queue.MaximumCapacity)
         {
-            _logger.LogError($"[{requestId}] Data consumer queue is at maximum capacity! {usage}");
+            _logger.LogError("[{RequestId}] Data consumer queue is at maximum capacity! {Usage}", requestId, usage);
         }
         else if (count >= Options.Queue.MaximumSizeWarning)
         {
-            _logger.LogWarning($"[{requestId}] Data consumer queue is over normal capacity with {usage} items total, consider increasing 'MaximumQueueBatchSize'");
+            _logger.LogWarning("[{RequestId}] Data consumer queue is over normal capacity with {Usage} items total, consider increasing 'MaximumQueueBatchSize'", requestId, usage);
         }
     }
 

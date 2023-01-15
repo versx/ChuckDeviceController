@@ -8,7 +8,6 @@ using Microsoft.Extensions.Logging;
 using ChuckDeviceController.Common;
 using ChuckDeviceController.Common.Jobs;
 using ChuckDeviceController.Common.Tasks;
-using ChuckDeviceController.Data.Common;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Extensions;
 using ChuckDeviceController.Geometry.Models.Abstractions;

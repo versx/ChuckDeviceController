@@ -85,7 +85,7 @@ public class ApiKeyManagerService : IApiKeyManagerService
             return;
         }
 
-        _uow.ApiKeys.Remove(entity);
+        await _uow.ApiKeys.RemoveAsync(entity);
         await _uow.CommitAsync();
     }
 

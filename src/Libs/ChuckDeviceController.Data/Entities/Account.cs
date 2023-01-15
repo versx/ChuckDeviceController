@@ -10,7 +10,7 @@ using POGOProtos.Rpc;
 
 using ChuckDeviceController.Caching.Memory;
 using ChuckDeviceController.Common;
-using ChuckDeviceController.Data.Abstractions;
+using ChuckDeviceController.Common.Abstractions;
 using ChuckDeviceController.Extensions;
 
 [Table("account")]

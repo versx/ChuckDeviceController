@@ -1,6 +1,6 @@
 ﻿namespace ChuckDeviceController.Plugin;
 
-using ChuckDeviceController.Data.Abstractions;
+using ChuckDeviceController.Common.Abstractions;
 
 /// <summary>
 /// Instance service interface contract used to create new instances.

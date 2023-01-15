@@ -110,7 +110,7 @@ public class GenericMemoryCacheService : IMemoryCacheService
 
     private void LoadCaches(IEnumerable<string> typeNames)
     {
-        _logger.LogInformation($"Initializing {typeNames.Count():N0} memory caches...");
+        _logger.LogInformation("Initializing {Count:N0} memory caches...", typeNames.Count());
 
         foreach (var typeName in typeNames)
         {

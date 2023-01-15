@@ -102,7 +102,7 @@ public class TestApiController : ControllerBase
     {
         foreach (var coord in coords)
         {
-            _logger.LogInformation($"Received coord: {coord}");
+            _logger.LogInformation("Received coord: {Coord}", coord);
         }
         // Add coordinates from response body to existing cached list
         _coords.AddRange(_coords);

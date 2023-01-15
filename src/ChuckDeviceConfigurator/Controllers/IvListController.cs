@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 using ChuckDeviceConfigurator.Localization;
+using ChuckDeviceConfigurator.Services.Icons;
 using ChuckDeviceConfigurator.Services.IvLists;
 using ChuckDeviceConfigurator.Utilities;
 using ChuckDeviceConfigurator.ViewModels;
@@ -58,7 +59,7 @@ public class IvListController : Controller
                 var split = pokemonId.Split(new[] { "_f" }, StringSplitOptions.RemoveEmptyEntries);
                 var id = Convert.ToUInt32(split[0]);
                 var formId = split.Length > 1 ? Convert.ToUInt32(split[1]) : 0;
-                var image = Utils.GetPokemonIcon(id, formId, html: true);
+                var image = GetPokemonIcon(id, formId, html: true);
                 images.Add(image);
             }
             model.Add(new IvListViewModel
@@ -102,8 +103,8 @@ public class IvListController : Controller
         {
             var name = Convert.ToString(collection["Name"]);
             var pokemonIds = Convert.ToString(collection["PokemonIds"])
-                                    .Split(',')
-                                    .ToList();
+                .Split(',')
+                .ToList();
 
             if (_uow.IvLists.Any(iv => iv.Name == name))
             {
@@ -175,8 +176,8 @@ public class IvListController : Controller
             }
 
             var pokemonIds = Convert.ToString(collection["PokemonIds"])
-                                    .Split(',')
-                                    .ToList();
+                .Split(',')
+                .ToList();
 
             // Compare list counts or if any elements are different
             if (ivList.PokemonIds.Count != pokemonIds.Count ||
@@ -256,7 +257,7 @@ public class IvListController : Controller
             var name = string.IsNullOrEmpty(formName)
                 ? pkmnName
                 : $"{pkmnName} - {formName}";
-            var image = Utils.GetPokemonIcon(pokemonId, formId);
+            var image = GetPokemonIcon(pokemonId, formId);
             var selected = selectedPokemon?.Contains(id) ?? false;
             pokemon.Add(new { id, pokemonId, name, image, selected });
         }
@@ -276,5 +277,15 @@ public class IvListController : Controller
             }
         }
         return pokemon;
+    }
+
+    private static string GetPokemonIcon(
+        uint pokemonId, uint formId = 0, ushort gender = 0, uint costumeId = 0,
+        string width = "32", string height = "32", bool html = false)
+    {
+        var url = UIconsService.Instance.GetPokemonIcon(pokemonId, formId, 0, gender, costumeId);
+        return html
+            ? $"<img src='{url}' width='{width}' height='{height}' />"
+            : url;
     }
 }

@@ -68,7 +68,7 @@
                     @index
                 </th>
                 <td>
-                    @Html.Raw(Utils.GetPokemonIcon(item.PokemonId, item.PokemonFormId, item.PokemonGender, item.PokemonCostumeId, width: "32", height: "32", html: true))
+                    @Html.Raw(UiUtils.GetPokemonIcon(item.PokemonId, item.PokemonFormId, (ushort)item.PokemonGender, item.PokemonCostumeId, width: "32", height: "32", html: true))
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.PokemonName)

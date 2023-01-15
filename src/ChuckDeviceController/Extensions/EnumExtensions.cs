@@ -1,6 +1,6 @@
 ﻿namespace ChuckDeviceController.Extensions;
 
-using ChuckDeviceController.Data.Common;
+using ChuckDeviceController.Common;
 using ChuckDeviceController.Protos;
 
 public static class EnumExtensions

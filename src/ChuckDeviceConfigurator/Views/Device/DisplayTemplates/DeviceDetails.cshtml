@@ -29,12 +29,12 @@
         @Html.DisplayNameFor(model => model.LastSeen)
     </dt>
     <dd class="col-sm-10">
-        @Html.Raw(Utils.GetLastUpdatedStatus(Model?.LastSeen ?? 0, html: true))
+        @Html.Raw(ChuckDeviceController.Plugin.Helpers.Utils.GetLastUpdatedStatus(Model?.LastSeen ?? 0, html: true))
     </dd>
     <dt class="col-sm-2">
         @localizer["Last Location"]
     </dt>
     <dd class="col-sm-10">
-        @Html.Raw(Utils.GetGoogleMapsLink(Model?.LastLatitude ?? 0, Model?.LastLongitude ?? 0, html: true))
+        @Html.Raw(ChuckDeviceController.Plugin.Helpers.Utils.GetGoogleMapsLink(Model?.LastLatitude ?? 0, Model?.LastLongitude ?? 0, html: true))
     </dd>
 </dl>

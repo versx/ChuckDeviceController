@@ -162,7 +162,7 @@ public class ProtoProcessorService : TimedHostedService, IProtoProcessorService
 
             if (string.IsNullOrEmpty(data))
             {
-                _logger.LogDebug($"[{uuid}] Unhandled proto {method} ({rawData.Method}): Proto data is null '{data}'");
+                _logger.LogDebug("[{Uuid}] Unhandled proto {Method} ({Method}): Proto data is null '{Data}'", uuid, method, rawData.Method, data);
                 continue;
             }
 
@@ -174,7 +174,7 @@ public class ProtoProcessorService : TimedHostedService, IProtoProcessorService
                         var gpr = GetPlayerOutProto.Parser.ParseFrom(Convert.FromBase64String(data));
                         if (!(gpr?.Success ?? false))
                         {
-                            _logger.LogError($"[{uuid}] Malformed GetPlayerOutProto");
+                            _logger.LogError("[{Uuid}] Malformed GetPlayerOutProto", uuid);
                             continue;
                         }
 
@@ -187,7 +187,7 @@ public class ProtoProcessorService : TimedHostedService, IProtoProcessorService
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError($"[{uuid}] Unable to decode GetPlayerOutProto: {ex}");
+                        _logger.LogError("[{Uuid}] Unable to decode GetPlayerOutProto: {Message}", uuid, ex.InnerException?.Message ?? ex.Message);
                     }
                     break;
                 case Method.GetHoloholoInventory:
@@ -196,7 +196,7 @@ public class ProtoProcessorService : TimedHostedService, IProtoProcessorService
                         var ghi = GetHoloholoInventoryOutProto.Parser.ParseFrom(Convert.FromBase64String(data));
                         if (!(ghi?.Success ?? false))
                         {
-                            _logger.LogError($"[{uuid}] Malformed GetHoloholoInventoryOutProto");
+                            _logger.LogError("[{Uuid}] Malformed GetHoloholoInventoryOutProto", uuid);
                             continue;
                         }
 
@@ -231,7 +231,7 @@ public class ProtoProcessorService : TimedHostedService, IProtoProcessorService
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError($"[{uuid}] Unable to decode GetHoloholoInventoryOutProto: {ex}");
+                        _logger.LogError("[{Uuid}] Unable to decode GetHoloholoInventoryOutProto: {Message}", uuid, ex.InnerException?.Message ?? ex.Message);
                     }
                     break;
                 case Method.FortSearch:
@@ -252,8 +252,8 @@ public class ProtoProcessorService : TimedHostedService, IProtoProcessorService
                         // Ignore AR quests so they get rescanned if they were the first quest a scanner would hold onto
                         if (quest.QuestType == QuestType.QuestGeotargetedArScan && !Options.AllowArQuests)
                         {
-                            _logger.LogWarning($"[{uuid}] Quest was blocked because it is type '{quest.QuestType}'.");
-                            _logger.LogInformation($"[{uuid}] Quest info: {quest}");
+                            _logger.LogWarning("[{Uuid}] Quest was blocked because it is type '{QuestType}'.", uuid, quest.QuestType);
+                            _logger.LogInformation("[{Uuid}] Quest info: {Quest}", uuid, quest);
                             continue;
                         }
 
@@ -271,7 +271,7 @@ public class ProtoProcessorService : TimedHostedService, IProtoProcessorService
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError($"[{uuid}] Unable to decode FortSearchOutProto: {ex}");
+                        _logger.LogError("[{Uuid}] Unable to decode FortSearchOutProto: {Message}", uuid, ex.InnerException?.Message ?? ex.Message);
                     }
                     break;
                 case Method.Encounter:
@@ -285,7 +285,7 @@ public class ProtoProcessorService : TimedHostedService, IProtoProcessorService
                             var status = er?.Status ?? EncounterOutProto.Types.Status.EncounterError;
                             if (status != EncounterOutProto.Types.Status.EncounterSuccess)
                             {
-                                _logger.LogError($"[{uuid}] Malformed EncounterOutProto");
+                                _logger.LogError("[{Uuid}] Malformed EncounterOutProto", uuid);
                                 continue;
                             }
 
@@ -300,7 +300,7 @@ public class ProtoProcessorService : TimedHostedService, IProtoProcessorService
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError($"[{uuid}] Unable to decode EncounterOutProto: {ex}");
+                        _logger.LogError("[{Uuid}] Unable to decode EncounterOutProto: {Message}", ex.InnerException?.Message ?? ex.Message);
                     }
                     break;
                 case Method.DiskEncounter:
@@ -312,7 +312,7 @@ public class ProtoProcessorService : TimedHostedService, IProtoProcessorService
                             var status = der?.Result ?? DiskEncounterOutProto.Types.Result.Unknown;
                             if (status != DiskEncounterOutProto.Types.Result.Success)
                             {
-                                _logger.LogError($"[{uuid}] Malformed DiskEncounterOutProto");
+                                _logger.LogError("[{Uuid}] Malformed DiskEncounterOutProto", uuid);
                                 continue;
                             }
 
@@ -326,7 +326,7 @@ public class ProtoProcessorService : TimedHostedService, IProtoProcessorService
                         }
                         catch (Exception ex)
                         {
-                            _logger.LogError($"[{uuid}] Unable to decode DiskEncounterOutProto: {ex}");
+                            _logger.LogError("[{Uuid}] Unable to decode DiskEncounterOutProto: {Message}", ex.InnerException?.Message ?? ex.Message);
                         }
                     }
                     break;
@@ -336,7 +336,7 @@ public class ProtoProcessorService : TimedHostedService, IProtoProcessorService
                         var fdr = FortDetailsOutProto.Parser.ParseFrom(Convert.FromBase64String(data));
                         if (fdr == null)
                         {
-                            _logger.LogError($"[{uuid}] Malformed FortDetailsOutProto");
+                            _logger.LogError("[{Uuid}] Malformed FortDetailsOutProto", uuid);
                             continue;
                         }
 
@@ -348,7 +348,7 @@ public class ProtoProcessorService : TimedHostedService, IProtoProcessorService
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError($"[{uuid}] Unable to decode FortDetailsOutProto: {ex}");
+                        _logger.LogError("[{Uuid}] Unable to decode FortDetailsOutProto: {Message}", ex.InnerException?.Message ?? ex.Message);
                     }
                     break;
                 case Method.GetMapObjects:
@@ -364,7 +364,7 @@ public class ProtoProcessorService : TimedHostedService, IProtoProcessorService
                         var ggi = GymGetInfoOutProto.Parser.ParseFrom(Convert.FromBase64String(data));
                         if (ggi == null)
                         {
-                            _logger.LogError($"[{uuid}] Malformed GymGetInfoOutProto");
+                            _logger.LogError("[{Uuid}] Malformed GymGetInfoOutProto", uuid);
                             continue;
                         }
 
@@ -379,7 +379,7 @@ public class ProtoProcessorService : TimedHostedService, IProtoProcessorService
 
                         if (ggi.GymStatusAndDefenders == null)
                         {
-                            _logger.LogWarning($"Invalid GymStatusAndDefenders provided, skipping...\n: {ggi}");
+                            _logger.LogWarning("[{Uuid}] Invalid GymStatusAndDefenders provided, skipping...\n: {Ggi}", uuid, ggi);
                             continue;
                         }
                         var fortId = ggi.GymStatusAndDefenders.PokemonFortProto.FortId;
@@ -410,12 +410,12 @@ public class ProtoProcessorService : TimedHostedService, IProtoProcessorService
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError($"[{uuid}] Unable to decode GymGetInfoOutProto: {ex}");
+                        _logger.LogError("[{Uuid}] Unable to decode GymGetInfoOutProto: {Message}", uuid, ex.InnerException?.Message ?? ex.Message);
                     }
                     break;
                 case Method.Unset:
                 default:
-                    _logger.LogDebug($"[{uuid}] Invalid method or data provided. {method}:{data}");
+                    _logger.LogDebug("[{Uuid}] Invalid method or data provided. {Method}:{Data}", uuid, method, data);
                     break;
             }
         }
@@ -444,7 +444,8 @@ public class ProtoProcessorService : TimedHostedService, IProtoProcessorService
         {
             sw.Stop();
             var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, Options.DecimalPrecision);
-            _logger.LogInformation($"[{uuid}] Parsed {processedProtos.Count:N0} protos{(Options.ShowProcessingTimes ? $" in {totalSeconds}s" : "")}");
+            var time = Options.ShowProcessingTimes ? $" in {totalSeconds}s" : "";
+            _logger.LogInformation("[{Uuid}] Parsed {Count:N0} protos{Time}", uuid, processedProtos.Count, time);
         }
 
         ProtoDataStatistics.Instance.TotalProtosProcessed += (uint)processedProtos.Count;
@@ -508,7 +509,7 @@ public class ProtoProcessorService : TimedHostedService, IProtoProcessorService
             var gmoMapCells = gmo.MapCell;
             if (gmoMapCells.Count == 0)
             {
-                _logger.LogDebug($"[{uuid}] Map cells are empty");
+                _logger.LogDebug("[{Uuid}] Map cells are empty", uuid);
                 return results;
             }
 
@@ -595,13 +596,13 @@ public class ProtoProcessorService : TimedHostedService, IProtoProcessorService
 
                     if (_emptyCells[cellId] == DefaultMaxEmptyCellsCount)
                     {
-                        _logger.LogWarning($"[{uuid}] Cell {cellId} was empty 3 times in a row. Assuming empty.");
+                        _logger.LogWarning("[{Uuid}] Cell {CellId} was empty 3 times in a row. Assuming empty.", uuid, cellId);
                         results.Add(cell);
                     }
                 }
 
                 //isEmptyGmo = true;
-                _logger.LogDebug($"[{uuid}] GMO is empty.");
+                _logger.LogDebug("[{Uuid}] GMO is empty.", uuid);
             }
             else
             {
@@ -623,7 +624,7 @@ public class ProtoProcessorService : TimedHostedService, IProtoProcessorService
         }
         catch (Exception ex)
         {
-            _logger.LogError($"[{uuid}] Unable to decode GetMapObjectsOutProto: {ex}");
+            _logger.LogError("[{Uuid}] Unable to decode GetMapObjectsOutProto: {Message}", ex.InnerException?.Message ?? ex.Message);
         }
         return results;
     }
@@ -666,11 +667,11 @@ public class ProtoProcessorService : TimedHostedService, IProtoProcessorService
         var usage = $"{_protoQueue.Count:N0}/{Options.Queue.MaximumCapacity:N0}";
         if (_protoQueue.Count >= Options.Queue.MaximumCapacity)
         {
-            _logger.LogError($"Proto processing queue is at maximum capacity! {usage}");
+            _logger.LogError("Proto processing queue is at maximum capacity! {Usage}", usage);
         }
         else if (_protoQueue.Count >= Options.Queue.MaximumSizeWarning)
         {
-            _logger.LogWarning($"Proto processing queue is over normal capacity with {usage} items total, consider increasing 'MaximumQueueBatchSize'");
+            _logger.LogWarning("Proto processing queue is over normal capacity with {Usage} items total, consider increasing 'MaximumQueueBatchSize'", usage);
         }
     }
 

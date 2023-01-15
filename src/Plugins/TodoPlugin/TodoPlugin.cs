@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 using ChuckDeviceController.Common;
-using ChuckDeviceController.Data.Common;
 using ChuckDeviceController.Plugin;
 
 using Data.Contexts;

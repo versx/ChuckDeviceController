@@ -3,10 +3,9 @@
 using System.Text.Json.Serialization;
 
 using ChuckDeviceController.Common;
+using ChuckDeviceController.Common.Abstractions;
 using ChuckDeviceController.Common.Jobs;
 using ChuckDeviceController.Common.Tasks;
-using ChuckDeviceController.Data.Abstractions;
-using ChuckDeviceController.Data.Common;
 using ChuckDeviceController.Geometry.Models.Abstractions;
 using ChuckDeviceController.Plugin;
 

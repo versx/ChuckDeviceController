@@ -8,8 +8,7 @@ using RewardType = POGOProtos.Rpc.QuestRewardProto.Types.Type;
 
 using ChuckDeviceController.Caching.Memory;
 using ChuckDeviceController.Common;
-using ChuckDeviceController.Data.Abstractions;
-using ChuckDeviceController.Data.Common;
+using ChuckDeviceController.Common.Abstractions;
 using ChuckDeviceController.Data.Extensions;
 using ChuckDeviceController.Extensions;
 

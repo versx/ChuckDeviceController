@@ -1,6 +1,6 @@
 ﻿namespace ChuckDeviceController.JobControllers.Utilities;
 
-using ChuckDeviceController.Data.Abstractions;
+using ChuckDeviceController.Common.Abstractions;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Repositories.Dapper;
 using ChuckDeviceController.Extensions;

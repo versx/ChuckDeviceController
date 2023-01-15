@@ -4,10 +4,9 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 
 using ChuckDeviceController.Common;
+using ChuckDeviceController.Common.Abstractions;
 using ChuckDeviceController.Common.Jobs;
 using ChuckDeviceController.Common.Tasks;
-using ChuckDeviceController.Data.Abstractions;
-using ChuckDeviceController.Data.Common;
 using ChuckDeviceController.Geometry.Models;
 using ChuckDeviceController.Geometry.Models.Abstractions;
 using ChuckDeviceController.Plugin;

@@ -9,6 +9,7 @@ using MySqlConnector;
 using ChuckDeviceController.Caching.Memory;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Extensions;
+using ChuckDeviceController.Data.TypeHandlers;
 using ChuckDeviceController.Extensions;
 using ChuckDeviceController.Logging;
 
@@ -37,7 +38,6 @@ public class EntityRepository
     };
     private static string? _connectionString;
     private readonly bool _openConnection;
-    private static EntityDataRepository _entityRepository = default!;
 
     #endregion
 
@@ -82,10 +82,7 @@ public class EntityRepository
         _connectionString = connectionString;
         _openConnection = openConnection;
 
-        EntityDataRepository.AddTypeMappers();
-
-        //_entityRepository = new EntityDataRepository(connectionString);
-        _entityRepository = new EntityDataRepository();
+        DapperTypeMappings.AddTypeMappers();
     }
 
     #endregion
@@ -216,7 +213,7 @@ public class EntityRepository
     /// <param name="commandTimeoutS">SQL command timeout in seconds.</param>
     /// <returns>Returns the number of rows affected by the query.</returns>
     /// <exception cref="Exception">Throws if MySQL connection is null.</exception>
-    public static async Task<int> ExecuteAsync(string sql, object? param = null, int? commandTimeoutS = EntityDataRepository.DefaultCommandTimeoutS, CancellationToken stoppingToken = default)
+    public static async Task<int> ExecuteAsync(string sql, object? param = null, int? commandTimeoutS = DefaultCommandTimeoutS, CancellationToken stoppingToken = default)
     {
         var rowsAffected = 0;
         await _sem.WaitAsync(stoppingToken);
@@ -252,7 +249,7 @@ public class EntityRepository
     /// <param name="commandTimeoutS">SQL command timeout in seconds.</param>
     /// <returns>Returns the number of rows affected by the query.</returns>
     /// <exception cref="Exception">Throws if MySQL connection is null.</exception>
-    public static async Task<int> ExecuteAsync(MySqlConnection connection, string sql, object? param = null, int? commandTimeoutS = EntityDataRepository.DefaultCommandTimeoutS, CancellationToken stoppingToken = default)
+    public static async Task<int> ExecuteAsync(MySqlConnection connection, string sql, object? param = null, int? commandTimeoutS = DefaultCommandTimeoutS, CancellationToken stoppingToken = default)
     {
         var rowsAffected = 0;
         //await _sem.WaitAsync(stoppingToken);
@@ -281,7 +278,7 @@ public class EntityRepository
     /// <param name="stoppingToken">Cancellation token to signal exit.</param>
     /// <returns>Returns the number of rows affected by the query.</returns>
     /// <exception cref="Exception">Throws if MySQL connection is null.</exception>
-    public static async Task<int> ExecuteAsync(IEnumerable<string> sqls, int? commandTimeoutS = EntityDataRepository.DefaultCommandTimeoutS, CancellationToken stoppingToken = default)
+    public static async Task<int> ExecuteAsync(IEnumerable<string> sqls, int? commandTimeoutS = DefaultCommandTimeoutS, CancellationToken stoppingToken = default)
     {
         var rowsAffected = 0;
         await _sem.WaitAsync(stoppingToken);
@@ -359,7 +356,7 @@ public class EntityRepository
         string name,
         bool openConnection = true,
         bool runLeakWatcher = true,
-        uint waitTimeS = EntityDataRepository.DefaultConnectionWaitTimeS)
+        uint waitTimeS = DefaultConnectionWaitTimeS)
     {
         var task = Task.Run(async () => await CreateConnectionAsync(name, openConnection, runLeakWatcher, waitTimeS));
         task.Wait();
@@ -370,7 +367,7 @@ public class EntityRepository
         string name,
         bool openConnection = true,
         bool runLeakWatcher = true,
-        uint waitTimeS = EntityDataRepository.DefaultConnectionWaitTimeS,
+        uint waitTimeS = DefaultConnectionWaitTimeS,
         uint connectionLeakTimeoutS = DefaultConnectionLeakTimeoutS,
         CancellationToken stoppingToken = default)
     {

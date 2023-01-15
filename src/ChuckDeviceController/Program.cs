@@ -1,6 +1,5 @@
 using System.Diagnostics;
 
-using MicroOrm.Dapper.Repositories;
 using MicroOrm.Dapper.Repositories.Config;
 using MicroOrm.Dapper.Repositories.SqlGenerator;
 using Microsoft.EntityFrameworkCore;
@@ -14,7 +13,9 @@ using ChuckDeviceController.Collections;
 using ChuckDeviceController.Configuration;
 using ChuckDeviceController.Data;
 using ChuckDeviceController.Data.Contexts;
+using ChuckDeviceController.Data.Factories;
 using ChuckDeviceController.Data.Repositories;
+using ChuckDeviceController.Data.Repositories.Dapper;
 using ChuckDeviceController.Extensions;
 using ChuckDeviceController.Extensions.Data;
 using ChuckDeviceController.HostedServices;
@@ -121,6 +122,9 @@ builder.Services.AddDistributedMemoryCache();
 // Register data contexts, factories, and pools
 builder.Services.AddDbContext<MapDbContext>(options =>
     options.GetDbContextOptions(connectionString, serverVersion, Strings.AssemblyName, resiliencyConfig), ServiceLifetime.Scoped);
+
+builder.Services.AddSingleton<IDapperUnitOfWork, DapperUnitOfWork>();
+
 builder.Services.AddScoped<MySqlConnection>(options =>
 {
     var connection = new MySqlConnection(connectionString);
@@ -135,13 +139,17 @@ builder.Services.AddScoped<MySqlConnection>(options =>
     }
     return connection;
 });
+builder.Services.AddSingleton<IMySqlConnectionFactory>(sp =>
+{
+    var factory = new MySqlConnectionFactory(config);
+    return factory;
+});
 
 // Dapper-Repositories registration
 // Reference: https://github.com/phnx47/dapper-repositories
 MicroOrmConfig.SqlProvider = SqlProvider.MySQL;
 MicroOrmConfig.AllowKeyAsIdentity = true;
 builder.Services.AddSingleton(typeof(ISqlGenerator<>), typeof(SqlGenerator<>));
-builder.Services.AddScoped(typeof(DapperRepository<>), typeof(BaseEntityRepository<>));
 
 #endregion
 
@@ -226,8 +234,8 @@ app.Use((context, next) =>
 app.UseAuthorization();
 app.MapControllers();
 
-//new Thread(async () => await MonitorResults(TimeSpan.FromMinutes(5), new()))
-//{ IsBackground = true }.Start();
+new Thread(() => MonitorResults(TimeSpan.FromMinutes(5), new()))
+{ IsBackground = true }.Start();
 
 // Open DB connection
 var sw = new Stopwatch();
@@ -247,7 +255,7 @@ app.Run();
 
 #endregion
 
-async Task MonitorResults(TimeSpan duration, Stopwatch stopwatch)
+void MonitorResults(TimeSpan duration, Stopwatch stopwatch)
 {
     var lastInstanceCount = 0UL;
     var lastRequestCount = 0UL;
@@ -257,8 +265,6 @@ async Task MonitorResults(TimeSpan duration, Stopwatch stopwatch)
 
     while (stopwatch.Elapsed < duration)
     {
-        await Task.Delay(TimeSpan.FromSeconds(1));
-
         var instanceCount = EntityRepository.InstanceCount + MapDbContext.InstanceCount;
         var requestCount = ProtoDataStatistics.Instance.TotalRequestsProcessed;
         var elapsed = stopwatch.Elapsed;
@@ -273,6 +279,8 @@ async Task MonitorResults(TimeSpan duration, Stopwatch stopwatch)
         lastInstanceCount = instanceCount;
         lastRequestCount = requestCount;
         lastElapsed = elapsed;
+
+        Thread.Sleep(1000);
     }
 
     logger.LogInformation("Total database connections created: {InstanceCount:N0}", EntityRepository.InstanceCount);

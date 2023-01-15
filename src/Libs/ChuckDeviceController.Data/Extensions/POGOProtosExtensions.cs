@@ -2,7 +2,7 @@
 
 using POGOProtos.Rpc;
 
-using ChuckDeviceController.Data.Abstractions;
+using ChuckDeviceController.Common.Abstractions;
 using ChuckDeviceController.Extensions;
 
 public static class POGOProtosExtensions

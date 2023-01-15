@@ -7,9 +7,9 @@ using Microsoft.Extensions.Logging;
 using POGOProtos.Rpc;
 
 using ChuckDeviceController.Common;
+using ChuckDeviceController.Common.Abstractions;
 using ChuckDeviceController.Common.Jobs;
 using ChuckDeviceController.Common.Tasks;
-using ChuckDeviceController.Data.Abstractions;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Repositories.Dapper;
 using ChuckDeviceController.Extensions;

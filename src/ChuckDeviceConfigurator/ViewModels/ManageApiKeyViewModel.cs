@@ -2,7 +2,7 @@
 
 using System.ComponentModel;
 
-using ChuckDeviceController.Data.Common;
+using ChuckDeviceController.Common;
 using ChuckDeviceController.PluginManager;
 
 public class ManageApiKeyViewModel

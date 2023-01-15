@@ -7,7 +7,7 @@ using System.Text.Json.Serialization;
 
 using Microsoft.EntityFrameworkCore;
 
-using ChuckDeviceController.Data.Abstractions;
+using ChuckDeviceController.Common.Abstractions;
 
 [Table("device")]
 public class Device : BaseEntity, IDevice

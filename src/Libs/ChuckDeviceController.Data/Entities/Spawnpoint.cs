@@ -7,7 +7,7 @@ using System.Text.Json.Serialization;
 using MySqlConnector;
 
 using ChuckDeviceController.Caching.Memory;
-using ChuckDeviceController.Data.Abstractions;
+using ChuckDeviceController.Common.Abstractions;
 using ChuckDeviceController.Data.Repositories;
 using ChuckDeviceController.Extensions;
 

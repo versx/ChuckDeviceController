@@ -1,12 +1,11 @@
 ﻿@using ChuckDeviceConfigurator.Localization
-@using static POGOProtos.Rpc.PokemonDisplayProto.Types
 @model Webhook
 @{
     string GetPokemonDisplay(string id)
     {
         var details = Translator.Instance.GetPokemonDetails(id);
         var name = Translator.Instance.GetPokemonName(id);
-        var icon = Utils.GetPokemonIcon(details.PokemonId, details.FormId, (Gender)details.GenderId, details.CostumeId, width: "32", height: "32", html: true);
+        var icon = UiUtils.GetPokemonIcon(details.PokemonId, details.FormId, details.GenderId, details.CostumeId, html: true);
         return $"{icon}&nbsp;{name}";
     }
 }

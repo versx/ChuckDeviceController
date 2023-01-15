@@ -72,7 +72,7 @@ public class ProxyHandlerMiddleware<TProxyHandler>
             catch (IOException ex)
             {
                 // Usually a client abort. Ignore.
-                _logger.LogError($"[CopyProxyHttpResponse] {ex.Message}");
+                _logger.LogError("[CopyProxyHttpResponse] {Message}", ex.InnerException?.Message ?? ex.Message);
             }
         }
     }

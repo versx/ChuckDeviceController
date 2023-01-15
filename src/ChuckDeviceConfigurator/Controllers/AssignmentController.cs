@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using ChuckDeviceConfigurator.Services.Assignments;
 using ChuckDeviceConfigurator.ViewModels;
 using ChuckDeviceController.Common;
-using ChuckDeviceController.Data.Common;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Repositories;
 
@@ -308,7 +307,7 @@ public class AssignmentController : BaseMvcController
         try
         {
             var assignments = await _uow.Assignments.FindAllAsync();
-            _uow.Assignments.RemoveRange(assignments);
+            await _uow.Assignments.RemoveRangeAsync(assignments);
             await _uow.CommitAsync();
 
             // Reload assignments in the assignment service to reflect the changes.

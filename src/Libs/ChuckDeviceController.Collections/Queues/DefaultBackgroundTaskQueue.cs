@@ -9,7 +9,8 @@ public class DefaultBackgroundTaskQueue<T> : IBackgroundTaskQueue<T> where T : c
 
     public uint Count => Convert.ToUInt32(_queue.Count);
 
-    public DefaultBackgroundTaskQueue(int capacity = 4096)
+    //public DefaultBackgroundTaskQueue(int capacity = 4096)
+    public DefaultBackgroundTaskQueue()
     {
     }
 

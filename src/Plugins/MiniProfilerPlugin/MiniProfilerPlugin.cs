@@ -2,7 +2,7 @@
 
 using StackExchange.Profiling;
 
-using ChuckDeviceController.Data.Common;
+using ChuckDeviceController.Common;
 using ChuckDeviceController.Plugin;
 
 [

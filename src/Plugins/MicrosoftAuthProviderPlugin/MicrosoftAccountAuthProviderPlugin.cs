@@ -2,8 +2,8 @@
 
 using Microsoft.Extensions.Configuration;
 
+using ChuckDeviceController.Common;
 using ChuckDeviceController.Common.Configuration;
-using ChuckDeviceController.Data.Common;
 using ChuckDeviceController.Plugin;
 
 [PluginApiKey("CDC-328TVvD7o85TNbNhjLE0JysVMbOxjXKT")]

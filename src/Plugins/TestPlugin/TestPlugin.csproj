@@ -9,7 +9,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Libs\ChuckDeviceController.Data.Common\ChuckDeviceController.Data.Common.csproj" />
     <ProjectReference Include="..\..\Libs\ChuckDeviceController.Extensions.Http\ChuckDeviceController.Extensions.Http.csproj" />
     <ProjectReference Include="..\..\Libs\ChuckDeviceController.Extensions.Json\ChuckDeviceController.Extensions.Json.csproj" />
     <ProjectReference Include="..\..\Libs\ChuckDeviceController.Plugin.Helpers\ChuckDeviceController.Plugin.Helpers.csproj" />

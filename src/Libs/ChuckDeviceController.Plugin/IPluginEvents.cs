@@ -1,6 +1,6 @@
 ﻿namespace ChuckDeviceController.Plugin;
 
-using ChuckDeviceController.Data.Common;
+using ChuckDeviceController.Common;
 
 /// <summary>
 /// Provides delegates of plugin related events

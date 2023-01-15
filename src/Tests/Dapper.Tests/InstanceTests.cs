@@ -1,8 +1,7 @@
 ﻿namespace Dapper.Tests;
 
-using ChuckDeviceController.Data.Common;
+using ChuckDeviceController.Common;
 using ChuckDeviceController.Data.Entities;
-using ChuckDeviceController.Data.Factories;
 using ChuckDeviceController.Extensions.Json;
 using ChuckDeviceController.Extensions.Json.Converters;
 
@@ -62,7 +61,7 @@ internal class InstanceTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(circleRouteType.ToString() == circleRouteType2?.ToString(), Is.True);
+            Assert.That(circleRouteType.ToString(), Is.EqualTo(circleRouteType2?.ToString()));
             Assert.That(instance, Is.Not.Null);
         });
     }

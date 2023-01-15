@@ -31,7 +31,6 @@
     <ProjectReference Include="..\Libs\ChuckDeviceController.Authorization.Jwt\ChuckDeviceController.Authorization.Jwt.csproj" />
     <ProjectReference Include="..\Libs\ChuckDeviceController.Collections\ChuckDeviceController.Collections.csproj" />
     <ProjectReference Include="..\Libs\ChuckDeviceController.Configuration\ChuckDeviceController.Configuration.csproj" />
-    <ProjectReference Include="..\Libs\ChuckDeviceController.Data.Common\ChuckDeviceController.Data.Common.csproj" />
     <ProjectReference Include="..\Libs\ChuckDeviceController.Data\ChuckDeviceController.Data.csproj" />
     <ProjectReference Include="..\Libs\ChuckDeviceController.Extensions.Json\ChuckDeviceController.Extensions.Json.csproj" />
     <ProjectReference Include="..\Libs\ChuckDeviceController.Geometry\ChuckDeviceController.Geometry.csproj" />

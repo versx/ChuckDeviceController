@@ -134,7 +134,7 @@ public class JwtAuthManager
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Failed to validate the JWT token for gRPC service request: {ex}");
+            _logger.LogError("Failed to validate the JWT token for gRPC service request: {Message}", ex.InnerException?.Message ?? ex.Message);
         }
         return false;
     }

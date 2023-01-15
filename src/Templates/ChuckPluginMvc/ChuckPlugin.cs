@@ -2,7 +2,7 @@
 #pragma warning disable IDE0052 // Remove unread private members
 namespace ChuckDeviceControllerPluginMvc;
 
-using ChuckDeviceController.Data.Common;
+using ChuckDeviceController.Common;
 using ChuckDeviceController.Plugin;
 using ChuckDeviceController.Plugin.Services;
 

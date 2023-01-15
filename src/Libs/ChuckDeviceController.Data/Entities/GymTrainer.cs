@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using POGOProtos.Rpc;
 
 using ChuckDeviceController.Common;
-using ChuckDeviceController.Data.Abstractions;
+using ChuckDeviceController.Common.Abstractions;
 using ChuckDeviceController.Extensions;
 
 [Table("gym_trainer")]

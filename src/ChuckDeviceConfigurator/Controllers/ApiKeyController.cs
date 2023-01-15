@@ -8,8 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 using ChuckDeviceConfigurator.Services.Plugins;
 using ChuckDeviceConfigurator.ViewModels;
 using ChuckDeviceController.Common;
-using ChuckDeviceController.Data.Common;
-using ChuckDeviceController.Data.Common.Extensions;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Repositories;
 using ChuckDeviceController.Extensions;

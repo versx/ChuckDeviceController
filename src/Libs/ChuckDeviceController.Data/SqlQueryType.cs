@@ -1,5 +1,8 @@
 ﻿namespace ChuckDeviceController.Data;
 
+/// <summary>
+/// 
+/// </summary>
 public enum SqlQueryType
 {
     /// <summary>

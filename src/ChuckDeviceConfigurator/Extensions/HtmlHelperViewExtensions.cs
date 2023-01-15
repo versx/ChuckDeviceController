@@ -12,14 +12,14 @@ public static class HtmlHelperViewExtensions
     {
         var controller = Convert.ToString(helper.ViewContext.RouteData.Values["controller"]);
 
-        return RenderAction(helper, action, controller, parameters);
+        return RenderAction(helper, action, controller!, parameters);
     }
 
     public static IHtmlContent RenderAction(this IHtmlHelper helper, string action, string controller, object? parameters = null)
     {
         var area = Convert.ToString(helper.ViewContext.RouteData.Values["area"]);
 
-        return RenderAction(helper, action, controller, area, parameters);
+        return RenderAction(helper, action, controller, area!, parameters);
     }
 
     public static IHtmlContent RenderAction(this IHtmlHelper helper, string action, string controller, string area, object? parameters = null)

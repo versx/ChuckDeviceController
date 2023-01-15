@@ -23,7 +23,6 @@ public static class CallCredentialsExtensions
         var (status, json) = await NetUtils.PostAsync(url);
         if (status != HttpStatusCode.OK || json == null)
         {
-            Console.WriteLine($"Failed to send request for JWT");
             return;
         }
 

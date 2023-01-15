@@ -1,7 +1,6 @@
 ﻿namespace ChuckDeviceController.Plugin;
 
-using ChuckDeviceController.Common.Jobs;
-using ChuckDeviceController.Data.Common;
+using ChuckDeviceController.Common;
 
 /// <summary>
 ///     Sets the expected <seealso cref="GeofenceType"/> for custom
@@ -21,7 +20,7 @@ public sealed class GeofenceTypeAttribute : Attribute
     ///     attribute class.
     /// </summary>
     /// <param name="type">
-    ///     Expected geofence type required by the custom <seealso cref="IJobController"/>.
+    ///     Expected geofence type required by the custom <seealso cref="Common.Jobs.IJobController"/>.
     /// </param>
     public GeofenceTypeAttribute(string type)
     {

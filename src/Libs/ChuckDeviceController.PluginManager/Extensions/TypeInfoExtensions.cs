@@ -85,20 +85,20 @@ public static class TypeInfoExtensions
         {
             if (attr == null)
             {
-                _logger.LogError($"Attribute '{nameof(PluginBootstrapperServiceAttribute)}' for field '{fieldInfo.Name}' was null, skipping.");
+                _logger.LogError("Attribute '{TypeName}' for field '{Name}' was null, skipping.", nameof(PluginBootstrapperServiceAttribute), fieldInfo.Name);
                 continue;
             }
 
             if (sharedServices == null)
             {
-                _logger.LogError($"Attribute '{nameof(PluginBootstrapperServiceAttribute)}' for field '{fieldInfo.Name}' was found, but shared host services is null, skipping.");
+                _logger.LogError("Attribute '{TypeName}' for field '{Name}' was found, but shared host services is null, skipping.", nameof(PluginBootstrapperServiceAttribute), fieldInfo.Name);
                 continue;
             }
 
             // Instantiate/set field to service instance
             if (!sharedServices.ContainsKey(attr.ServiceType))
             {
-                _logger.LogError($"Unable to find registered service '{attr.ServiceType.Name}' for plugin field '{fieldInfo.Name}' with attribute '{nameof(PluginBootstrapperServiceAttribute)}'");
+                _logger.LogError("Unable to find registered service '{ServiceName}' for plugin field '{Name}' with attribute '{TypeName}'", attr.ServiceType.Name, fieldInfo.Name, nameof(PluginBootstrapperServiceAttribute));
                 continue;
             }
 
@@ -125,20 +125,20 @@ public static class TypeInfoExtensions
         {
             if (attr == null)
             {
-                _logger.LogError($"Attribute '{nameof(PluginBootstrapperServiceAttribute)}' for property '{propertyInfo.Name}' was null, skipping.");
+                _logger.LogError("Attribute '{TypeName}' for property '{Name}' was null, skipping.", nameof(PluginBootstrapperServiceAttribute), propertyInfo.Name);
                 continue;
             }
 
             if (sharedServices == null)
             {
-                _logger.LogError($"Attribute '{nameof(PluginBootstrapperServiceAttribute)}' for property '{propertyInfo.Name}' was found, but shared host services is null, skipping.");
+                _logger.LogError("Attribute '{TypeName}' for property '{Name}' was found, but shared host services is null, skipping.", nameof(PluginBootstrapperServiceAttribute), propertyInfo.Name);
                 continue;
             }
 
             // Instantiate/set property to service
             if (!sharedServices.ContainsKey(attr.ServiceType))
             {
-                _logger.LogError($"Unable to find registered service '{attr.ServiceType.Name}' for plugin property '{propertyInfo.Name}' with attribute '{nameof(PluginBootstrapperServiceAttribute)}'");
+                _logger.LogError("Unable to find registered service '{ServiceName}' for plugin property '{Name}' with attribute '{TypeName}'", attr.ServiceType.Name, propertyInfo.Name, nameof(PluginBootstrapperServiceAttribute));
                 continue;
             }
 

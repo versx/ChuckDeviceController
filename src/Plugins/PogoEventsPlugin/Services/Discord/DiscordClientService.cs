@@ -8,14 +8,14 @@ using Configuration;
 
 public class DiscordClientService : IDiscordClientService
 {
-    private readonly ILogger<IDiscordClientService> _logger;
+    //private readonly ILogger<IDiscordClientService> _logger;
     private readonly DiscordConfig _config;
 
     public DiscordClientService(
-        ILogger<IDiscordClientService> logger,
+        //ILogger<IDiscordClientService> logger,
         IOptions<DiscordConfig> options)
     {
-        _logger = logger;
+        //_logger = logger;
         _config = options.Value;
     }
 

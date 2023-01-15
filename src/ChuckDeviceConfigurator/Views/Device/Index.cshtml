@@ -91,7 +91,7 @@
         {
             <tr>
                 <th scope="row">
-                    @Utils.GetDeviceStatus(item.LastSeen ?? 0)
+                    @ChuckDeviceController.Plugin.Helpers.Utils.GetDeviceStatus(item.LastSeen ?? 0)
                 </th>
                 <td>
                     @Html.DisplayFor(modelItem => item.Uuid)
@@ -109,10 +109,10 @@
                     @Html.DisplayFor(modelItem => item.LastHost)
                 </td>
                 <td>
-                    @Html.Raw(Utils.GetGoogleMapsLink(item.LastLatitude ?? 0, item.LastLongitude ?? 0, html: true))
+                    @Html.Raw(ChuckDeviceController.Plugin.Helpers.Utils.GetGoogleMapsLink(item.LastLatitude ?? 0, item.LastLongitude ?? 0, html: true))
                 </td>
                 <td>
-                    @Html.Raw(Utils.GetLastUpdatedStatus(item.LastSeen ?? 0, html: true))
+                    @Html.Raw(ChuckDeviceController.Plugin.Helpers.Utils.GetLastUpdatedStatus(item.LastSeen ?? 0, html: true))
                 </td>
                 <td>
                     <div class="dropdown">

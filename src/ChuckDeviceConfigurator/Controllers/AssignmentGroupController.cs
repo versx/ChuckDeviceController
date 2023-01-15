@@ -9,9 +9,9 @@ using ChuckDeviceConfigurator.Services.Assignments;
 using ChuckDeviceConfigurator.Utilities;
 using ChuckDeviceConfigurator.ViewModels;
 using ChuckDeviceController.Common;
-using ChuckDeviceController.Data.Common;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Repositories;
+using ChuckDeviceController.Plugin.Helpers;
 
 [Controller]
 [Authorize(Roles = RoleConsts.AssignmentGroupsRole)]
@@ -104,7 +104,7 @@ public class AssignmentGroupController : BaseMvcController
         var assignments = await _uow.Assignments.FindAllAsync();
         foreach (var assignment in assignments)
         {
-            var displayText = Utils.FormatAssignmentText(assignment);
+            var displayText = ChuckDeviceController.Plugin.Helpers.Utils.FormatAssignmentText(assignment);
             assignmentsList.Add(new SelectListItem
             {
                 Text = displayText,
@@ -184,7 +184,7 @@ public class AssignmentGroupController : BaseMvcController
         var assignments = await _uow.Assignments.FindAllAsync();
         foreach (var assignment in assignments)
         {
-            var displayText = Utils.FormatAssignmentText(assignment);
+            var displayText = ChuckDeviceController.Plugin.Helpers.Utils.FormatAssignmentText(assignment);
             assignmentsList.Add(new SelectListItem
             {
                 Text = displayText,

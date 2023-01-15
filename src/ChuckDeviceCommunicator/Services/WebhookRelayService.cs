@@ -10,7 +10,6 @@ using Microsoft.Extensions.Options;
 using ChuckDeviceController.Collections;
 using ChuckDeviceController.Common;
 using ChuckDeviceController.Configuration;
-using ChuckDeviceController.Data.Common;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Extensions;
 using ChuckDeviceController.Extensions.Json;
@@ -394,7 +393,7 @@ public class WebhookRelayService : IWebhookRelayService
             if (!(endpoint?.Enabled ?? false))
                 continue;
 
-            if (pokemonEvents.Any() && endpoint.Types.Contains(WebhookType.Pokemon))
+            if (pokemonEvents.Any() && endpoint.Types.HasFlag(WebhookType.Pokemon))
             {
                 var webhooks = ProcessPokemon(endpoint, pokemonEvents);
                 if (webhooks.Any())
@@ -402,7 +401,7 @@ public class WebhookRelayService : IWebhookRelayService
                     events.AddRange(webhooks);
                 }
             }
-            if (pokestopEvents.Any() && endpoint.Types.Contains(WebhookType.Pokestops))
+            if (pokestopEvents.Any() && endpoint.Types.HasFlag(WebhookType.Pokestops))
             {
                 var webhooks = ProcessPokestops(endpoint, pokestopEvents);
                 if (webhooks.Any())
@@ -410,7 +409,7 @@ public class WebhookRelayService : IWebhookRelayService
                     events.AddRange(webhooks);
                 }
             }
-            if (lureEvents.Any() && endpoint.Types.Contains(WebhookType.Lures))
+            if (lureEvents.Any() && endpoint.Types.HasFlag(WebhookType.Lures))
             {
                 var webhooks = ProcessLures(endpoint, lureEvents);
                 if (webhooks.Any())
@@ -418,7 +417,7 @@ public class WebhookRelayService : IWebhookRelayService
                     events.AddRange(webhooks);
                 }
             }
-            if (invasionEvents.Any() && endpoint.Types.Contains(WebhookType.Invasions))
+            if (invasionEvents.Any() && endpoint.Types.HasFlag(WebhookType.Invasions))
             {
                 var webhooks = ProcessInvasions(endpoint, invasionEvents);
                 if (webhooks.Any())
@@ -426,7 +425,7 @@ public class WebhookRelayService : IWebhookRelayService
                     events.AddRange(webhooks);
                 }
             }
-            if (questEvents.Any() && endpoint.Types.Contains(WebhookType.Quests))
+            if (questEvents.Any() && endpoint.Types.HasFlag(WebhookType.Quests))
             {
                 var webhooks = ProcessQuests(endpoint, questEvents);
                 if (webhooks.Any())
@@ -434,7 +433,7 @@ public class WebhookRelayService : IWebhookRelayService
                     events.AddRange(webhooks);
                 }
             }
-            if (alternativeQuestEvents.Any() && endpoint.Types.Contains(WebhookType.AlternativeQuests))
+            if (alternativeQuestEvents.Any() && endpoint.Types.HasFlag(WebhookType.AlternativeQuests))
             {
                 var webhooks = ProcessAltQuests(endpoint, alternativeQuestEvents);
                 if (webhooks.Any())
@@ -442,7 +441,7 @@ public class WebhookRelayService : IWebhookRelayService
                     events.AddRange(webhooks);
                 }
             }
-            if (gymEvents.Any() && endpoint.Types.Contains(WebhookType.Gyms))
+            if (gymEvents.Any() && endpoint.Types.HasFlag(WebhookType.Gyms))
             {
                 var webhooks = ProcessGyms(endpoint, gymEvents);
                 if (webhooks.Any())
@@ -450,7 +449,7 @@ public class WebhookRelayService : IWebhookRelayService
                     events.AddRange(webhooks);
                 }
             }
-            if (gymInfoEvents.Any() && endpoint.Types.Contains(WebhookType.GymInfo))
+            if (gymInfoEvents.Any() && endpoint.Types.HasFlag(WebhookType.GymInfo))
             {
                 var webhooks = ProcessGymInfo(endpoint, gymInfoEvents);
                 if (webhooks.Any())
@@ -458,7 +457,7 @@ public class WebhookRelayService : IWebhookRelayService
                     events.AddRange(webhooks);
                 }
             }
-            if (gymDefenderEvents.Any() && endpoint.Types.Contains(WebhookType.GymDefenders))
+            if (gymDefenderEvents.Any() && endpoint.Types.HasFlag(WebhookType.GymDefenders))
             {
                 var webhooks = ProcessGymDefenders(endpoint, gymDefenderEvents);
                 if (webhooks.Any())
@@ -466,7 +465,7 @@ public class WebhookRelayService : IWebhookRelayService
                     events.AddRange(webhooks);
                 }
             }
-            if (gymTrainerEvents.Any() && endpoint.Types.Contains(WebhookType.GymTrainers))
+            if (gymTrainerEvents.Any() && endpoint.Types.HasFlag(WebhookType.GymTrainers))
             {
                 var webhooks = ProcessGymTrainers(endpoint, gymTrainerEvents);
                 if (webhooks.Any())
@@ -474,7 +473,7 @@ public class WebhookRelayService : IWebhookRelayService
                     events.AddRange(webhooks);
                 }
             }
-            if (eggEvents.Any() && endpoint.Types.Contains(WebhookType.Eggs))
+            if (eggEvents.Any() && endpoint.Types.HasFlag(WebhookType.Eggs))
             {
                 var webhooks = ProcessEggs(endpoint, eggEvents);
                 if (webhooks.Any())
@@ -482,7 +481,7 @@ public class WebhookRelayService : IWebhookRelayService
                     events.AddRange(webhooks);
                 }
             }
-            if (raidEvents.Any() && endpoint.Types.Contains(WebhookType.Raids))
+            if (raidEvents.Any() && endpoint.Types.HasFlag(WebhookType.Raids))
             {
                 var webhooks = ProcessRaids(endpoint, raidEvents);
                 if (webhooks.Any())
@@ -490,7 +489,7 @@ public class WebhookRelayService : IWebhookRelayService
                     events.AddRange(webhooks);
                 }
             }
-            if (weatherEvents.Any() && endpoint.Types.Contains(WebhookType.Weather))
+            if (weatherEvents.Any() && endpoint.Types.HasFlag(WebhookType.Weather))
             {
                 var webhooks = ProcessWeather(endpoint, weatherEvents);
                 if (webhooks.Any())
@@ -498,7 +497,7 @@ public class WebhookRelayService : IWebhookRelayService
                     events.AddRange(webhooks);
                 }
             }
-            if (accountEvents.Count > 0 && endpoint.Types.Contains(WebhookType.Accounts))
+            if (accountEvents.Count > 0 && endpoint.Types.HasFlag(WebhookType.Accounts))
             {
                 var webhooks = ProcessAccounts(endpoint, accountEvents);
                 if (webhooks.Any())
@@ -536,23 +535,23 @@ public class WebhookRelayService : IWebhookRelayService
         if (statusCode == HttpStatusCode.OK)
         {
             _totalWebhooksSent += Convert.ToUInt64(payloads.Count);
-            _logger.LogInformation($"Sent {payloads!.Count:N0} webhook events to {url}. Total sent this session: {_totalWebhooksSent}");
+            _logger.LogInformation("Sent {Count:N0} webhook events to {Url}. Total sent this session: {_totalWebhooksSent}", payloads.Count, url, _totalWebhooksSent);
             return;
         }
 
-        _logger.LogError($"Webhook endpoint {url} did not return an 'OK' status code, {statusCode} with response: {result}");
+        _logger.LogError("Webhook endpoint {Url} did not return an 'OK' status code, {StatusCode} with response: {Result}", url, statusCode, result);
 
         // Try sending again
         if (retryCount >= Options.MaximumRetryCount)
         {
-            _logger.LogWarning($"{retryCount}/{Options.MaximumRetryCount} attempts made to send webhook payload to endpoint {url}, aborting...");
+            _logger.LogWarning("{RetryCount}/{MaximumRetryCount} attempts made to send webhook payload to endpoint {Url}, aborting...", retryCount, Options.MaximumRetryCount, url);
             return;
         }
 
         // Wait 3 seconds before trying again
         Thread.Sleep(Options.FailedRetryDelayS * 1000);
         retryCount++;
-        _logger.LogWarning($"Retry attempt {retryCount}/{Options.MaximumRetryCount} to resend webhook payload to endpoint {url}");
+        _logger.LogWarning("Retry attempt {RetryCount}/{MaximumRetryCount} to resend webhook payload to endpoint {Url}", retryCount, Options.MaximumRetryCount, url);
 
         await SendWebhookEventsAsync(url, payloads!, retryCount);
     }
@@ -582,11 +581,11 @@ public class WebhookRelayService : IWebhookRelayService
             _webhookEndpoints.Clear();
             _webhookEndpoints.AddRange(webhooks);
 
-            _logger.LogInformation($"Successfully retrieved {webhooks.Count:N0} updated webhook endpoints.");
+            _logger.LogInformation("Successfully retrieved {Count:N0} updated webhook endpoints.", webhooks.Count);
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error: {ex}");
+            _logger.LogError("Error: {Message}", ex.InnerException?.Message ?? ex.Message);
         }
     }
 

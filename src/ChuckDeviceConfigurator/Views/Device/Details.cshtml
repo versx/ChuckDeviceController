@@ -14,7 +14,7 @@
 
 <div class="mb-4">
     <div class="float-start">
-        <h4>@Utils.GetDeviceStatus(Model?.LastSeen ?? 0) @localizer["Device"] '@Model?.Uuid'</h4>
+        <h4>@ChuckDeviceController.Plugin.Helpers.Utils.GetDeviceStatus(Model?.LastSeen ?? 0) @localizer["Device"] '@Model?.Uuid'</h4>
     </div>
     <div class="float-end">
         <a asp-action="ForceAccountSwitch" asp-route-id="@Model?.Uuid" class="btn btn-warning btn-sm" onclick="return confirm('@(localizer["Are you sure you want to force device '{0}' to logout and switch accounts?", Model!.Uuid])');">

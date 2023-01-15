@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Configuration;
 using Extensions;
 
-using ChuckDeviceController.Data.Common;
+using ChuckDeviceController.Common;
 using ChuckDeviceController.Plugin;
 
 [PluginApiKey("CDC-328TVvD7o85TNbNhjLE0JysVMbOxjXKT")]

@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using ChuckDeviceConfigurator.Services.Webhooks;
 using ChuckDeviceConfigurator.ViewModels;
 using ChuckDeviceController.Common;
-using ChuckDeviceController.Data.Common;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Repositories;
 using ChuckDeviceController.Extensions;

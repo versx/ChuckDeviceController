@@ -2,16 +2,6 @@
 
 public class SqlQueryBuilder
 {
-    public SqlQueryBuilder()
-    {
-    }
-
-    public string BuildQuery(string sqlQuery, params object[] args)
-    {
-        var query = string.Format(sqlQuery, args);
-        return query;
-    }
-
     /// <summary>
     /// Returns SQL query related to provided query type.
     /// </summary>

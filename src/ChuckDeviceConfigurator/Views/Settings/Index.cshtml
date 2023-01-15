@@ -113,7 +113,7 @@
                 if (tabProperties?.Any() ?? false)
                 {
                     tabProperties.Sort((a, b) => a.DisplayIndex.CompareTo(b.DisplayIndex));
-                    var groupedProperties = await Utils.GroupPropertiesAsync(tabProperties);
+                    var groupedProperties = await UiUtils.GroupPropertiesAsync(tabProperties);
                     <div class="tab-pane @tab.Class" id="@tab.Id" role="tabpanel" aria-labelledby="tabs-@tab.Id" style="@tab.Style">
                     @foreach (var (group, settings) in groupedProperties)
                     {

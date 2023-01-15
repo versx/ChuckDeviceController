@@ -4,12 +4,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-using ChuckDeviceConfigurator.Utilities;
 using ChuckDeviceConfigurator.ViewModels;
 using ChuckDeviceController.Common;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Repositories;
 using ChuckDeviceController.Extensions;
+using ChuckDeviceController.Plugin.Helpers;
 
 //[FormatFilter]
 [Authorize(Roles = RoleConsts.AccountsRole)]

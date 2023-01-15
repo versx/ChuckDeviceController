@@ -10,7 +10,6 @@ using ChuckDeviceConfigurator.Services.Jobs;
 using ChuckDeviceConfigurator.ViewModels;
 using ChuckDeviceController.Common;
 using ChuckDeviceController.Configuration;
-using ChuckDeviceController.Data.Common;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Extensions;
 using ChuckDeviceController.Data.Repositories;

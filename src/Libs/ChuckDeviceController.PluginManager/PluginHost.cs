@@ -2,8 +2,8 @@
 
 using Microsoft.Extensions.DependencyInjection;
 
-using ChuckDeviceController.Data.Abstractions;
-using ChuckDeviceController.Data.Common;
+using ChuckDeviceController.Common;
+using ChuckDeviceController.Common.Abstractions;
 using ChuckDeviceController.Plugin;
 using ChuckDeviceController.PluginManager.Extensions;
 using ChuckDeviceController.PluginManager.Services.Finder;

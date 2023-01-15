@@ -3,7 +3,7 @@ namespace ChuckDeviceControllerPluginRazor;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
-using ChuckDeviceController.Data.Common;
+using ChuckDeviceController.Common;
 using ChuckDeviceController.Plugin;
 using ChuckDeviceController.Plugin.Services;
 

@@ -24,7 +24,7 @@ public class GrpcWebhookEndpointsClient : IGrpcClient<WebhookEndpoint.WebhookEnd
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error: {ex.Message}");
+            _logger.LogError("Error: {Message}", ex.InnerException?.Message ?? ex.Message);
         }
         return null;
     }

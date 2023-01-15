@@ -301,6 +301,7 @@ namespace ChuckDeviceController.Migrations
                         .HasColumnName("form");
 
                     b.Property<string>("FortId")
+                        .IsRequired()
                         .HasColumnType("varchar(255)")
                         .HasColumnName("fort_id");
 
@@ -382,6 +383,7 @@ namespace ChuckDeviceController.Migrations
                         .HasColumnName("times_fed");
 
                     b.Property<string>("TrainerName")
+                        .IsRequired()
                         .HasColumnType("varchar(255)")
                         .HasColumnName("trainer_name");
 
@@ -1160,12 +1162,14 @@ namespace ChuckDeviceController.Migrations
                     b.HasOne("ChuckDeviceController.Data.Entities.Gym", "Fort")
                         .WithMany("Defenders")
                         .HasForeignKey("FortId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("ChuckDeviceController.Data.Entities.GymTrainer", "Trainer")
                         .WithMany("Defenders")
                         .HasForeignKey("TrainerName")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Fort");
 

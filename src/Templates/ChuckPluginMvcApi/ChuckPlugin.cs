@@ -1,6 +1,6 @@
 ﻿namespace ChuckPluginMvcApi;
 
-using ChuckDeviceController.Data.Common;
+using ChuckDeviceController.Common;
 using ChuckDeviceController.Plugin;
 
 /// <summary>

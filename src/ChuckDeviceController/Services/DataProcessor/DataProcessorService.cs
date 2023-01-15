@@ -16,9 +16,9 @@ using PokemonCostume = POGOProtos.Rpc.PokemonDisplayProto.Types.Costume;
 
 using ChuckDeviceController.Caching.Memory;
 using ChuckDeviceController.Collections;
+using ChuckDeviceController.Common;
 using ChuckDeviceController.Configuration;
 using ChuckDeviceController.Data;
-using ChuckDeviceController.Data.Common;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Repositories;
 using ChuckDeviceController.Extensions;
@@ -280,14 +280,15 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error: {ex}");
+            _logger.LogError("Error: {Message}", ex.InnerException?.Message ?? ex.Message);
         }
 
         if (Options.ShowProcessingTimes)
         {
             sw.Stop();
             var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, Options.DecimalPrecision);
-            _logger.LogInformation($"[{requestId}] Finished parsing {protos.Count:N0} data entities{(Options.ShowProcessingTimes ? $" in {totalSeconds}s" : "")}");
+            var time = Options.ShowProcessingTimes ? $" in {totalSeconds}s" : "";
+            _logger.LogInformation("[{RequestId}] Finished parsing {Count:N0} data entities{Time}", requestId, protos.Count, time);
         }
 
         await Task.CompletedTask;
@@ -307,14 +308,14 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
         if (Options.ShowProcessingTimes)
         {
             sw.Start();
-            _logger.LogInformation($"[{requestId}] Parsing {count:N0} player accounts");
+            _logger.LogInformation("[{RequestId}] Parsing {Count:N0} player accounts", requestId, count);
         }
 
         foreach (var player in playerData)
         {
             if (Options.ShowProcessingCount)
             {
-                _logger.LogInformation($"[{requestId}] Parsing player account {index:N0}/{count:N0}");
+                _logger.LogInformation("[{RequestId}] Parsing player account {Index:N0}/{Count:N0}", requestId, index, count);
             }
 
             try
@@ -324,7 +325,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
                 var account = await EntityRepository.GetEntityAsync<string, Account>(connection, username, _memCache);
                 if (account == null)
                 {
-                    _logger.LogWarning($"[{requestId}] Failed to retrieve account with username '{username}' from cache and database to update account status");
+                    _logger.LogWarning("[{RequestId}] Failed to retrieve account with username '{Username}' from cache and database to update account status", requestId, username);
                     continue;
                 }
 
@@ -339,7 +340,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
             }
             catch (Exception ex)
             {
-                _logger.LogError($"UpdatePlayerDataAsync: {ex.InnerException?.Message ?? ex.Message}");
+                _logger.LogError("UpdatePlayerDataAsync: {Message}", ex.InnerException?.Message ?? ex.Message);
             }
             index++;
         }
@@ -348,7 +349,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
         {
             sw.Stop();
             var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, Options.DecimalPrecision);
-            _logger.LogInformation($"[{requestId}] {count:N0} player accounts parsed in {totalSeconds}s");
+            _logger.LogInformation("[{RequestId}] {Count:N0} player accounts parsed in {TotalSeconds}s", requestId, count, totalSeconds);
         }
 
         if (webhooks.Any())
@@ -366,7 +367,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
         if (Options.ShowProcessingTimes)
         {
             sw.Start();
-            _logger.LogInformation($"[{requestId}] Parsing {count:N0} s2 cells");
+            _logger.LogInformation("[{RequestId}] Parsing {Count:N0} s2 cells", requestId, count);
         }
 
         foreach (var cellId in cells)
@@ -393,7 +394,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
             }
             catch (Exception ex)
             {
-                _logger.LogError($"UpdateCellsAsync: {ex.InnerException?.Message ?? ex.Message}");
+                _logger.LogError("UpdateCellsAsync: {Message}", ex.InnerException?.Message ?? ex.Message);
             }
         }
 
@@ -404,7 +405,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
         {
             sw.Stop();
             var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, Options.DecimalPrecision);
-            _logger.LogInformation($"[{requestId}] {count:N0} s2 cells parsed with {(count - s2cells.Count):N0} ignored in {totalSeconds}s");
+            _logger.LogInformation("[{RequestId}] {Count:N0} s2 cells parsed with {S2CellsIgnored:N0} ignored in {TotalSeconds}s", requestId, count, count - s2cells.Count, totalSeconds);
         }
 
         //for (var i = 0; i < s2cells.Count; i++)
@@ -453,7 +454,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
         }
         catch (Exception ex)
         {
-            _logger.LogError($"UpdateCellAsync: {ex.InnerException?.Message ?? ex.Message}");
+            _logger.LogError("UpdateCellAsync: {Message}", ex.InnerException?.Message ?? ex.Message);
         }
 
         //try
@@ -482,7 +483,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
         if (Options.ShowProcessingTimes)
         {
             sw.Start();
-            _logger.LogInformation($"[{requestId}] Parsing {count:N0} client weather cells");
+            _logger.LogInformation("[{RequestId}] Parsing {Count:N0} client weather cells", requestId, count);
         }
 
         // Convert weather protos to Weather models
@@ -518,7 +519,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
         {
             if (Options.ShowProcessingCount)
             {
-                _logger.LogInformation($"[{requestId}] Parsing weather cell {index:N0}/{count:N0}");
+                _logger.LogInformation("[{RequestId}] Parsing weather cell {Index:N0}/{Count:N0}", requestId, index, count);
             }
 
             try
@@ -541,7 +542,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
             }
             catch (Exception ex)
             {
-                _logger.LogError($"UpdateClientWeatherAsync: {ex.InnerException?.Message ?? ex.Message}");
+                _logger.LogError("UpdateClientWeatherAsync: {Message}", ex.InnerException?.Message ?? ex.Message);
             }
             index++;
         }
@@ -550,7 +551,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
         {
             sw.Stop();
             var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, Options.DecimalPrecision);
-            _logger.LogInformation($"[{requestId}] {count:N0} weather cells parsed in {totalSeconds}s");
+            _logger.LogInformation("[{RequestId}] {Count:N0} weather cells parsed in {TotalSeconds}s", requestId, count, totalSeconds);
         }
 
         if (webhooks.Any())
@@ -569,14 +570,14 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
         if (Options.ShowProcessingTimes)
         {
             sw.Start();
-            _logger.LogInformation($"[{requestId}] Parsing {count:N0} wild pokemon");
+            _logger.LogInformation("[{RequestId}] Parsing {Count:N0} wild pokemon", requestId, count);
         }
 
         foreach (var wild in wildPokemon)
         {
             if (Options.ShowProcessingCount)
             {
-                _logger.LogInformation($"[{requestId}] Parsing wild pokemon {index:N0}/{count:N0}");
+                _logger.LogInformation("[{RequestId}] Parsing wild pokemon {Index:N0}/{Count:N0}", requestId, index, count);
             }
 
             try
@@ -607,7 +608,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
             }
             catch (Exception ex)
             {
-                _logger.LogError($"UpdateWildPokemonAsync: {ex.InnerException?.Message ?? ex.Message}");
+                _logger.LogError("UpdateWildPokemonAsync: {Message}", ex.InnerException?.Message ?? ex.Message);
             }
             index++;
         }
@@ -616,12 +617,12 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
         {
             sw.Stop();
             var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, Options.DecimalPrecision);
-            _logger.LogInformation($"[{requestId}] {count:N0} wild pokemon parsed in {totalSeconds}s");
+            _logger.LogInformation("[{RequestId}] {Count:N0} wild pokemon parsed in {TotalSeconds}s", requestId, count, totalSeconds);
         }
 
         if (webhooks.Any())
         {
-            _logger.LogDebug($"Sending {webhooks.Count:N0} pokemon webhooks");
+            _logger.LogDebug("[{RequestId}] Sending {Count:N0} pokemon webhooks", requestId, webhooks.Count);
             await SendWebhooksAsync(WebhookType.Pokemon, webhooks);
 
             // Send pokemon to Configurator endpoint for IV stats
@@ -639,14 +640,14 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
         if (Options.ShowProcessingTimes)
         {
             sw.Start();
-            _logger.LogInformation($"[{requestId}] Parsing {count:N0} nearby pokemon");
+            _logger.LogInformation("[{RequestId}] Parsing {Count:N0} nearby pokemon", requestId, count);
         }
 
         foreach (var nearby in nearbyPokemon)
         {
             if (Options.ShowProcessingCount)
             {
-                _logger.LogInformation($"[{requestId}] Parsing nearby pokemon {index:N0}/{count:N0}");
+                _logger.LogInformation("[{RequestId}] Parsing nearby pokemon {Index:N0}/{Count:N0}", requestId, index, count);
             }
 
             try
@@ -659,7 +660,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
                 if (pokemon == null)
                 {
                     // Failed to get pokestop
-                    _logger.LogWarning($"Failed to find pokestop with id '{data.FortId}' for nearby pokemon: {data.EncounterId}");
+                    _logger.LogWarning("Failed to find pokestop with id '{FortId}' for nearby pokemon: {EncounterId}", data.FortId, data.EncounterId);
                     continue;
                 }
 
@@ -678,7 +679,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
             }
             catch (Exception ex)
             {
-                _logger.LogError($"UpdateNearbyPokemonAsync: {ex.InnerException?.Message ?? ex.Message}");
+                _logger.LogError("UpdateNearbyPokemonAsync: {Message}", ex.InnerException?.Message ?? ex.Message);
             }
             index++;
         }
@@ -687,12 +688,12 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
         {
             sw.Stop();
             var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, Options.DecimalPrecision);
-            _logger.LogInformation($"[{requestId}] {count:N0} nearby pokemon parsed in {totalSeconds}s");
+            _logger.LogInformation("[{RequestId}] {Count:N0} nearby pokemon parsed in {TotalSeconds}s", requestId, count, totalSeconds);
         }
 
         if (webhooks.Any())
         {
-            _logger.LogDebug($"Sending {webhooks.Count:N0} pokemon webhooks");
+            _logger.LogDebug("Sending {Count:N0} pokemon webhooks", webhooks.Count);
             await SendWebhooksAsync(WebhookType.Pokemon, webhooks);
 
             // Send pokemon to Configurator endpoint for IV stats
@@ -710,14 +711,14 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
         if (Options.ShowProcessingTimes)
         {
             sw.Start();
-            _logger.LogInformation($"[{requestId}] Parsing {count:N0} map pokemon");
+            _logger.LogInformation("[{RequestId}] Parsing {Count:N0} map pokemon", requestId, count);
         }
 
         foreach (var map in mapPokemon)
         {
             if (Options.ShowProcessingCount)
             {
-                _logger.LogInformation($"[{requestId}] Parsing map pokemon {index:N0}/{count:N0}");
+                _logger.LogInformation("[{RequestId}] Parsing map pokemon {Index:N0}/{Count:N0}", requestId, index, count);
             }
 
             try
@@ -733,12 +734,12 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
                 if (cachedDiskEncounter == null)
                 {
                     // Failed to get DiskEncounter from cache
-                    _logger.LogWarning($"Unable to fetch cached Pokemon disk encounter with id '{displayId}' from cache");
+                    _logger.LogWarning("Unable to fetch cached Pokemon disk encounter with id '{DisplayId}' from cache", displayId);
                     continue;
                 }
 
                 // Thanks Fabio <3
-                _logger.LogDebug($"Found Pokemon disk encounter with id '{displayId}' in cache");
+                _logger.LogDebug("Found Pokemon disk encounter with id '{DisplayId}' in cache", displayId);
 
                 // TODO: Lookup old pokemon first, if not null update properties from map proto
                 var pokemon = await Pokemon.ParsePokemonFromMap(connection, _memCache, data, cellId, username, isEvent);
@@ -756,7 +757,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
             }
             catch (Exception ex)
             {
-                _logger.LogError($"UpdateMapPokemonAsync: {ex.InnerException?.Message ?? ex.Message}");
+                _logger.LogError("UpdateMapPokemonAsync: {Message}", ex.InnerException?.Message ?? ex.Message);
             }
             index++;
         }
@@ -765,12 +766,12 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
         {
             sw.Stop();
             var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, Options.DecimalPrecision);
-            _logger.LogInformation($"[{requestId}] {count:N0} map pokemon parsed in {totalSeconds}s");
+            _logger.LogInformation("[{RequestId}] {Count:N0} map pokemon parsed in {TotalSeconds}s", requestId, count, totalSeconds);
         }
 
         if (webhooks.Any())
         {
-            _logger.LogDebug($"Sending {webhooks.Count:N0} pokemon webhooks");
+            _logger.LogDebug("Sending {Count:N0} pokemon webhooks", webhooks.Count);
             await SendWebhooksAsync(WebhookType.Pokemon, webhooks);
 
             // Send pokemon to Configurator endpoint for IV stats
@@ -789,14 +790,14 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
         if (Options.ShowProcessingTimes)
         {
             sw.Start();
-            _logger.LogInformation($"[{requestId}] Parsing {count:N0} forts");
+            _logger.LogInformation("[{RequestId}] Parsing {Count:N0} forts", requestId, count);
         }
 
         foreach (var fort in forts)
         {
             if (Options.ShowProcessingCount)
             {
-                _logger.LogInformation($"[{requestId}] Parsing fort {index:N0}/{count:N0}");
+                _logger.LogInformation("[{RequestId}] Parsing fort {Index:N0}/{Count:N0}", requestId, index, count);
             }
 
             try
@@ -853,7 +854,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
             }
             catch (Exception ex)
             {
-                _logger.LogError($"UpdateFortsAsync: {ex.InnerException?.Message ?? ex.Message}");
+                _logger.LogError("UpdateFortsAsync: {Message}", ex.InnerException?.Message ?? ex.Message);
             }
             index++;
             ProtoDataStatistics.Instance.TotalFortsProcessed++;
@@ -863,7 +864,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
         {
             sw.Stop();
             var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, Options.DecimalPrecision);
-            _logger.LogInformation($"[{requestId}] {count:N0} forts parsed in {totalSeconds}s");
+            _logger.LogInformation("[{RequestId}] {Count:N0} forts parsed in {TotalSeconds}s", requestId, count, totalSeconds);
         }
 
         if (webhooks.Any())
@@ -905,7 +906,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
 
             if (Options.ShowProcessingTimes)
             {
-                _logger.LogInformation($"[{requestId}] Parsing {count:N0} pokestop fort details");
+                _logger.LogInformation("[{RequestId}] Parsing {Count:N0} pokestop fort details", requestId, count);
             }
 
             // Convert fort details protos to Pokestop models
@@ -913,7 +914,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
             {
                 if (Options.ShowProcessingCount)
                 {
-                    _logger.LogInformation($"[{requestId}] Parsing pokestop fort detail {index:N0}/{count:N0}");
+                    _logger.LogInformation("[{RequestId}] Parsing pokestop fort detail {Index:N0}/{Count:N0}", requestId, index, count);
                 }
 
                 try
@@ -939,7 +940,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError($"UpdateFortDetailsAsync[Pokestop]: {ex.InnerException?.Message ?? ex.Message}");
+                    _logger.LogError("UpdateFortDetailsAsync[Pokestop]: {Message}", ex.InnerException?.Message ?? ex.Message);
                 }
                 index++;
             }
@@ -948,7 +949,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
             {
                 sw.Stop();
                 var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, Options.DecimalPrecision);
-                _logger.LogInformation($"[{requestId}] {count:N0} pokestop fort details parsed in {totalSeconds}s");
+                _logger.LogInformation("[{RequestId}] {Count:N0} pokestop fort details parsed in {TotalSeconds}s", requestId, count, totalSeconds);
             }
         }
 
@@ -967,7 +968,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
 
             if (Options.ShowProcessingTimes)
             {
-                _logger.LogInformation($"[{requestId}] Parsing {count:N0} gym fort details");
+                _logger.LogInformation("[{RequestId}] Parsing {Count:N0} gym fort details", requestId, count);
             }
 
             // Convert fort details protos to Gym models
@@ -975,7 +976,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
             {
                 if (Options.ShowProcessingCount)
                 {
-                    _logger.LogInformation($"[{requestId}] Parsing fort detail {index:N0}/{count:N0}");
+                    _logger.LogInformation("[{RequestId}] Parsing fort detail {Index:N0}/{Count:N0}", requestId, index, count);
                 }
 
                 try
@@ -1001,7 +1002,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError($"UpdateFortDetailsAsync[Gym]: {ex.InnerException?.Message ?? ex.Message}");
+                    _logger.LogError("UpdateFortDetailsAsync[Gym]: {Message}", ex.InnerException?.Message ?? ex.Message);
                 }
                 index++;
             }
@@ -1010,7 +1011,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
             {
                 sw.Stop();
                 var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, Options.DecimalPrecision);
-                _logger.LogInformation($"[{requestId}] {count:N0} gym fort details parsed in {totalSeconds}s");
+                _logger.LogInformation("[{RequestId}] {Count:N0} gym fort details parsed in {TotalSeconds}s", requestId, count, totalSeconds);
             }
         }
 
@@ -1030,7 +1031,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
         if (Options.ShowProcessingTimes)
         {
             sw.Start();
-            _logger.LogInformation($"[{requestId}] Parsing {count:N0} gym infos");
+            _logger.LogInformation("[{RequestId}] Parsing {Count:N0} gym infos", requestId, count);
         }
 
         // Convert gym info protos to Gym models
@@ -1038,7 +1039,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
         {
             if (Options.ShowProcessingCount)
             {
-                _logger.LogInformation($"[{requestId}] Parsing gym info {index:N0}/{count:N0}");
+                _logger.LogInformation("[{RequestId}] Parsing gym info {Index:N0}/{Count:N0}", requestId, index, count);
             }
 
             try
@@ -1109,7 +1110,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
             }
             catch (Exception ex)
             {
-                _logger.LogError($"UpdateGymInfoAsync: {ex.InnerException?.Message ?? ex.Message}");
+                _logger.LogError("UpdateGymInfoAsync: {Message}", ex.InnerException?.Message ?? ex.Message);
             }
             index++;
         }
@@ -1118,7 +1119,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
         {
             sw.Stop();
             var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, Options.DecimalPrecision);
-            _logger.LogInformation($"[{requestId}] {count:N0} gym info parsed in {totalSeconds}s");
+            _logger.LogInformation("[{RequestId}] {Count:N0} gym info parsed in {TotalSeconds}s", requestId, count, totalSeconds);
         }
 
         if (webhooks.Any())
@@ -1137,14 +1138,14 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
         if (Options.ShowProcessingTimes)
         {
             sw.Start();
-            _logger.LogInformation($"[{requestId}] Parsing {count:N0} quests");
+            _logger.LogInformation("[{RequestId}] Parsing {Count:N0} quests", requestId, count);
         }
 
         foreach (var quest in quests)
         {
             if (Options.ShowProcessingCount)
             {
-                _logger.LogInformation($"[{requestId}] Parsing quest {index:N0}/{count:N0}");
+                _logger.LogInformation("[{RequestId}] Parsing quest {Index:N0}/{Count:N0}", requestId, index, count);
             }
 
             try
@@ -1173,7 +1174,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
             }
             catch (Exception ex)
             {
-                _logger.LogError($"UpdateQuestsAsync: {ex.InnerException?.Message ?? ex.Message}");
+                _logger.LogError("UpdateQuestsAsync: {Message}", ex.InnerException?.Message ?? ex.Message);
             }
             index++;
         }
@@ -1182,7 +1183,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
         {
             sw.Stop();
             var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, Options.DecimalPrecision);
-            _logger.LogInformation($"[{requestId}] {count:N0} quests parsed in {totalSeconds}s");
+            _logger.LogInformation("[{RequestId}] {Count:N0} quests parsed in {TotalSeconds}s", requestId, count, totalSeconds);
         }
 
         if (webhooks.Any())
@@ -1203,14 +1204,14 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
         if (Options.ShowProcessingTimes)
         {
             sw.Start();
-            _logger.LogInformation($"[{requestId}] Parsing {count:N0} pokemon encounters");
+            _logger.LogInformation("[{RequestId}] Parsing {Count:N0} pokemon encounters", requestId, count);
         }
 
         foreach (var encounter in encounters)
         {
             if (Options.ShowProcessingCount)
             {
-                _logger.LogInformation($"[{requestId}] Parsing pokemon encounter {index:N0}/{count:N0}");
+                _logger.LogInformation("[{RequestId}] Parsing pokemon encounter {Index:N0}/{Count:N0}", requestId, index, count);
             }
 
             try
@@ -1251,7 +1252,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
             }
             catch (Exception ex)
             {
-                _logger.LogError($"UpdateEncountersAsync: {ex}");
+                _logger.LogError("UpdateEncountersAsync: {Message}", ex.InnerException?.Message ?? ex.Message);
             }
             index++;
         }
@@ -1260,12 +1261,12 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
         {
             sw.Stop();
             var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, Options.DecimalPrecision);
-            _logger.LogInformation($"[{requestId}] {count:N0} pokemon encounters parsed in {totalSeconds}s");
+            _logger.LogInformation("[{RequestId}] {Count:N0} pokemon encounters parsed in {TotalSeconds}s", requestId, count, totalSeconds);
         }
 
         if (webhooks.Any())
         {
-            _logger.LogDebug($"Sending {webhooks.Count:N0} pokemon webhooks");
+            _logger.LogDebug("Sending {Count:N0} pokemon webhooks", webhooks.Count);
             await SendWebhooksAsync(WebhookType.Pokemon, webhooks);
 
             // Send pokemon to Configurator endpoint for IV stats
@@ -1283,14 +1284,14 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
         if (Options.ShowProcessingTimes)
         {
             sw.Start();
-            _logger.LogInformation($"[{requestId}] Parsing {count:N0} pokemon disk encounters");
+            _logger.LogInformation("[{RequestId}] Parsing {Count:N0} pokemon disk encounters", requestId, count);
         }
 
         foreach (var diskEncounter in diskEncounters)
         {
             if (Options.ShowProcessingCount)
             {
-                _logger.LogInformation($"[{requestId}] Parsing pokemon disk encounter {index:N0}/{count:N0}");
+                _logger.LogInformation("[{RequestId}] Parsing pokemon disk encounter {Index:N0}/{Count:N0}", requestId, index, count);
             }
 
             try
@@ -1303,7 +1304,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
                 if (pokemon == null)
                 {
                     _diskCache.Set(displayId, data, _diskCacheExpiry);
-                    _logger.LogInformation($"Disk encounter with id '{displayId}' added to cache");
+                    _logger.LogInformation("Disk encounter with id '{DisplayId}' added to cache", displayId);
                     continue;
                 }
 
@@ -1321,7 +1322,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
             }
             catch (Exception ex)
             {
-                _logger.LogError($"UpdateDiskEncountersAsync: {ex.InnerException?.Message ?? ex.Message}");
+                _logger.LogError("UpdateDiskEncountersAsync: {Message}", ex.InnerException?.Message ?? ex.Message);
             }
             index++;
         }
@@ -1330,12 +1331,12 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
         {
             sw.Stop();
             var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, Options.DecimalPrecision);
-            _logger.LogInformation($"[{requestId}] {count:N0} pokemon disk encounters parsed in {totalSeconds}s");
+            _logger.LogInformation("[{RequestId}] {Count:N0} pokemon disk encounters parsed in {TotalSeconds}s", requestId, count, totalSeconds);
         }
 
         if (webhooks.Any())
         {
-            _logger.LogDebug($"Sending {webhooks.Count:N0} pokemon webhooks");
+            _logger.LogDebug("Sending {Count:N0} pokemon webhooks", webhooks.Count);
             await SendWebhooksAsync(WebhookType.Pokemon, webhooks);
 
             // Send pokemon to Configurator endpoint for IV stats
@@ -1353,7 +1354,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
         if (Options.ShowProcessingTimes)
         {
             sw.Start();
-            _logger.LogInformation($"[{requestId}] Parsing {count:N0} pokestop incidents");
+            _logger.LogInformation("[{RequestId}] Parsing {Count:N0} pokestop incidents", requestId, count);
         }
 
         // Loop incidents
@@ -1363,7 +1364,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
             {
                 if (Options.ShowProcessingCount)
                 {
-                    _logger.LogInformation($"[{requestId}] Parsing pokestop incident {index:N0}/{count:N0}");
+                    _logger.LogInformation("[{RequestId}] Parsing pokestop incident {Index:N0}/{Count:N0}", requestId, index, count);
                 }
 
                 try
@@ -1385,7 +1386,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError($"UpdateIncidentsAsync: {ex.InnerException?.Message ?? ex.Message}");
+                    _logger.LogError("UpdateIncidentsAsync: {Message}", ex.InnerException?.Message ?? ex.Message);
                 }
                 index++;
             }
@@ -1395,7 +1396,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
         {
             sw.Stop();
             var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, Options.DecimalPrecision);
-            _logger.LogInformation($"[{requestId}] {count:N0} pokemon incidents parsed in {totalSeconds}s");
+            _logger.LogInformation("[{RequestId}] {Count:N0} pokemon incidents parsed in {TotalSeconds}s", requestId, count, totalSeconds);
         }
 
         if (webhooks.Any())
@@ -1414,11 +1415,11 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
         var usage = $"{_taskQueue.Count:N0}/{Options.Queue.MaximumCapacity:N0}";
         if (_taskQueue.Count >= Options.Queue.MaximumCapacity)
         {
-            _logger.LogError($"Data processing queue is at maximum capacity! {usage}");
+            _logger.LogError("Data processing queue is at maximum capacity! {Usage}", usage);
         }
         else if (_taskQueue.Count >= Options.Queue.MaximumSizeWarning)
         {
-            _logger.LogWarning($"Data processing queue is over normal capacity with {usage} items total, consider increasing 'MaximumQueueBatchSize'");
+            _logger.LogWarning("Data processing queue is over normal capacity with {Usage} items total, consider increasing 'MaximumQueueBatchSize'", usage);
         }
     }
 
@@ -1533,14 +1534,14 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
     {
         if (entity == null)
         {
-            _logger.LogWarning($"Unable to relay entity {typeof(T).Name} to webhook service, entity is null...");
+            _logger.LogWarning("Unable to relay entity {Name} to webhook service, entity is null...", typeof(T).Name);
             return;
         }
 
         var json = entity.ToJson();
         if (string.IsNullOrEmpty(json))
         {
-            _logger.LogWarning($"Failed to serialize entity {typeof(T).Name} to relay to webhook service, skipping...");
+            _logger.LogWarning("Failed to serialize entity {Name} to relay to webhook service, skipping...", typeof(T).Name);
             return;
         }
 

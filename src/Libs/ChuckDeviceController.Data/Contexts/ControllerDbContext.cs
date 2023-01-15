@@ -2,7 +2,7 @@
 
 using Microsoft.EntityFrameworkCore;
 
-using ChuckDeviceController.Data.Common;
+using ChuckDeviceController.Common;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Factories;
 using ChuckDeviceController.Extensions.Json.Converters;

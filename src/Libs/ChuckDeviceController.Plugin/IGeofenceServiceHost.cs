@@ -1,6 +1,6 @@
 ﻿namespace ChuckDeviceController.Plugin;
 
-using ChuckDeviceController.Data.Abstractions;
+using ChuckDeviceController.Common.Abstractions;
 using ChuckDeviceController.Geometry.Models.Abstractions;
 
 /// <summary>

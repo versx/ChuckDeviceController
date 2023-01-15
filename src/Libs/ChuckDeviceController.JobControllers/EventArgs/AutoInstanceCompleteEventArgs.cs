@@ -1,6 +1,6 @@
 ﻿namespace ChuckDeviceController.JobControllers;
 
-using ChuckDeviceController.Data.Common;
+using ChuckDeviceController.Common;
 
 public sealed class AutoInstanceCompleteEventArgs : EventArgs
 {

@@ -9,8 +9,8 @@ using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-using ChuckDeviceController.Data.Abstractions;
-using ChuckDeviceController.Data.Common;
+using ChuckDeviceController.Common;
+using ChuckDeviceController.Common.Abstractions;
 using ChuckDeviceController.Extensions.Http;
 using ChuckDeviceController.Extensions.Json;
 using ChuckDeviceController.Geometry.Models;
@@ -173,6 +173,7 @@ public class TestPlugin : IPlugin, IDatabaseEvents, IJobControllerServiceEvents,
         _eventAggregatorHost = eventAggregatorHost;
         _authHost = authHost;
         _logger = logger;
+        _logger.LogDebug("Started {Name}", Name);
 
         //_appHost.Restart();
     }
@@ -329,7 +330,7 @@ public class TestPlugin : IPlugin, IDatabaseEvents, IJobControllerServiceEvents,
         TestFileStorageHost();
 
         // Execute IConfigurationHost method tests
-        //TestConfigurationHost();
+        TestConfigurationHost();
 
         // Add dashboard stats
         //var stats = new List<IDashboardStatsItem>
@@ -539,6 +540,9 @@ public class TestPlugin : IPlugin, IDatabaseEvents, IJobControllerServiceEvents,
             var device = await _databaseHost.FindAsync<IDevice, string>("atv08");
             _loggingHost.LogInformation($"Device: {device?.Uuid}");
 
+            var devices = await _databaseHost.FindAllAsync<IDevice>();
+            _loggingHost.LogInformation($"Devices: {devices}");
+
             var instance = await _databaseHost.FindAsync<IInstance, string>("TestInstance");
             var circleRouteType = instance?.Data?.CircleRouteType;
             _loggingHost.LogInformation($"Instance: {instance?.Name}");
@@ -601,13 +605,13 @@ public class TestPlugin : IPlugin, IDatabaseEvents, IJobControllerServiceEvents,
             await _jobControllerHost.RegisterJobControllerAsync<TestInstanceController>(customInstanceType);
 
             // Create geofence entity
-            //var geofence = CreateGeofence();
-            //await _geofenceServiceHost.CreateGeofenceAsync(geofence);
+            var geofence = CreateGeofence();
+            await _geofenceServiceHost.CreateGeofenceAsync(geofence);
 
-            //var instance = CreateInstance(customInstanceType, new() { geofence.Name });
-            //await _instanceServiceHost.CreateInstanceAsync(instance);
+            var instance = CreateInstance(customInstanceType, new() { geofence.Name });
+            await _instanceServiceHost.CreateInstanceAsync(instance);
 
-            //TestAssignDevice(instance.Name);
+            TestAssignDevice(instance.Name);
         }
         catch (Exception ex)
         {
@@ -618,7 +622,8 @@ public class TestPlugin : IPlugin, IDatabaseEvents, IJobControllerServiceEvents,
     private async void TestAssignDevice(string instanceName)
     {
         // Assign device to new instance using custom job controller
-        var uuid = "RH2SE"; //"SGV7SE";
+        //var uuid = "RH2SE"; //"SGV7SE";
+        var uuid = "SGV8SE";
         var device = await _databaseHost.FindAsync<IDevice, string>(uuid);
         if (device == null)
         {
@@ -681,6 +686,8 @@ public class TestPlugin : IPlugin, IDatabaseEvents, IJobControllerServiceEvents,
     #endregion
 }
 
+#region Mock Models
+
 // Mock {file}.deps.json configuration file model classes.
 // 
 // Since we are passing generic <T> type from host application to
@@ -732,3 +739,5 @@ public class Geofence : IGeofence
 
     public GeofenceData? Data { get; set; } = new();
 }
+
+#endregion

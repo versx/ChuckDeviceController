@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using ChuckDeviceConfigurator.Services.Assignments.EventArgs;
 using ChuckDeviceConfigurator.Services.Geofences;
 using ChuckDeviceController.Collections;
-using ChuckDeviceController.Data.Common;
+using ChuckDeviceController.Common;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Extensions;
 using ChuckDeviceController.Data.Repositories.Dapper;
