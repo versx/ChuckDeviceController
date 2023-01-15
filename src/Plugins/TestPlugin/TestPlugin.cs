@@ -535,7 +535,7 @@ public class TestPlugin : IPlugin, IDatabaseEvents, IJobControllerServiceEvents,
         try
         {
             // Retrieve database entities 
-            var assignment = await _databaseHost.FindAsync<IAssignment, uint>((uint)2);
+            var assignment = await _databaseHost.FindAsync<IAssignment, uint>(2);
             _loggingHost.LogInformation($"Assignment: {assignment?.Id}");
 
             var device = await _databaseHost.FindAsync<IDevice, string>("atv08");
@@ -585,7 +585,7 @@ public class TestPlugin : IPlugin, IDatabaseEvents, IJobControllerServiceEvents,
         }
         catch (Exception ex)
         {
-            _loggingHost.LogError(ex);
+            _loggingHost.LogError($"Error: {ex}");
         }
     }
 
@@ -616,7 +616,7 @@ public class TestPlugin : IPlugin, IDatabaseEvents, IJobControllerServiceEvents,
         }
         catch (Exception ex)
         {
-            _loggingHost.LogError(ex);
+            _loggingHost.LogError($"Error: {ex}");
         }
     }
 

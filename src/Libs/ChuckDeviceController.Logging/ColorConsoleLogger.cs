@@ -2,6 +2,8 @@
 
 using Microsoft.Extensions.Logging;
 
+// TODO: Add config option for namespace vs class name
+
 public sealed class ColorConsoleLogger : ILogger
 {
     private readonly string _name;
