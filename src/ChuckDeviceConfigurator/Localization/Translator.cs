@@ -113,7 +113,7 @@ public class Translator : Language<string, string, Dictionary<string, string>>, 
 
             File.WriteAllText(
                 Path.Combine(_binLocalesFolder, localeFile),
-                remote.ToJson(pretty: true)
+                remote.ToJson(prettyPrint: true)
             );
             _logger.LogInformation($"{locale} file saved.");
 

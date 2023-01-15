@@ -54,7 +54,7 @@ internal class InstanceTests
 }
 """;
 
-        var instance = json.FromJson<Instance>(new[] { new ObjectDataConverter<InstanceData>() });//DbContextFactory.JsonDictionaryConverters);
+        var instance = json.FromJson<Instance>(converters: new[] { new ObjectDataConverter<InstanceData>() });//DbContextFactory.JsonDictionaryConverters);
         var circleRouteType = instance!.Data!.CircleRouteType;
         var circleRouteType2 = instance!.Data["circle_route_type"];//.Get<CircleInstanceRouteType>("circle_route_type");
         //var test = instance!.Get<string>("custom_instance_type", null);

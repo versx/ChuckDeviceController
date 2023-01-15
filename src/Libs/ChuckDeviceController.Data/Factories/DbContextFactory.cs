@@ -62,8 +62,8 @@ public static class DbContextFactory
     {
         return new ValueConverter<T, string?>
         (
-            v => v.ToJson(true, jsonConverters),// JsonDictionaryConverters),
-            v => v!.FromJson<T>(jsonConverters) ?? default!// JsonDictionaryConverters)!
+            v => v.ToJson(true, jsonConverters),
+            v => v!.FromJson<T>(false, jsonConverters) ?? default!
         );
     }
 

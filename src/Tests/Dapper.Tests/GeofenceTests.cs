@@ -44,7 +44,7 @@ internal class GeofenceTests
 }
 """;
 
-        var geofence = json.FromJson<Geofence>(new[] { new ObjectDataConverter<GeofenceData>() });//DbContextFactory.JsonDictionaryConverters);
+        var geofence = json.FromJson<Geofence>(converters: new[] { new ObjectDataConverter<GeofenceData>() });//DbContextFactory.JsonDictionaryConverters);
         var area = geofence!.Data!.Area;
         var area2 = geofence!.Data["area"];
 

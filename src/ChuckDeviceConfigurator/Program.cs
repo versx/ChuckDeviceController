@@ -41,6 +41,7 @@ using ChuckDeviceController.Data.Factories;
 using ChuckDeviceController.Data.Repositories;
 using ChuckDeviceController.Data.Repositories.Dapper;
 using ChuckDeviceController.Extensions.Data;
+using ChuckDeviceController.Extensions.Json;
 using ChuckDeviceController.Logging;
 using ChuckDeviceController.Plugin;
 using ChuckDeviceController.Plugin.EventBus;
@@ -48,6 +49,8 @@ using ChuckDeviceController.Plugin.EventBus.Observer;
 using ChuckDeviceController.PluginManager;
 using ChuckDeviceController.Routing;
 
+
+JsonExtensions.SetConverters(DbContextFactory.JsonDictionaryConverters);
 
 #region Config
 

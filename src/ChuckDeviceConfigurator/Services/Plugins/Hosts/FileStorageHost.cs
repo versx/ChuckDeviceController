@@ -111,7 +111,7 @@ public class FileStorageHost : IFileStorageHost
                 File.Move(dataFile, tempCopy, true);
             }
 
-            var json = data.ToJson(prettyPrint);
+            var json = data.ToJson(prettyPrint: true);
             File.WriteAllText(dataFile, json);
 
             if (File.Exists(tempCopy))

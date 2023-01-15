@@ -16,13 +16,13 @@ public class JsonTypeHandler<T> : SqlMapper.TypeHandler<T>
         {
             return default!;
         }
-        var obj = json.FromJson<T>(DbContextFactory.JsonDictionaryConverters) ?? default;
+        var obj = json.FromJson<T>(prettyPrint: false, DbContextFactory.JsonDictionaryConverters) ?? default;
         return obj ?? default!;
     }
 
     public override void SetValue(IDbDataParameter parameter, T value)
     {
-        var json = value?.ToJson(pretty: true, DbContextFactory.JsonDictionaryConverters);
+        var json = value?.ToJson(prettyPrint: true, DbContextFactory.JsonDictionaryConverters);
         parameter.Value = json ?? null;
     }
 }

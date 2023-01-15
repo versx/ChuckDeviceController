@@ -89,7 +89,7 @@ public class JsonStringLocalizer : IStringLocalizer
             if (LogMissingKeys && !_missing.ContainsKey(key))
             {
                 _missing.Add(key, key);
-                File.WriteAllText($"missing_locales.txt", _missing.ToJson(pretty: true));
+                File.WriteAllText($"missing_locales.txt", _missing.ToJson());
             }
             return key;
         }

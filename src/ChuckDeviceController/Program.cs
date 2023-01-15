@@ -18,6 +18,7 @@ using ChuckDeviceController.Data.Repositories;
 using ChuckDeviceController.Data.Repositories.Dapper;
 using ChuckDeviceController.Extensions;
 using ChuckDeviceController.Extensions.Data;
+using ChuckDeviceController.Extensions.Json;
 using ChuckDeviceController.HostedServices;
 using ChuckDeviceController.Logging;
 using ChuckDeviceController.Protos;
@@ -27,6 +28,8 @@ using ChuckDeviceController.Services.DataProcessor;
 using ChuckDeviceController.Services.ProtoProcessor;
 using ChuckDeviceController.Services.Rpc;
 
+
+JsonExtensions.SetConverters(DbContextFactory.JsonDictionaryConverters);
 
 #region Config
 
