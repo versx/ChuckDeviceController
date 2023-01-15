@@ -65,6 +65,10 @@ public class SmartRaidInstanceController : IJobController
 
     public bool IsEvent { get; }
 
+    //public bool OptimizeRoute { get; }
+
+    //public ushort RadiusM { get; }
+
     #endregion
 
     #region Constructor
@@ -80,6 +84,8 @@ public class SmartRaidInstanceController : IJobController
         MaximumLevel = instance.MaximumLevel;
         GroupName = instance.Data?.AccountGroup ?? Strings.DefaultAccountGroup;
         IsEvent = instance.Data?.IsEvent ?? Strings.DefaultIsEvent;
+
+        //OptimizeRoute = instance.Data?.OptimizeSmartRaidRoute ?? Strings.DefaultOptimizeSmartRaidRoute;
 
         _uow = uow;
         _logger = new Logger<SmartRaidInstanceController>(LoggerFactory.Create(x => x.AddConsole()));

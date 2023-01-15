@@ -9,8 +9,6 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 
-using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
-
 using ChuckDeviceController.Extensions;
 
 // Credits: https://stackoverflow.com/a/7891426
@@ -703,65 +701,6 @@ public class MySqlQueryTranslator : ExpressionVisitor
         throw new NotSupportedException($"The member '{node.Member.Name}' is not supported");
     }
 
-    protected Expression VisitIn(InExpression @in)
-    {
-        if (@in.Values != null)
-        {
-            if (@in.Values.Count == 0)
-            {
-                Write("0 <> 0");
-            }
-            else
-            {
-                //VisitValue(@in.Expression, skipVisit: true);
-                VisitIn2(@in);
-                Write(" IN (");
-                for (int i = 0, n = @in.Values.Count; i < n; i++)
-                {
-                    if (i > 0) Write(", ");
-                    VisitValue(@in.Values[i]);
-                    //Visit(@in.Values[i]);
-                }
-                Write(")");
-            }
-        }
-        else
-        {
-            VisitValue(@in.Expression);
-            Write(" IN (");
-            WriteLine();
-            Visit(@in.Select);
-            WriteLine();
-            Write(")");
-        }
-        return @in;
-    }
-
-    protected Expression VisitIn2(InExpression @in)
-    {
-        //var expr = Visit(@in.Expression);
-        var expr = @in.Expression;
-        var select = (SelectExpression)Visit(@in.Select);
-        var values = VisitExpressionList(@in.Values);
-        return UpdateIn(@in, expr, select, values);
-    }
-
-    protected InExpression UpdateIn(InExpression @in, Expression expression, SelectExpression select, IEnumerable<Expression> values)
-    {
-        if (expression != @in.Expression || select != @in.Select || values != @in.Values)
-        {
-            if (select != null)
-            {
-                return new InExpression(expression, select);
-            }
-            else
-            {
-                return new InExpression(expression, values);
-            }
-        }
-        return @in;
-    }
-
     protected ReadOnlyCollection<Expression> VisitExpressionList(ReadOnlyCollection<Expression> original)
     {
         for (int i = 0, count = original.Count; i < count; i++)
@@ -1035,64 +974,6 @@ public class MySqlQueryTranslator : ExpressionVisitor
     }
 
     #endregion
-}
-
-public class InExpression : Expression
-{
-    // Either select expression or values are assigned
-    public Expression Expression { get; }
-
-    public ReadOnlyCollection<Expression> Values { get; } = null!;
-
-    public SelectExpression Select { get; }
-
-    public override ExpressionType NodeType => (ExpressionType)(int)DbExpressionType.In;
-
-    public override Type Type => typeof(bool);
-
-    public InExpression(Expression expression, SelectExpression select)
-    {
-        Expression = expression;
-        Select = select;
-    }
-
-    public InExpression(Expression expression, IEnumerable<Expression> values, SelectExpression? select = null)
-    {
-        Expression = expression;
-        Values = new ReadOnlyCollection<Expression>(values.ToList());
-        Select = select ?? null!;
-    }
-}
-
-public enum DbExpressionType
-{
-    Table = 1000, // make sure these don't overlap with ExpressionType
-    ClientJoin = 1001,
-    Column = 1002,
-    Select = 1003,
-    Projection = 1004,
-    Entity = 1005,
-    Join = 1006,
-    Aggregate = 1007,
-    Scalar = 1008,
-    Exists = 1009,
-    In = 1010,
-    Grouping = 1011,
-    AggregateSubquery = 1012,
-    IsNull = 1013,
-    Between = 1014,
-    RowCount = 1015,
-    NamedValue = 1016,
-    OuterJoined = 1017,
-    Insert = 1018,
-    Update = 1019,
-    Delete = 1020,
-    Batch = 1021,
-    Function = 1022,
-    Block = 1023,
-    If = 1024,
-    Declaration = 1025,
-    Variable = 1026
 }
 
 // Credits: https://github.com/mattwar/iqtoolkit/blob/master/docs/blog/building-part-03.md

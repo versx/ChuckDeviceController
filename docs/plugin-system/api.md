@@ -24,7 +24,7 @@
     - [Executed](#F-ChuckDeviceController-Plugin-EventBus-EventExecutionResult-Executed 'ChuckDeviceController.Plugin.EventBus.EventExecutionResult.Executed')
     - [UnhandledException](#F-ChuckDeviceController-Plugin-EventBus-EventExecutionResult-UnhandledException 'ChuckDeviceController.Plugin.EventBus.EventExecutionResult.UnhandledException')
 - [GeofenceTypeAttribute](#T-ChuckDeviceController-Plugin-GeofenceTypeAttribute 'ChuckDeviceController.Plugin.GeofenceTypeAttribute')
-    - [#ctor(type)](#M-ChuckDeviceController-Plugin-GeofenceTypeAttribute-#ctor-ChuckDeviceController-Data-Common-GeofenceType- 'ChuckDeviceController.Plugin.GeofenceTypeAttribute.#ctor(ChuckDeviceController.Data.Common.GeofenceType)')
+    - [#ctor(type)](#M-ChuckDeviceController-Plugin-GeofenceTypeAttribute-#ctor-System-String- 'ChuckDeviceController.Plugin.GeofenceTypeAttribute.#ctor(System.String)')
     - [Type](#P-ChuckDeviceController-Plugin-GeofenceTypeAttribute-Type 'ChuckDeviceController.Plugin.GeofenceTypeAttribute.Type')
 - [IAuthorizeHost](#T-ChuckDeviceController-Plugin-IAuthorizeHost 'ChuckDeviceController.Plugin.IAuthorizeHost')
     - [RegisterRole(name,displayIndex)](#M-ChuckDeviceController-Plugin-IAuthorizeHost-RegisterRole-System-String,System-Int32- 'ChuckDeviceController.Plugin.IAuthorizeHost.RegisterRole(System.String,System.Int32)')
@@ -53,7 +53,7 @@
 - [IDatabaseHost](#T-ChuckDeviceController-Plugin-IDatabaseHost 'ChuckDeviceController.Plugin.IDatabaseHost')
     - [FindAllAsync\`\`1()](#M-ChuckDeviceController-Plugin-IDatabaseHost-FindAllAsync``1 'ChuckDeviceController.Plugin.IDatabaseHost.FindAllAsync``1')
     - [FindAsync\`\`2(id)](#M-ChuckDeviceController-Plugin-IDatabaseHost-FindAsync``2-``1- 'ChuckDeviceController.Plugin.IDatabaseHost.FindAsync``2(``1)')
-    - [FindAsync\`\`2(predicate,order,sortDirection,limit)](#M-ChuckDeviceController-Plugin-IDatabaseHost-FindAsync``2-System-Linq-Expressions-Expression{System-Func{``0,System-Boolean}},System-Linq-Expressions-Expression{System-Func{``0,``1}},ChuckDeviceController-Data-Common-SortOrderDirection,System-Int32- 'ChuckDeviceController.Plugin.IDatabaseHost.FindAsync``2(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Linq.Expressions.Expression{System.Func{``0,``1}},ChuckDeviceController.Data.Common.SortOrderDirection,System.Int32)')
+    - [FindAsync\`\`2(predicate,order,sortDirection,limit)](#M-ChuckDeviceController-Plugin-IDatabaseHost-FindAsync``2-System-Linq-Expressions-Expression{System-Func{``0,System-Boolean}},System-Linq-Expressions-Expression{System-Func{``0,``1}},ChuckDeviceController-Common-SortOrderDirection,System-Int32- 'ChuckDeviceController.Plugin.IDatabaseHost.FindAsync``2(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Linq.Expressions.Expression{System.Func{``0,``1}},ChuckDeviceController.Common.SortOrderDirection,System.Int32)')
 - [IEvent](#T-ChuckDeviceController-Plugin-EventBus-IEvent 'ChuckDeviceController.Plugin.EventBus.IEvent')
     - [Payload](#P-ChuckDeviceController-Plugin-EventBus-IEvent-Payload 'ChuckDeviceController.Plugin.EventBus.IEvent.Payload')
 - [IEventAggregatorHost](#T-ChuckDeviceController-Plugin-EventBus-IEventAggregatorHost 'ChuckDeviceController.Plugin.EventBus.IEventAggregatorHost')
@@ -62,21 +62,21 @@
     - [Subscribe\`\`1(observer)](#M-ChuckDeviceController-Plugin-EventBus-IEventAggregatorHost-Subscribe``1-ChuckDeviceController-Plugin-EventBus-ICustomObserver{``0}- 'ChuckDeviceController.Plugin.EventBus.IEventAggregatorHost.Subscribe``1(ChuckDeviceController.Plugin.EventBus.ICustomObserver{``0})')
 - [IFileStorageHost](#T-ChuckDeviceController-Plugin-IFileStorageHost 'ChuckDeviceController.Plugin.IFileStorageHost')
 - [IGeofenceServiceHost](#T-ChuckDeviceController-Plugin-IGeofenceServiceHost 'ChuckDeviceController.Plugin.IGeofenceServiceHost')
-    - [CreateGeofenceAsync(options)](#M-ChuckDeviceController-Plugin-IGeofenceServiceHost-CreateGeofenceAsync-ChuckDeviceController-Data-Abstractions-IGeofence- 'ChuckDeviceController.Plugin.IGeofenceServiceHost.CreateGeofenceAsync(ChuckDeviceController.Data.Abstractions.IGeofence)')
-    - [GetCoordinates(geofence)](#M-ChuckDeviceController-Plugin-IGeofenceServiceHost-GetCoordinates-ChuckDeviceController-Data-Abstractions-IGeofence- 'ChuckDeviceController.Plugin.IGeofenceServiceHost.GetCoordinates(ChuckDeviceController.Data.Abstractions.IGeofence)')
+    - [CreateGeofenceAsync(options)](#M-ChuckDeviceController-Plugin-IGeofenceServiceHost-CreateGeofenceAsync-ChuckDeviceController-Common-Abstractions-IGeofence- 'ChuckDeviceController.Plugin.IGeofenceServiceHost.CreateGeofenceAsync(ChuckDeviceController.Common.Abstractions.IGeofence)')
+    - [GetCoordinates(geofence)](#M-ChuckDeviceController-Plugin-IGeofenceServiceHost-GetCoordinates-ChuckDeviceController-Common-Abstractions-IGeofence- 'ChuckDeviceController.Plugin.IGeofenceServiceHost.GetCoordinates(ChuckDeviceController.Common.Abstractions.IGeofence)')
     - [GetGeofenceAsync(name)](#M-ChuckDeviceController-Plugin-IGeofenceServiceHost-GetGeofenceAsync-System-String- 'ChuckDeviceController.Plugin.IGeofenceServiceHost.GetGeofenceAsync(System.String)')
-    - [GetMultiPolygons(geofence)](#M-ChuckDeviceController-Plugin-IGeofenceServiceHost-GetMultiPolygons-ChuckDeviceController-Data-Abstractions-IGeofence- 'ChuckDeviceController.Plugin.IGeofenceServiceHost.GetMultiPolygons(ChuckDeviceController.Data.Abstractions.IGeofence)')
+    - [GetMultiPolygons(geofence)](#M-ChuckDeviceController-Plugin-IGeofenceServiceHost-GetMultiPolygons-ChuckDeviceController-Common-Abstractions-IGeofence- 'ChuckDeviceController.Plugin.IGeofenceServiceHost.GetMultiPolygons(ChuckDeviceController.Common.Abstractions.IGeofence)')
     - [IsPointInMultiPolygon(coord,multiPolygon)](#M-ChuckDeviceController-Plugin-IGeofenceServiceHost-IsPointInMultiPolygon-ChuckDeviceController-Geometry-Models-Abstractions-ICoordinate,ChuckDeviceController-Geometry-Models-Abstractions-IMultiPolygon- 'ChuckDeviceController.Plugin.IGeofenceServiceHost.IsPointInMultiPolygon(ChuckDeviceController.Geometry.Models.Abstractions.ICoordinate,ChuckDeviceController.Geometry.Models.Abstractions.IMultiPolygon)')
     - [IsPointInMultiPolygons(coord,multiPolygons)](#M-ChuckDeviceController-Plugin-IGeofenceServiceHost-IsPointInMultiPolygons-ChuckDeviceController-Geometry-Models-Abstractions-ICoordinate,System-Collections-Generic-IEnumerable{ChuckDeviceController-Geometry-Models-Abstractions-IMultiPolygon}- 'ChuckDeviceController.Plugin.IGeofenceServiceHost.IsPointInMultiPolygons(ChuckDeviceController.Geometry.Models.Abstractions.ICoordinate,System.Collections.Generic.IEnumerable{ChuckDeviceController.Geometry.Models.Abstractions.IMultiPolygon})')
     - [IsPointInPolygon(coord,coordinates)](#M-ChuckDeviceController-Plugin-IGeofenceServiceHost-IsPointInPolygon-ChuckDeviceController-Geometry-Models-Abstractions-ICoordinate,System-Collections-Generic-IEnumerable{ChuckDeviceController-Geometry-Models-Abstractions-ICoordinate}- 'ChuckDeviceController.Plugin.IGeofenceServiceHost.IsPointInPolygon(ChuckDeviceController.Geometry.Models.Abstractions.ICoordinate,System.Collections.Generic.IEnumerable{ChuckDeviceController.Geometry.Models.Abstractions.ICoordinate})')
 - [IInstanceServiceHost](#T-ChuckDeviceController-Plugin-IInstanceServiceHost 'ChuckDeviceController.Plugin.IInstanceServiceHost')
-    - [CreateInstanceAsync(options)](#M-ChuckDeviceController-Plugin-IInstanceServiceHost-CreateInstanceAsync-ChuckDeviceController-Data-Abstractions-IInstance- 'ChuckDeviceController.Plugin.IInstanceServiceHost.CreateInstanceAsync(ChuckDeviceController.Data.Abstractions.IInstance)')
+    - [CreateInstanceAsync(options)](#M-ChuckDeviceController-Plugin-IInstanceServiceHost-CreateInstanceAsync-ChuckDeviceController-Common-Abstractions-IInstance- 'ChuckDeviceController.Plugin.IInstanceServiceHost.CreateInstanceAsync(ChuckDeviceController.Common.Abstractions.IInstance)')
 - [IJobControllerServiceEvents](#T-ChuckDeviceController-Plugin-IJobControllerServiceEvents 'ChuckDeviceController.Plugin.IJobControllerServiceEvents')
 - [IJobControllerServiceHost](#T-ChuckDeviceController-Plugin-IJobControllerServiceHost 'ChuckDeviceController.Plugin.IJobControllerServiceHost')
     - [CustomInstanceTypes](#P-ChuckDeviceController-Plugin-IJobControllerServiceHost-CustomInstanceTypes 'ChuckDeviceController.Plugin.IJobControllerServiceHost.CustomInstanceTypes')
     - [Devices](#P-ChuckDeviceController-Plugin-IJobControllerServiceHost-Devices 'ChuckDeviceController.Plugin.IJobControllerServiceHost.Devices')
     - [Instances](#P-ChuckDeviceController-Plugin-IJobControllerServiceHost-Instances 'ChuckDeviceController.Plugin.IJobControllerServiceHost.Instances')
-    - [AssignDeviceToJobControllerAsync(device,instanceName)](#M-ChuckDeviceController-Plugin-IJobControllerServiceHost-AssignDeviceToJobControllerAsync-ChuckDeviceController-Data-Abstractions-IDevice,System-String- 'ChuckDeviceController.Plugin.IJobControllerServiceHost.AssignDeviceToJobControllerAsync(ChuckDeviceController.Data.Abstractions.IDevice,System.String)')
+    - [AssignDeviceToJobControllerAsync(device,instanceName)](#M-ChuckDeviceController-Plugin-IJobControllerServiceHost-AssignDeviceToJobControllerAsync-ChuckDeviceController-Common-Abstractions-IDevice,System-String- 'ChuckDeviceController.Plugin.IJobControllerServiceHost.AssignDeviceToJobControllerAsync(ChuckDeviceController.Common.Abstractions.IDevice,System.String)')
     - [RegisterJobControllerAsync\`\`1(customInstanceType)](#M-ChuckDeviceController-Plugin-IJobControllerServiceHost-RegisterJobControllerAsync``1-System-String- 'ChuckDeviceController.Plugin.IJobControllerServiceHost.RegisterJobControllerAsync``1(System.String)')
 - [ILoadData](#T-ChuckDeviceController-Plugin-ILoadData 'ChuckDeviceController.Plugin.ILoadData')
     - [Load\`\`1(folderName,fileName)](#M-ChuckDeviceController-Plugin-ILoadData-Load``1-System-String,System-String- 'ChuckDeviceController.Plugin.ILoadData.Load``1(System.String,System.String)')
@@ -126,7 +126,7 @@
     - [OnLoad()](#M-ChuckDeviceController-Plugin-IPluginEvents-OnLoad 'ChuckDeviceController.Plugin.IPluginEvents.OnLoad')
     - [OnReload()](#M-ChuckDeviceController-Plugin-IPluginEvents-OnReload 'ChuckDeviceController.Plugin.IPluginEvents.OnReload')
     - [OnRemove()](#M-ChuckDeviceController-Plugin-IPluginEvents-OnRemove 'ChuckDeviceController.Plugin.IPluginEvents.OnRemove')
-    - [OnStateChanged(state)](#M-ChuckDeviceController-Plugin-IPluginEvents-OnStateChanged-ChuckDeviceController-Data-Common-PluginState- 'ChuckDeviceController.Plugin.IPluginEvents.OnStateChanged(ChuckDeviceController.Data.Common.PluginState)')
+    - [OnStateChanged(state)](#M-ChuckDeviceController-Plugin-IPluginEvents-OnStateChanged-ChuckDeviceController-Common-PluginState- 'ChuckDeviceController.Plugin.IPluginEvents.OnStateChanged(ChuckDeviceController.Common.PluginState)')
     - [OnStop()](#M-ChuckDeviceController-Plugin-IPluginEvents-OnStop 'ChuckDeviceController.Plugin.IPluginEvents.OnStop')
 - [IPluginServiceAttribute](#T-ChuckDeviceController-Plugin-Services-IPluginServiceAttribute 'ChuckDeviceController.Plugin.Services.IPluginServiceAttribute')
     - [Lifetime](#P-ChuckDeviceController-Plugin-Services-IPluginServiceAttribute-Lifetime 'ChuckDeviceController.Plugin.Services.IPluginServiceAttribute.Lifetime')
@@ -258,6 +258,7 @@
     - [GetHashCode()](#M-ChuckDeviceController-Plugin-SettingsPropertyGroup-GetHashCode 'ChuckDeviceController.Plugin.SettingsPropertyGroup.GetHashCode')
 - [SettingsPropertyType](#T-ChuckDeviceController-Plugin-SettingsPropertyType 'ChuckDeviceController.Plugin.SettingsPropertyType')
     - [CheckBox](#F-ChuckDeviceController-Plugin-SettingsPropertyType-CheckBox 'ChuckDeviceController.Plugin.SettingsPropertyType.CheckBox')
+    - [MultiSelect](#F-ChuckDeviceController-Plugin-SettingsPropertyType-MultiSelect 'ChuckDeviceController.Plugin.SettingsPropertyType.MultiSelect')
     - [Number](#F-ChuckDeviceController-Plugin-SettingsPropertyType-Number 'ChuckDeviceController.Plugin.SettingsPropertyType.Number')
     - [Select](#F-ChuckDeviceController-Plugin-SettingsPropertyType-Select 'ChuckDeviceController.Plugin.SettingsPropertyType.Select')
     - [Text](#F-ChuckDeviceController-Plugin-SettingsPropertyType-Text 'ChuckDeviceController.Plugin.SettingsPropertyType.Text')
@@ -487,7 +488,7 @@ ChuckDeviceController.Plugin
 Sets the expected for custom
     instances.
 
-<a name='M-ChuckDeviceController-Plugin-GeofenceTypeAttribute-#ctor-ChuckDeviceController-Data-Common-GeofenceType-'></a>
+<a name='M-ChuckDeviceController-Plugin-GeofenceTypeAttribute-#ctor-System-String-'></a>
 ### #ctor(type) `constructor`
 
 ##### Summary
@@ -499,7 +500,7 @@ Instantiates a new instance of the [GeofenceTypeAttribute](#T-ChuckDeviceControl
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| type | [ChuckDeviceController.Data.Common.GeofenceType](#T-ChuckDeviceController-Data-Common-GeofenceType 'ChuckDeviceController.Data.Common.GeofenceType') | Expected geofence type required by the custom . |
+| type | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | Expected geofence type required by the custom . |
 
 <a name='P-ChuckDeviceController-Plugin-GeofenceTypeAttribute-Type'></a>
 ### Type `property`
@@ -874,7 +875,7 @@ Returns the database entity.
 | TEntity | Database entity contract type. |
 | TKey | Database entity primary key type. |
 
-<a name='M-ChuckDeviceController-Plugin-IDatabaseHost-FindAsync``2-System-Linq-Expressions-Expression{System-Func{``0,System-Boolean}},System-Linq-Expressions-Expression{System-Func{``0,``1}},ChuckDeviceController-Data-Common-SortOrderDirection,System-Int32-'></a>
+<a name='M-ChuckDeviceController-Plugin-IDatabaseHost-FindAsync``2-System-Linq-Expressions-Expression{System-Func{``0,System-Boolean}},System-Linq-Expressions-Expression{System-Func{``0,``1}},ChuckDeviceController-Common-SortOrderDirection,System-Int32-'></a>
 ### FindAsync\`\`2(predicate,order,sortDirection,limit) `method`
 
 ##### Summary
@@ -891,7 +892,7 @@ Returns the list of database entities.
 | ---- | ---- | ----------- |
 | predicate | [System.Linq.Expressions.Expression{System.Func{\`\`0,System.Boolean}}](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Linq.Expressions.Expression 'System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}}') | Predicate used to determine if a database entity matches. |
 | order | [System.Linq.Expressions.Expression{System.Func{\`\`0,\`\`1}}](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Linq.Expressions.Expression 'System.Linq.Expressions.Expression{System.Func{``0,``1}}') | Sort order expression. (Optional) |
-| sortDirection | [ChuckDeviceController.Data.Common.SortOrderDirection](#T-ChuckDeviceController-Data-Common-SortOrderDirection 'ChuckDeviceController.Data.Common.SortOrderDirection') | Sort ordering direction. |
+| sortDirection | [ChuckDeviceController.Common.SortOrderDirection](#T-ChuckDeviceController-Common-SortOrderDirection 'ChuckDeviceController.Common.SortOrderDirection') | Sort ordering direction. |
 | limit | [System.Int32](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.Int32 'System.Int32') | Limit the returned number of results. |
 
 ##### Generic Types
@@ -1009,7 +1010,7 @@ Geofence service interface contract used to create new geofences, check
 if coordinate is within a polygon, as well as converting geofence text to
 actual geometry models.
 
-<a name='M-ChuckDeviceController-Plugin-IGeofenceServiceHost-CreateGeofenceAsync-ChuckDeviceController-Data-Abstractions-IGeofence-'></a>
+<a name='M-ChuckDeviceController-Plugin-IGeofenceServiceHost-CreateGeofenceAsync-ChuckDeviceController-Common-Abstractions-IGeofence-'></a>
 ### CreateGeofenceAsync(options) `method`
 
 ##### Summary
@@ -1020,9 +1021,9 @@ Create a new or update an existing geofence.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| options | [ChuckDeviceController.Data.Abstractions.IGeofence](#T-ChuckDeviceController-Data-Abstractions-IGeofence 'ChuckDeviceController.Data.Abstractions.IGeofence') | Geofence options used to create or update. |
+| options | [ChuckDeviceController.Common.Abstractions.IGeofence](#T-ChuckDeviceController-Common-Abstractions-IGeofence 'ChuckDeviceController.Common.Abstractions.IGeofence') | Geofence options used to create or update. |
 
-<a name='M-ChuckDeviceController-Plugin-IGeofenceServiceHost-GetCoordinates-ChuckDeviceController-Data-Abstractions-IGeofence-'></a>
+<a name='M-ChuckDeviceController-Plugin-IGeofenceServiceHost-GetCoordinates-ChuckDeviceController-Common-Abstractions-IGeofence-'></a>
 ### GetCoordinates(geofence) `method`
 
 ##### Summary
@@ -1037,7 +1038,7 @@ Returns a list of coordinates.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| geofence | [ChuckDeviceController.Data.Abstractions.IGeofence](#T-ChuckDeviceController-Data-Abstractions-IGeofence 'ChuckDeviceController.Data.Abstractions.IGeofence') | Geofence to get coordinates from. |
+| geofence | [ChuckDeviceController.Common.Abstractions.IGeofence](#T-ChuckDeviceController-Common-Abstractions-IGeofence 'ChuckDeviceController.Common.Abstractions.IGeofence') | Geofence to get coordinates from. |
 
 <a name='M-ChuckDeviceController-Plugin-IGeofenceServiceHost-GetGeofenceAsync-System-String-'></a>
 ### GetGeofenceAsync(name) `method`
@@ -1056,7 +1057,7 @@ Returns a geofence interface contract.
 | ---- | ---- | ----------- |
 | name | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | Name of geofence to retrieve. |
 
-<a name='M-ChuckDeviceController-Plugin-IGeofenceServiceHost-GetMultiPolygons-ChuckDeviceController-Data-Abstractions-IGeofence-'></a>
+<a name='M-ChuckDeviceController-Plugin-IGeofenceServiceHost-GetMultiPolygons-ChuckDeviceController-Common-Abstractions-IGeofence-'></a>
 ### GetMultiPolygons(geofence) `method`
 
 ##### Summary
@@ -1071,7 +1072,7 @@ Returns a tuple with a list of MultiPolygons and a two-dimensional list of coord
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| geofence | [ChuckDeviceController.Data.Abstractions.IGeofence](#T-ChuckDeviceController-Data-Abstractions-IGeofence 'ChuckDeviceController.Data.Abstractions.IGeofence') | Geofence to get coordinates from. |
+| geofence | [ChuckDeviceController.Common.Abstractions.IGeofence](#T-ChuckDeviceController-Common-Abstractions-IGeofence 'ChuckDeviceController.Common.Abstractions.IGeofence') | Geofence to get coordinates from. |
 
 <a name='M-ChuckDeviceController-Plugin-IGeofenceServiceHost-IsPointInMultiPolygon-ChuckDeviceController-Geometry-Models-Abstractions-ICoordinate,ChuckDeviceController-Geometry-Models-Abstractions-IMultiPolygon-'></a>
 ### IsPointInMultiPolygon(coord,multiPolygon) `method`
@@ -1138,7 +1139,7 @@ ChuckDeviceController.Plugin
 
 Instance service interface contract used to create new instances.
 
-<a name='M-ChuckDeviceController-Plugin-IInstanceServiceHost-CreateInstanceAsync-ChuckDeviceController-Data-Abstractions-IInstance-'></a>
+<a name='M-ChuckDeviceController-Plugin-IInstanceServiceHost-CreateInstanceAsync-ChuckDeviceController-Common-Abstractions-IInstance-'></a>
 ### CreateInstanceAsync(options) `method`
 
 ##### Summary
@@ -1149,7 +1150,7 @@ Creates a new instance in the database.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| options | [ChuckDeviceController.Data.Abstractions.IInstance](#T-ChuckDeviceController-Data-Abstractions-IInstance 'ChuckDeviceController.Data.Abstractions.IInstance') | Options used to create the new instance. |
+| options | [ChuckDeviceController.Common.Abstractions.IInstance](#T-ChuckDeviceController-Common-Abstractions-IInstance 'ChuckDeviceController.Common.Abstractions.IInstance') | Options used to create the new instance. |
 
 <a name='T-ChuckDeviceController-Plugin-IJobControllerServiceEvents'></a>
 ## IJobControllerServiceEvents `type`
@@ -1196,7 +1197,7 @@ Gets a dictionary of active and configured devices.
 
 Gets a dictionary of all loaded job controller instances.
 
-<a name='M-ChuckDeviceController-Plugin-IJobControllerServiceHost-AssignDeviceToJobControllerAsync-ChuckDeviceController-Data-Abstractions-IDevice,System-String-'></a>
+<a name='M-ChuckDeviceController-Plugin-IJobControllerServiceHost-AssignDeviceToJobControllerAsync-ChuckDeviceController-Common-Abstractions-IDevice,System-String-'></a>
 ### AssignDeviceToJobControllerAsync(device,instanceName) `method`
 
 ##### Summary
@@ -1208,7 +1209,7 @@ instance by name.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| device | [ChuckDeviceController.Data.Abstractions.IDevice](#T-ChuckDeviceController-Data-Abstractions-IDevice 'ChuckDeviceController.Data.Abstractions.IDevice') | Device entity. |
+| device | [ChuckDeviceController.Common.Abstractions.IDevice](#T-ChuckDeviceController-Common-Abstractions-IDevice 'ChuckDeviceController.Common.Abstractions.IDevice') | Device entity. |
 | instanceName | [System.String](http://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k:System.String 'System.String') | Job controller instance name. |
 
 <a name='M-ChuckDeviceController-Plugin-IJobControllerServiceHost-RegisterJobControllerAsync``1-System-String-'></a>
@@ -1901,7 +1902,7 @@ the host application.
 
 This method has no parameters.
 
-<a name='M-ChuckDeviceController-Plugin-IPluginEvents-OnStateChanged-ChuckDeviceController-Data-Common-PluginState-'></a>
+<a name='M-ChuckDeviceController-Plugin-IPluginEvents-OnStateChanged-ChuckDeviceController-Common-PluginState-'></a>
 ### OnStateChanged(state) `method`
 
 ##### Summary
@@ -1913,7 +1914,7 @@ changed by the host application.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| state | [ChuckDeviceController.Data.Common.PluginState](#T-ChuckDeviceController-Data-Common-PluginState 'ChuckDeviceController.Data.Common.PluginState') | Plugin's current state |
+| state | [ChuckDeviceController.Common.PluginState](#T-ChuckDeviceController-Common-PluginState 'ChuckDeviceController.Common.PluginState') | Plugin's current state |
 
 <a name='M-ChuckDeviceController-Plugin-IPluginEvents-OnStop'></a>
 ### OnStop() `method`
@@ -3267,6 +3268,13 @@ the settings property.
 ##### Summary
 
 Settings property type is a checkbox field.
+
+<a name='F-ChuckDeviceController-Plugin-SettingsPropertyType-MultiSelect'></a>
+### MultiSelect `constants`
+
+##### Summary
+
+Settings property type is a multi-select item list element.
 
 <a name='F-ChuckDeviceController-Plugin-SettingsPropertyType-Number'></a>
 ### Number `constants`

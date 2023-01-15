@@ -27,6 +27,10 @@ internal static class Strings
     public const CircleInstanceRouteType DefaultCircleRouteType = CircleInstanceRouteType.Smart;
     public const bool DefaultOptimizeDynamicRoute = true;
 
+    // Smart Raid
+    public const bool DefaultOptimizeSmartRaidRoute = true;
+    public const ushort DefaultSmartRaidRadiusM = 500;
+
     // Quests
     public const short DefaultTimeZoneOffset = 0;
     public const string DefaultTimeZone = null;
