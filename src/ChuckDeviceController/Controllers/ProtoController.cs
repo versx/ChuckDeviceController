@@ -165,6 +165,11 @@ public class ProtoController : ControllerBase
             }
             else
             {
+                var mappings = new Dictionary<string, Func<Device, object?>>
+                {
+                    ["uuid"] = x => x.Uuid,
+                    ["last_seen"] = x => x.LastSeen,
+                };
                 var deviceLat = Math.Round(device.LastLatitude ?? 0, 6);
                 var deviceLon = Math.Round(device.LastLongitude ?? 0, 6);
                 var payloadLat = Math.Round(payload.LatitudeTarget, 6);
@@ -174,21 +179,28 @@ public class ProtoController : ControllerBase
                 {
                     device.LastLatitude = payloadLat;
                     device.LastLongitude = payloadLon;
+
+                    mappings.Add("last_lat", x => x.LastLatitude);
+                    mappings.Add("last_lon", x => x.LastLongitude);
                 }
                 if (device.LastHost != ipAddr)
                 {
                     device.LastHost = ipAddr;
+                    mappings.Add("last_host", x => x.LastHost);
                 }
                 device.LastSeen = now;
 
-                var result = await _uow.Devices.UpdateAsync(device);
-                if (result < 1)
+                //var result = await _uow.Devices.UpdateAsync(device);
+                if (mappings.Count > 2)
                 {
-                    // Failed
-                    _logger.LogError("[{Uuid}] Failed to update device location", payload.Uuid);
+                    var result = await _uow.Devices.UpdateAsync(device, mappings);
+                    if (result < 1)
+                    {
+                        // Failed
+                        _logger.LogError("[{Uuid}] Failed to update device location", payload.Uuid);
+                    }
                 }
             }
-
 
             //var sql = string.Format(SqlQueries.DeviceOnMergeUpdate, SqlQueries.DeviceValues);
             //var result = await EntityRepository.ExecuteAsync(_connection, sql, device);
@@ -199,7 +211,7 @@ public class ProtoController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError("[{Uuid}] SetDeviceLastLocationAsync: {Message}", payload.Uuid, ex.InnerException?.Message ?? ex.Message);
+            _logger.LogError("[{Uuid}] SetDeviceLocationAsync: {Message}", payload.Uuid, ex.InnerException?.Message ?? ex.Message);
         }
 
         _semDevices.Release();
