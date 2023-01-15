@@ -78,6 +78,9 @@ public class ManageInstanceDataViewModel
     [DisplayName("Enable Lure Encounters")]
     public bool EnableLureEncounters { get; set; } = Strings.DefaultEnableLureEncounters;
 
+    [DisplayName("Secondary Instance Name")]
+    public string? SecondaryInstanceName { get; set; }
+
 
     // Bootstrap Instance
     [DisplayName("Fast Bootstrap Mode")]

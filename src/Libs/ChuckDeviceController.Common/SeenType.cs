@@ -1,30 +1,5 @@
 ﻿namespace ChuckDeviceController.Common;
 
-//[JsonConverter(typeof(JsonStringEnumConverter))]
-//public enum SeenType
-//{
-//    [EnumMember(Value = "unset")]
-//    Unset,
-
-//    [EnumMember(Value = "encounter")]
-//    Encounter,
-
-//    [EnumMember(Value = "wild")]
-//    Wild,
-
-//    [EnumMember(Value = "nearby_stop")]
-//    NearbyStop,
-
-//    [EnumMember(Value = "nearby_cell")]
-//    NearbyCell,
-
-//    [EnumMember(Value = "lure_wild")]
-//    LureWild,
-
-//    [EnumMember(Value = "lure_encounter")]
-//    LureEncounter,
-//}
-
 /// <summary>
 /// Enumeration "emulator" since Dapper doesn't handle
 /// type mapping with enums.
@@ -83,20 +58,11 @@ public readonly struct SeenType
 
     #region Overrides
 
-    public static implicit operator SeenType(string value)
-    {
-        return new SeenType(value);
-    }
+    public static implicit operator SeenType(string value) => new(value);
 
-    public static implicit operator string(SeenType value)
-    {
-        return value._value;
-    }
+    public static implicit operator string(SeenType value) => value._value;
 
-    public override string ToString()
-    {
-        return _value;
-    }
+    public override string ToString() => _value;
 
     #endregion
 

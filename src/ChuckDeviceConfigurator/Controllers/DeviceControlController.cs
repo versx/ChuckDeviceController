@@ -24,7 +24,6 @@ public class DeviceControlController : ControllerBase
     #region Constants
 
     private const string ContentTypeJson = "application/json";
-    private const ushort AccountLastUsedS = 1800; // 30 minutes
 
     #endregion
 
@@ -441,7 +440,7 @@ public class DeviceControlController : ControllerBase
         if (oldStatus != account.Status)
         {
             // TODO: Send webhook for account status change
-            _logger.LogInformation($"Status changed for account '{account.Username}' from '{oldStatus}' to '{account.Status}'.");
+            _logger.LogInformation("[{Uuid}] Account status changed for '{Username}' from '{OldStatus}' to '{Status}'.", uuid, account.Username, oldStatus, account.Status);
         }
 
         await _uow.Accounts.UpdateAsync(account);
@@ -568,7 +567,7 @@ public class DeviceControlController : ControllerBase
         var accounts = await _uow.Accounts.FindAsync(x =>
             x.Level >= minLevel && x.Level <= maxLevel &&
             x.IsAccountClean &&
-            (x.LastUsedTimestamp == null || (x.LastUsedTimestamp != null && x.LastUsedTimestamp > 0 && now - AccountLastUsedS > x.LastUsedTimestamp)) &&
+            (x.LastUsedTimestamp == null || (x.LastUsedTimestamp != null && x.LastUsedTimestamp > 0 && now - Strings.DefaultAccountLastUsedS > x.LastUsedTimestamp)) &&
             !inUseAccounts.Contains(x.Username.ToLower())
         );
 

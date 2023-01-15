@@ -89,6 +89,8 @@ public static partial class Strings
     public const uint MaxPokemonId = 898;
     public const string Identifier = "Identifier";
 
+    public const ushort DefaultAccountLastUsedS = 1800; // 30 minutes
+
     #region Device Icons & Properties
 
     public const ushort DeviceOnlineThresholdS = 15 * 60; // 15 minutes (900)
@@ -128,6 +130,7 @@ public static partial class Strings
     public const ushort DefaultIvQueueLimit = 100;
     public const string DefaultIvList = null;
     public const bool DefaultEnableLureEncounters = false;
+    public const string DefaultSecondaryInstanceName = null;
 
     // Bootstrap
     public const bool DefaultFastBootstrapMode = false;

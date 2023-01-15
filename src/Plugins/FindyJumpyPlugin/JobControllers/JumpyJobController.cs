@@ -56,6 +56,8 @@ public class JumpyJobController : IJobController, IJobControllerCoordinates, ISc
 
     public string Name { get; }
 
+    public string Description => $"Finds Pokemon near spawnpoints about to trigger a Pokemon spawn.";
+
     public ushort MinimumLevel { get; }
 
     public ushort MaximumLevel { get; }

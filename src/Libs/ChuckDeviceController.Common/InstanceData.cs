@@ -96,6 +96,12 @@ public class InstanceData : Dictionary<string, object?>
     ]
     public bool? EnableLureEncounters { get; set; }
 
+    [
+        DisplayName("Secondary Instance Name"),
+        JsonPropertyName("iv_secondary_instance_name"),
+    ]
+    public string? SecondaryInstanceName { get; set; }
+
     #endregion
 
     #region Bootstrap Instance

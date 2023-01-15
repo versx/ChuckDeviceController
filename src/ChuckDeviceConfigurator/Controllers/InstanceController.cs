@@ -601,6 +601,7 @@ public class InstanceController : Controller
             // IV
             IvList = model?.IvList ?? Strings.DefaultIvList,
             IvQueueLimit = model?.IvQueueLimit ?? Strings.DefaultIvQueueLimit,
+            SecondaryInstanceName = model?.SecondaryInstanceName ?? Strings.DefaultSecondaryInstanceName,
 
             // Quests
             QuestMode = model?.QuestMode ?? Strings.DefaultQuestMode,
@@ -650,6 +651,7 @@ public class InstanceController : Controller
             // IV
             IvList = data?.IvList ?? Strings.DefaultIvList,
             IvQueueLimit = data?.IvQueueLimit ?? Strings.DefaultIvQueueLimit,
+            SecondaryInstanceName = data?.SecondaryInstanceName ?? Strings.DefaultSecondaryInstanceName,
 
             // Quests
             QuestMode = data?.QuestMode ?? Strings.DefaultQuestMode,

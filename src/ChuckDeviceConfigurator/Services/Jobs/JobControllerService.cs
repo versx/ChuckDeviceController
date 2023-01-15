@@ -310,7 +310,7 @@ public class JobControllerService : IJobControllerService
                             _logger.LogError($"[{instance.Name}] Failed to fetch IV list, skipping controller instantiation...");
                             return;
                         }
-                        jobController = CreateIvJobController(instance, _uow, multiPolygons, ivList);
+                        jobController = CreateIvJobController(instance, _uow, multiPolygons, ivList, this);
                         break;
                     case nameof(InstanceType.SmartRaid):
                         jobController = CreateSmartRaidJobController(instance, _uow, multiPolygons);
@@ -807,13 +807,14 @@ public class JobControllerService : IJobControllerService
         return jobController;
     }
 
-    private static IJobController CreateIvJobController(Instance instance, IDapperUnitOfWork uow, IReadOnlyList<IMultiPolygon> multiPolygons, IvList ivList)
+    private static IJobController CreateIvJobController(Instance instance, IDapperUnitOfWork uow, IReadOnlyList<IMultiPolygon> multiPolygons, IvList ivList, IJobControllerServiceHost jobControllerService)
     {
         var jobController = new IvInstanceController(
             instance,
             uow,
             multiPolygons,
-            ivList.PokemonIds
+            ivList.PokemonIds,
+            jobControllerService
         );
         return jobController;
     }

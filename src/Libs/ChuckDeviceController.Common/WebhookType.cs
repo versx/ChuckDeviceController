@@ -1,9 +1,7 @@
 ﻿namespace ChuckDeviceController.Common;
 
 using System.ComponentModel.DataAnnotations;
-//using System.Text.Json.Serialization;
 
-//[JsonConverter(typeof(JsonStringEnumConverter))]
 [Flags]
 public enum WebhookType : int
 {

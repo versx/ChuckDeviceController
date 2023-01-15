@@ -2,15 +2,6 @@
 
 using System.ComponentModel.DataAnnotations;
 
-//using System.Text.Json.Serialization;
-
-//[JsonConverter(typeof(JsonStringEnumConverter))]
-//public enum GeofenceType
-//{
-//    Circle,
-//    Geofence,
-//}
-
 public readonly struct GeofenceType
 {
     private readonly string _value;
@@ -43,20 +34,11 @@ public readonly struct GeofenceType
 
     #region Overrides
 
-    public static implicit operator GeofenceType(string value)
-    {
-        return new GeofenceType(value);
-    }
+    public static implicit operator GeofenceType(string value) => new(value);
 
-    public static implicit operator string(GeofenceType value)
-    {
-        return value._value;
-    }
+    public static implicit operator string(GeofenceType value) => value._value;
 
-    public override string ToString()
-    {
-        return _value;
-    }
+    public override string ToString() => _value;
 
     #endregion
 
@@ -65,14 +47,6 @@ public readonly struct GeofenceType
     public static string GeofenceTypeToString(GeofenceType type) => type.ToString();
 
     public static GeofenceType StringToGeofenceType(string geofenceType) => (GeofenceType)geofenceType;
-    //{
-    //    return geofenceType switch
-    //    {
-    //        "Circle" => Circle,
-    //        "Geofence" => Geofence,
-    //        _ => Circle,
-    //    };
-    //}
 
     #endregion
 }

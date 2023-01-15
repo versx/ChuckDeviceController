@@ -42,6 +42,8 @@ public class FindyJobController : IJobController, IJobControllerCoordinates, ISc
 
     public string Name { get; }
 
+    public string Description => $"Finds spawnpoint time-til-hidden values.";
+
     public ushort MinimumLevel { get; }
 
     public ushort MaximumLevel { get; }

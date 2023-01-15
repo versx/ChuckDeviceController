@@ -46,6 +46,7 @@ internal static class Strings
     public const ushort DefaultIvQueueLimit = 100;
     public const string DefaultIvList = null;
     public const bool DefaultEnableLureEncounters = false;
+    public const string DefaultSecondaryInstanceName = null;
 
     // Bootstrap
     public const bool DefaultFastBootstrapMode = false;
