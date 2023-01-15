@@ -253,11 +253,10 @@ public class RouteGenerator : IRoutingHost
     }
 
     /// <summary>
-    /// Notes: Expects geofence coordinates
+    /// Expects geofence coordinates
     /// </summary>
     /// <param name="coords">List of coordinates for the geofence to calculate the route for.</param>
     /// <param name="maxPoints">Maximum amount of coordinate points to generate.</param>
-    /// <param name="circleSize">The distance or spacing in meters between the previous and next coordinate generated.</param>
     /// <returns></returns>
     private static List<ICoordinate> Calculate(IReadOnlyList<ICoordinate> coords, uint maxPoints = 3000)
     {

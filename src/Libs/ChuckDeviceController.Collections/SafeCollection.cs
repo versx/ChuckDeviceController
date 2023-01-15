@@ -147,7 +147,7 @@ public class SafeCollection<T> : IProducerConsumerCollection<T>
 
     #region Extensions
 
-    public IEnumerable<T> Take(int count, CancellationToken stoppingToken = default)
+    public IEnumerable<T> Take(int count)
     {
         IEnumerable<T>? entities = null;
         lock (_lock)

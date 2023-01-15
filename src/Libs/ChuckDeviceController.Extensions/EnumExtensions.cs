@@ -2,6 +2,9 @@
 
 using System.Reflection;
 
+/// <summary>
+/// Credits: https://jonlabelle.com/snippets/view/csharp/enum-flag-extensions
+/// </summary>
 public static class EnumExtensions
 {
     /// <summary>
@@ -19,7 +22,7 @@ public static class EnumExtensions
     }
 
     /// <summary>
-    /// Includes an enumerated type and returns the new value
+    ///     Includes an enumerated type and returns the new value
     /// </summary>
     public static TEnum SetFlag<TEnum>(this TEnum flags, TEnum flag)
         where TEnum : unmanaged
@@ -36,7 +39,7 @@ public static class EnumExtensions
     }
 
     /// <summary>
-    /// Removes an enumerated type and returns the new value
+    ///     Removes an enumerated type and returns the new value
     /// </summary>
     public static TEnum UnsetFlag<TEnum>(this TEnum flags, TEnum flag)
         where TEnum : unmanaged
@@ -53,7 +56,7 @@ public static class EnumExtensions
     }
 
     /// <summary>
-    /// Checks if an enumerated type contains a value
+    ///     Checks if an enumerated type contains a value
     /// </summary>
     public static bool HasFlag<TEnum>(this TEnum flags, TEnum flag)
         where TEnum : unmanaged
@@ -65,7 +68,7 @@ public static class EnumExtensions
     }
 
     /// <summary>
-    /// Toggles an enumerated type and returns the new value
+    ///     Toggles an enumerated type and returns the new value
     /// </summary>
     public static TEnum ToggleFlag<TEnum>(this TEnum flags, TEnum flag)
         where TEnum : unmanaged
@@ -82,9 +85,9 @@ public static class EnumExtensions
     }
 
     /// <summary>
-    /// Internal class to simplfy narrowing values between a 
-    /// ulong and long since either value should cover any 
-    /// lesser value.
+    ///     Internal class to simplfy narrowing values between a 
+    ///     ulong and long since either value should cover any 
+    ///     lesser value.
     /// </summary>
     private class Value<T>
     {

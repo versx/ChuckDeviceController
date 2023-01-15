@@ -126,7 +126,7 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
                 return;
             }
 
-            var protos = _taskQueue.Take((int)Options.Queue.MaximumBatchSize, stoppingToken);
+            var protos = _taskQueue.Take((int)Options.Queue.MaximumBatchSize);
             if (!(protos?.Any() ?? false))
             {
                 _semParser.Release();

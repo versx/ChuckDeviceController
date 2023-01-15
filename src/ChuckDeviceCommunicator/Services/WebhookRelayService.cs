@@ -2,19 +2,16 @@
 
 using System.Collections.Concurrent;
 using System.Net;
-using System.Text;
 using System.Timers;
 
 using Microsoft.Extensions.Options;
 
+using ChuckDeviceCommunicator.Extensions;
 using ChuckDeviceController.Collections;
 using ChuckDeviceController.Common;
 using ChuckDeviceController.Configuration;
 using ChuckDeviceController.Data.Entities;
-using ChuckDeviceController.Data.Extensions;
 using ChuckDeviceController.Extensions.Json;
-using ChuckDeviceController.Geometry;
-using ChuckDeviceController.Geometry.Extensions;
 using ChuckDeviceController.Net.Utilities;
 using ChuckDeviceController.Protos;
 
@@ -395,7 +392,7 @@ public class WebhookRelayService : IWebhookRelayService
 
             if (pokemonEvents.Any() && endpoint.Types.HasFlag(WebhookType.Pokemon))
             {
-                var webhooks = ProcessPokemon(endpoint, pokemonEvents);
+                var webhooks = endpoint.ProcessPokemon(pokemonEvents);
                 if (webhooks.Any())
                 {
                     events.AddRange(webhooks);
@@ -403,7 +400,7 @@ public class WebhookRelayService : IWebhookRelayService
             }
             if (pokestopEvents.Any() && endpoint.Types.HasFlag(WebhookType.Pokestops))
             {
-                var webhooks = ProcessPokestops(endpoint, pokestopEvents);
+                var webhooks = endpoint.ProcessPokestops(pokestopEvents);
                 if (webhooks.Any())
                 {
                     events.AddRange(webhooks);
@@ -411,7 +408,7 @@ public class WebhookRelayService : IWebhookRelayService
             }
             if (lureEvents.Any() && endpoint.Types.HasFlag(WebhookType.Lures))
             {
-                var webhooks = ProcessLures(endpoint, lureEvents);
+                var webhooks = endpoint.ProcessLures(lureEvents);
                 if (webhooks.Any())
                 {
                     events.AddRange(webhooks);
@@ -419,7 +416,7 @@ public class WebhookRelayService : IWebhookRelayService
             }
             if (invasionEvents.Any() && endpoint.Types.HasFlag(WebhookType.Invasions))
             {
-                var webhooks = ProcessInvasions(endpoint, invasionEvents);
+                var webhooks = endpoint.ProcessInvasions(invasionEvents);
                 if (webhooks.Any())
                 {
                     events.AddRange(webhooks);
@@ -427,7 +424,7 @@ public class WebhookRelayService : IWebhookRelayService
             }
             if (questEvents.Any() && endpoint.Types.HasFlag(WebhookType.Quests))
             {
-                var webhooks = ProcessQuests(endpoint, questEvents);
+                var webhooks = endpoint.ProcessQuests(questEvents);
                 if (webhooks.Any())
                 {
                     events.AddRange(webhooks);
@@ -435,7 +432,7 @@ public class WebhookRelayService : IWebhookRelayService
             }
             if (alternativeQuestEvents.Any() && endpoint.Types.HasFlag(WebhookType.AlternativeQuests))
             {
-                var webhooks = ProcessAltQuests(endpoint, alternativeQuestEvents);
+                var webhooks = endpoint.ProcessAltQuests(alternativeQuestEvents);
                 if (webhooks.Any())
                 {
                     events.AddRange(webhooks);
@@ -443,7 +440,7 @@ public class WebhookRelayService : IWebhookRelayService
             }
             if (gymEvents.Any() && endpoint.Types.HasFlag(WebhookType.Gyms))
             {
-                var webhooks = ProcessGyms(endpoint, gymEvents);
+                var webhooks = endpoint.ProcessGyms(gymEvents);
                 if (webhooks.Any())
                 {
                     events.AddRange(webhooks);
@@ -451,7 +448,7 @@ public class WebhookRelayService : IWebhookRelayService
             }
             if (gymInfoEvents.Any() && endpoint.Types.HasFlag(WebhookType.GymInfo))
             {
-                var webhooks = ProcessGymInfo(endpoint, gymInfoEvents);
+                var webhooks = endpoint.ProcessGymInfo(gymInfoEvents);
                 if (webhooks.Any())
                 {
                     events.AddRange(webhooks);
@@ -459,7 +456,7 @@ public class WebhookRelayService : IWebhookRelayService
             }
             if (gymDefenderEvents.Any() && endpoint.Types.HasFlag(WebhookType.GymDefenders))
             {
-                var webhooks = ProcessGymDefenders(endpoint, gymDefenderEvents);
+                var webhooks = endpoint.ProcessGymDefenders(gymDefenderEvents);
                 if (webhooks.Any())
                 {
                     events.AddRange(webhooks);
@@ -467,7 +464,7 @@ public class WebhookRelayService : IWebhookRelayService
             }
             if (gymTrainerEvents.Any() && endpoint.Types.HasFlag(WebhookType.GymTrainers))
             {
-                var webhooks = ProcessGymTrainers(endpoint, gymTrainerEvents);
+                var webhooks = endpoint.ProcessGymTrainers(gymTrainerEvents);
                 if (webhooks.Any())
                 {
                     events.AddRange(webhooks);
@@ -475,7 +472,7 @@ public class WebhookRelayService : IWebhookRelayService
             }
             if (eggEvents.Any() && endpoint.Types.HasFlag(WebhookType.Eggs))
             {
-                var webhooks = ProcessEggs(endpoint, eggEvents);
+                var webhooks = endpoint.ProcessEggs(eggEvents);
                 if (webhooks.Any())
                 {
                     events.AddRange(webhooks);
@@ -483,7 +480,7 @@ public class WebhookRelayService : IWebhookRelayService
             }
             if (raidEvents.Any() && endpoint.Types.HasFlag(WebhookType.Raids))
             {
-                var webhooks = ProcessRaids(endpoint, raidEvents);
+                var webhooks = endpoint.ProcessRaids(raidEvents);
                 if (webhooks.Any())
                 {
                     events.AddRange(webhooks);
@@ -491,7 +488,7 @@ public class WebhookRelayService : IWebhookRelayService
             }
             if (weatherEvents.Any() && endpoint.Types.HasFlag(WebhookType.Weather))
             {
-                var webhooks = ProcessWeather(endpoint, weatherEvents);
+                var webhooks = endpoint.ProcessWeather(weatherEvents);
                 if (webhooks.Any())
                 {
                     events.AddRange(webhooks);
@@ -499,7 +496,7 @@ public class WebhookRelayService : IWebhookRelayService
             }
             if (accountEvents.Count > 0 && endpoint.Types.HasFlag(WebhookType.Accounts))
             {
-                var webhooks = ProcessAccounts(endpoint, accountEvents);
+                var webhooks = endpoint.ProcessAccounts(accountEvents);
                 if (webhooks.Any())
                 {
                     events.AddRange(webhooks);
@@ -586,327 +583,6 @@ public class WebhookRelayService : IWebhookRelayService
         catch (Exception ex)
         {
             _logger.LogError("Error: {Message}", ex.InnerException?.Message ?? ex.Message);
-        }
-    }
-
-    private static bool IsPokemonBlacklisted(uint? pokemonId, uint? formId, uint? costumeId, ushort? genderId, IEnumerable<string>? blacklisted = null)
-    {
-        if (!(blacklisted?.Any() ?? false))
-            return false;
-
-        var sb = new StringBuilder();
-        sb.Append($"{pokemonId}");
-        if (formId > 0) sb.Append($"_f{formId}");
-        if (costumeId > 0) sb.Append($"_c{costumeId}");
-        if (genderId > 0) sb.Append($"_g{genderId}");
-
-        var key = sb.ToString();
-        var matches = blacklisted.Contains(key);
-        return matches;
-    }
-
-    #endregion
-
-    #region Processing Methods
-
-    // TODO: Move to WebhookExtensions class
-
-    private static IEnumerable<dynamic> ProcessPokemon(Webhook endpoint, IReadOnlyDictionary<string, Pokemon> pokemonEvents)
-    {
-        foreach (var (_, pokemon) in pokemonEvents)
-        {
-            if (endpoint.Geofences?.Any() ?? false)
-            {
-                if (!GeofenceService.IsPointInPolygon(pokemon.ToCoordinate(), endpoint.GeofenceMultiPolygons))
-                    continue;
-            }
-            if (endpoint.Data?.PokemonIds?.Any() ?? false)
-            {
-                if (IsPokemonBlacklisted(
-                    pokemon.PokemonId,
-                    pokemon.Form,
-                    pokemon.Costume,
-                    pokemon.Gender,
-                    endpoint.Data.PokemonIds
-                ))
-                    continue;
-            }
-            var data = pokemon.GetWebhookData(WebhookHeaders.Pokemon);
-            if (data != null)
-            {
-                yield return data;
-            }
-        }
-    }
-
-    private static IEnumerable<dynamic> ProcessPokestops(Webhook endpoint, IReadOnlyDictionary<string, Pokestop> pokestopEvents)
-    {
-        foreach (var (_, pokestop) in pokestopEvents)
-        {
-            if (endpoint.Geofences?.Any() ?? false)
-            {
-                if (!GeofenceService.IsPointInPolygon(pokestop.ToCoordinate(), endpoint.GeofenceMultiPolygons))
-                    continue;
-            }
-            if (endpoint.Data?.PokestopIds?.Any() ?? false)
-            {
-                if (endpoint.Data.PokestopIds.Contains(pokestop.Id))
-                    continue;
-            }
-            var data = pokestop.GetWebhookData(WebhookHeaders.Pokestop);
-            if (data != null)
-            {
-                yield return data;
-            }
-        }
-    }
-
-    private static IEnumerable<dynamic> ProcessLures(Webhook endpoint, IReadOnlyDictionary<string, Pokestop> lureEvents)
-    {
-        foreach (var (_, lure) in lureEvents)
-        {
-            if (endpoint.Geofences?.Any() ?? false)
-            {
-                if (!GeofenceService.IsPointInPolygon(lure.ToCoordinate(), endpoint.GeofenceMultiPolygons))
-                    continue;
-            }
-            if (endpoint.Data?.LureIds?.Any() ?? false)
-            {
-                if (endpoint.Data.LureIds.Contains(lure.LureId))
-                    continue;
-            }
-            var data = lure.GetWebhookData(WebhookHeaders.Lure);
-            if (data != null)
-            {
-                yield return data;
-            }
-        }
-    }
-
-    private static IEnumerable<dynamic> ProcessInvasions(Webhook endpoint, IReadOnlyDictionary<string, PokestopWithIncident> invasionEvents)
-    {
-        foreach (var (_, pokestopWithIncident) in invasionEvents)
-        {
-            if (endpoint.Geofences?.Any() ?? false)
-            {
-                if (!GeofenceService.IsPointInPolygon(pokestopWithIncident.Pokestop.ToCoordinate(), endpoint.GeofenceMultiPolygons))
-                    continue;
-            }
-            if (endpoint.Data?.InvasionIds?.Any() ?? false)
-            {
-                if (endpoint.Data.InvasionIds.Contains(pokestopWithIncident.Invasion.Character))
-                    continue;
-            }
-            var data = pokestopWithIncident.Invasion.GetWebhookData(WebhookHeaders.Invasion, pokestopWithIncident.Pokestop);
-            if (data != null)
-            {
-                yield return data;
-            }
-        }
-    }
-
-    private static IEnumerable<dynamic> ProcessQuests(Webhook endpoint, IReadOnlyDictionary<string, Pokestop> questEvents)
-    {
-        foreach (var (_, quest) in questEvents)
-        {
-            if (endpoint.Geofences?.Any() ?? false)
-            {
-                if (!GeofenceService.IsPointInPolygon(quest.ToCoordinate(), endpoint.GeofenceMultiPolygons))
-                    continue;
-            }
-            // TODO: Add quest filtering
-            //if (endpoint.Data?.Quests.Any() ?? false)
-            //{
-            //}
-            var data = quest.GetWebhookData(WebhookHeaders.Quest);
-            if (data != null)
-            {
-                yield return data;
-            }
-        }
-    }
-
-    private static IEnumerable<dynamic> ProcessAltQuests(Webhook endpoint, IReadOnlyDictionary<string, Pokestop> alternativeQuestEvents)
-    {
-        foreach (var (_, alternativeQuest) in alternativeQuestEvents)
-        {
-            if (endpoint.Geofences?.Any() ?? false)
-            {
-                if (!GeofenceService.IsPointInPolygon(alternativeQuest.ToCoordinate(), endpoint.GeofenceMultiPolygons))
-                    continue;
-            }
-            //if (endpoint.Data?.Quests.Any() ?? false)
-            //{
-            //}
-            var data = alternativeQuest.GetWebhookData(WebhookHeaders.AlternativeQuest);
-            if (data != null)
-            {
-                yield return data;
-            }
-        }
-    }
-
-    private static IEnumerable<dynamic> ProcessGyms(Webhook endpoint, IReadOnlyDictionary<string, Gym> gymEvents)
-    {
-        foreach (var (_, gym) in gymEvents)
-        {
-            if ((endpoint.Geofences?.Count ?? 0) > 0)
-            {
-                if (!GeofenceService.IsPointInPolygon(gym.ToCoordinate(), endpoint.GeofenceMultiPolygons))
-                    continue;
-            }
-            if (endpoint.Data?.GymTeamIds?.Any() ?? false)
-            {
-                if (endpoint.Data.GymTeamIds.Contains((ushort)gym.Team))
-                    continue;
-            }
-            var data = gym.GetWebhookData(WebhookHeaders.Gym);
-            if (data != null)
-            {
-                yield return data;
-            }
-        }
-    }
-
-    private static IEnumerable<dynamic> ProcessGymInfo(Webhook endpoint, IReadOnlyDictionary<string, Gym> gymInfoEvents)
-    {
-        foreach (var (_, gymInfo) in gymInfoEvents)
-        {
-            if (endpoint.Geofences?.Any() ?? false)
-            {
-                if (!GeofenceService.IsPointInPolygon(gymInfo.ToCoordinate(), endpoint.GeofenceMultiPolygons))
-                    continue;
-            }
-            if (endpoint.Data?.GymIds?.Any() ?? false)
-            {
-                if (endpoint.Data.GymIds.Contains(gymInfo.Id))
-                    continue;
-            }
-            var data = gymInfo.GetWebhookData("gym-info");
-            if (data != null)
-            {
-                yield return data;
-            }
-        }
-    }
-
-    private static IEnumerable<dynamic> ProcessGymDefenders(Webhook endpoint, IReadOnlyDictionary<ulong, GymWithDefender> gymDefenderEvents)
-    {
-        foreach (var (_, gymDefender) in gymDefenderEvents)
-        {
-            if (endpoint.Geofences?.Any() ?? false)
-            {
-                if (!GeofenceService.IsPointInPolygon(gymDefender.Gym.ToCoordinate(), endpoint.GeofenceMultiPolygons))
-                    continue;
-            }
-            // TODO: Add gym defenders filtering
-            var data = gymDefender.Defender.GetWebhookData("gym-defender", gymDefender.Gym);
-            if (data != null)
-            {
-                yield return data;
-            }
-        }
-    }
-
-    private static IEnumerable<dynamic> ProcessGymTrainers(Webhook endpoint, IReadOnlyDictionary<string, GymWithTrainer> gymTrainerEvents)
-    {
-        foreach (var (_, gymTrainer) in gymTrainerEvents)
-        {
-            if (endpoint.Geofences?.Any() ?? false)
-            {
-                if (!GeofenceService.IsPointInPolygon(gymTrainer.Gym.ToCoordinate(), endpoint.GeofenceMultiPolygons))
-                    continue;
-            }
-            // TODO: Add gym trainers filtering
-            var data = gymTrainer.Trainer.GetWebhookData("gym-trainer", gymTrainer.Gym);
-            if (data != null)
-            {
-                yield return data;
-            }
-        }
-    }
-
-    private static IEnumerable<dynamic> ProcessEggs(Webhook endpoint, IReadOnlyDictionary<string, Gym> eggEvents)
-    {
-        foreach (var (_, egg) in eggEvents)
-        {
-            if (endpoint.Geofences?.Any() ?? false)
-            {
-                if (!GeofenceService.IsPointInPolygon(egg.ToCoordinate(), endpoint.GeofenceMultiPolygons))
-                    continue;
-            }
-            if (endpoint.Data?.EggLevels?.Any() ?? false)
-            {
-                if (endpoint.Data.EggLevels.Contains(egg.RaidLevel ?? 0))
-                    continue;
-            }
-            var data = egg.GetWebhookData(WebhookHeaders.Egg);
-            if (data != null)
-            {
-                yield return data;
-            }
-        }
-    }
-
-    private static IEnumerable<dynamic> ProcessRaids(Webhook endpoint, IReadOnlyDictionary<string, Gym> raidEvents)
-    {
-        foreach (var (_, raid) in raidEvents)
-        {
-            if (endpoint.Geofences?.Any() ?? false)
-            {
-                if (!GeofenceService.IsPointInPolygon(raid.ToCoordinate(), endpoint.GeofenceMultiPolygons))
-                    continue;
-            }
-            if (endpoint.Data?.RaidPokemonIds?.Any() ?? false)
-            {
-                if (IsPokemonBlacklisted(
-                    raid.RaidPokemonId,
-                    raid.RaidPokemonForm,
-                    raid.RaidPokemonCostume,
-                    raid.RaidPokemonGender,
-                    endpoint.Data.PokemonIds
-                ))
-                    continue;
-            }
-            var data = raid.GetWebhookData(WebhookHeaders.Raid);
-            if (data != null)
-            {
-                yield return data;
-            }
-        }
-    }
-
-    private static IEnumerable<dynamic> ProcessWeather(Webhook endpoint, IReadOnlyDictionary<long, Weather> weatherEvents)
-    {
-        foreach (var (_, weather) in weatherEvents)
-        {
-            if (endpoint.Geofences?.Any() ?? false)
-            {
-                if (!GeofenceService.IsPointInPolygon(weather.ToCoordinate(), endpoint.GeofenceMultiPolygons))
-                    continue;
-            }
-            if (endpoint.Data?.WeatherConditionIds?.Any() ?? false)
-            {
-                if (endpoint.Data.WeatherConditionIds.Contains((ushort)weather.GameplayCondition))
-                    continue;
-            }
-            var data = weather.GetWebhookData(WebhookHeaders.Weather);
-            if (data != null)
-            {
-                yield return data;
-            }
-        }
-    }
-
-    private static IEnumerable<dynamic> ProcessAccounts(Webhook endpoint, IReadOnlyDictionary<string, Account> accountEvents)
-    {
-        foreach (var (_, account) in accountEvents)
-        {
-            var data = account.GetWebhookData(WebhookHeaders.Account);
-            if (data != null)
-            {
-                yield return data;
-            }
         }
     }
 
