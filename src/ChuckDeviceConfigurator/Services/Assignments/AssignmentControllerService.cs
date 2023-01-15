@@ -372,23 +372,26 @@ public class AssignmentControllerService : IAssignmentControllerService
             }
         }
 
-        // Save/update all device's new assigned instance at once.
-        var result = await _uow.Devices.UpdateRangeAsync(devicesToUpdate, mappings: new Dictionary<string, Func<Device, object?>>
+        if (devicesToUpdate.Any())
         {
-            ["uuid"] = x => x.Uuid,
-            ["instance_name"] = x => x.InstanceName,
-        });
-        if (result <= 0)
-        {
-            // Failed to update devices
-            _logger.LogError($"Failed to update devices assigned instance");
-        }
+            // Save/update all device's new assigned instance at once.
+            var result = await _uow.Devices.UpdateRangeAsync(devicesToUpdate, mappings: new Dictionary<string, Func<Device, object?>>
+            {
+                ["uuid"] = x => x.Uuid,
+                ["instance_name"] = x => x.InstanceName,
+            });
+            if (result <= 0)
+            {
+                // Failed to update devices
+                _logger.LogError($"Failed to update devices assigned instance");
+            }
 
-        // Reload all triggered devices.
-        foreach (var device in devicesToUpdate)
-        {
-            _logger.LogDebug($"Reloading device: {device.Uuid}");
-            OnDeviceReloaded(device);
+            // Reload all triggered devices.
+            foreach (var device in devicesToUpdate)
+            {
+                _logger.LogDebug($"Reloading device: {device.Uuid}");
+                OnDeviceReloaded(device);
+            }
         }
     }
 

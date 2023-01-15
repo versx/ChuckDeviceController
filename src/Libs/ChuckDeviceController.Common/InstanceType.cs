@@ -1,6 +1,4 @@
-﻿using System.ComponentModel;
-
-namespace ChuckDeviceController.Common;
+﻿namespace ChuckDeviceController.Common;
 
 //using System.ComponentModel.DataAnnotations;
 //using System.Text.Json.Serialization;
@@ -77,34 +75,24 @@ public readonly struct InstanceType
         Custom,
     };
 
-    [DisplayName("Circle Pokemon")]
     public static InstanceType CirclePokemon => "CirclePokemon";
 
-    [DisplayName("Dynamic Route")]
     public static InstanceType DynamicRoute => "DynamicRoute";
 
-    [DisplayName("Circle Raid")]
     public static InstanceType CircleRaid => "CircleRaid";
 
-    [DisplayName("Smart Raid")]
     public static InstanceType SmartRaid => "SmartRaid";
 
-    [DisplayName("Auto-Quest")]
     public static InstanceType AutoQuest => "AutoQuest";
 
-    [DisplayName("Pokemon IV")]
     public static InstanceType PokemonIV => "PokemonIV";
 
-    [DisplayName("Bootstrapper")]
     public static InstanceType Bootstrap => "Bootstrap";
 
-    [DisplayName("Find TTH")]
     public static InstanceType FindTth => "FindTth";
 
-    [DisplayName("Leveling")]
     public static InstanceType Leveling => "Leveling";
 
-    [DisplayName("Custom")]
     public static InstanceType Custom => "Custom";
 
     #endregion

@@ -309,13 +309,14 @@ if (config.GetValue<bool>("AccountStatusService", false))
 
 #region Plugins
 
+var uiHost = new UiHost();
 // Register plugin host handlers
 builder.Services.AddSingleton<IConfigurationHost, ConfigurationHost>();
 builder.Services.AddSingleton<IDatabaseHost, DatabaseHost>();
 builder.Services.AddSingleton<IFileStorageHost, FileStorageHost>();
 builder.Services.AddSingleton<ILocalizationHost>(Translator.Instance);
 builder.Services.AddSingleton<ILoggingHost, LoggingHost>();
-builder.Services.AddSingleton<IUiHost, UiHost>();
+builder.Services.AddSingleton<IUiHost>(uiHost);
 builder.Services.AddSingleton<IGeofenceServiceHost, GeofenceServiceHost>();
 builder.Services.AddSingleton<IRoutingHost, RouteGenerator>();
 builder.Services.AddSingleton<IEventAggregatorHost, EventAggregatorHost>();
@@ -337,7 +338,7 @@ var databaseHost = serviceProvider.GetRequiredService<IDatabaseHost>();
 var eventAggregatorHost = serviceProvider.GetRequiredService<IEventAggregatorHost>();
 var fileStorageHost = serviceProvider.GetRequiredService<IFileStorageHost>();
 var geofenceServiceHost = serviceProvider.GetRequiredService<IGeofenceServiceHost>();
-var uiHost = serviceProvider.GetRequiredService<IUiHost>();
+//var uiHost = serviceProvider.GetRequiredService<IUiHost>();
 var jobControllerService = serviceProvider.GetRequiredService<IJobControllerService>();
 var loggingHost = serviceProvider.GetRequiredService<ILoggingHost>();
 var memCacheHost = serviceProvider.GetRequiredService<IMemoryCacheHost>();
