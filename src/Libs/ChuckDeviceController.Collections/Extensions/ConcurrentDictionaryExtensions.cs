@@ -90,7 +90,7 @@ public static class ConcurrentDictionaryExtensions
         );
 
         var cloned = new SafeCollection<KeyValuePair<TKey, TEntity>>(dictList);
-        var items = cloned.Take(batchSize, stoppingToken);
+        var items = cloned.Take(batchSize);
         var sorted = items
             .GroupBy(g => g.Key, g => g.Value)
             .ToDictionary(x => x.Key, y => new ConcurrentBag<TEntity>(y.ToList()))

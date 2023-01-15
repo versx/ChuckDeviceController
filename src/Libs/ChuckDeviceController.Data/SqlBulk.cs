@@ -29,8 +29,8 @@ public class SqlBulk
     private readonly Dictionary<SqlQueryType, (string, string)> _sqlCache = new();
     private readonly IEnumerable<SqlQueryType> _fortDetailTypes = new[]
     {
-        SqlQueryType.PokestopDetailsOnMergeUpdate,
-        SqlQueryType.GymDetailsOnMergeUpdate,
+        SqlQueryType.PokestopDetailsUpdateOnMerge,
+        SqlQueryType.GymDetailsUpdateOnMerge,
     };
     private readonly IEnumerable<string> _fortDetailColumns = new[]
     {
@@ -80,7 +80,7 @@ public class SqlBulk
         catch (Exception ex)
         {
             success = false;
-            _logger.LogError($"Error: {ex}");
+            _logger.LogError("Error: {Message}", ex.InnerException?.Message ?? ex.Message);
         }
 
         //_sem.Release();
@@ -125,7 +125,7 @@ public class SqlBulk
         catch (Exception ex)
         {
             success = false;
-            _logger.LogError($"Error: {ex.InnerException?.Message ?? ex.Message}");
+            _logger.LogError("Error: {Message}", ex.InnerException?.Message ?? ex.Message);
         }
 
         //_sem.Release();
@@ -148,7 +148,7 @@ public class SqlBulk
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error: {ex}");
+            _logger.LogError("Error: {Message}", ex.InnerException?.Message ?? ex.Message);
         }
 
         //_sem.Release();
@@ -199,7 +199,7 @@ public class SqlBulk
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error: {ex.InnerException?.Message ?? ex.Message}");
+            _logger.LogError("Error: {Message}", ex.InnerException?.Message ?? ex.Message);
         }
 
         return sqls;

@@ -97,7 +97,7 @@ public class ProtoProcessorService : TimedHostedService, IProtoProcessorService
 
         try
         {
-            var workItems = _protoQueue.Take((int)Options.Queue.MaximumBatchSize, stoppingToken);
+            var workItems = _protoQueue.Take((int)Options.Queue.MaximumBatchSize);
             if (!(workItems?.Any() ?? false))
             {
                 return;

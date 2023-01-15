@@ -12,27 +12,27 @@ public class SqlQueryBuilder
     {
         return type switch
         {
-            SqlQueryType.AccountOnMergeUpdate => (SqlQueries.AccountOnMergeUpdate, SqlQueries.AccountValuesRaw),
+            SqlQueryType.AccountUpdateOnMerge => (SqlQueries.AccountOnMergeUpdate, SqlQueries.AccountValuesRaw),
             // Update IV
             //SqlQueryType.PokemonOnMergeUpdate => SqlQueries.PokemonOnMergeUpdate,
             // Do not update IV
             SqlQueryType.PokemonIgnoreOnMerge => (SqlQueries.PokemonIgnoreOnMerge, SqlQueries.PokemonValuesRaw),
             // Insert everything
-            SqlQueryType.PokemonOnMergeUpdate => (SqlQueries.PokemonOnMergeUpdate, SqlQueries.PokemonValuesRaw),
+            SqlQueryType.PokemonUpdateOnMerge => (SqlQueries.PokemonOnMergeUpdate, SqlQueries.PokemonValuesRaw),
             // Do not update quest properties
             SqlQueryType.PokestopIgnoreOnMerge => (SqlQueries.PokestopIgnoreOnMerge, SqlQueries.PokestopValuesRaw),
-            SqlQueryType.PokestopOnMergeUpdate => (SqlQueries.PokestopOnMergeUpdate, SqlQueries.PokestopValuesRaw),
+            SqlQueryType.PokestopUpdateOnMerge => (SqlQueries.PokestopOnMergeUpdate, SqlQueries.PokestopValuesRaw),
             // Only update name/url/updated
-            SqlQueryType.PokestopDetailsOnMergeUpdate => (SqlQueries.PokestopDetailsOnMergeUpdate, string.Empty),
-            SqlQueryType.IncidentOnMergeUpdate => (SqlQueries.IncidentOnMergeUpdate, SqlQueries.IncidentValuesRaw),
-            SqlQueryType.GymOnMergeUpdate => (SqlQueries.GymOnMergeUpdate, SqlQueries.GymValuesRaw),
+            SqlQueryType.PokestopDetailsUpdateOnMerge => (SqlQueries.PokestopDetailsOnMergeUpdate, string.Empty),
+            SqlQueryType.IncidentUpdateOnMerge => (SqlQueries.IncidentOnMergeUpdate, SqlQueries.IncidentValuesRaw),
+            SqlQueryType.GymUpdateOnMerge => (SqlQueries.GymOnMergeUpdate, SqlQueries.GymValuesRaw),
             // Only update name/url/updated
-            SqlQueryType.GymDetailsOnMergeUpdate => (SqlQueries.GymDetailsOnMergeUpdate, string.Empty),
-            SqlQueryType.GymDefenderOnMergeUpdate => (SqlQueries.GymDefenderOnMergeUpdate, SqlQueries.GymDefenderValuesRaw),
-            SqlQueryType.GymTrainerOnMergeUpdate => (SqlQueries.GymTrainerOnMergeUpdate, SqlQueries.GymTrainerValuesRaw),
-            SqlQueryType.SpawnpointOnMergeUpdate => (SqlQueries.SpawnpointOnMergeUpdate, SqlQueries.SpawnpointValuesRaw),
-            SqlQueryType.CellOnMergeUpdate => (SqlQueries.CellOnMergeUpdate, SqlQueries.CellValuesRaw),
-            SqlQueryType.WeatherOnMergeUpdate => (SqlQueries.WeatherOnMergeUpdate, SqlQueries.WeatherValuesRaw),
+            SqlQueryType.GymDetailsUpdateOnMerge => (SqlQueries.GymDetailsOnMergeUpdate, string.Empty),
+            SqlQueryType.GymDefenderUpdateOnMerge => (SqlQueries.GymDefenderOnMergeUpdate, SqlQueries.GymDefenderValuesRaw),
+            SqlQueryType.GymTrainerUpdateOnMerge => (SqlQueries.GymTrainerOnMergeUpdate, SqlQueries.GymTrainerValuesRaw),
+            SqlQueryType.SpawnpointUpdateOnMerge => (SqlQueries.SpawnpointOnMergeUpdate, SqlQueries.SpawnpointValuesRaw),
+            SqlQueryType.CellUpdateOnMerge => (SqlQueries.CellOnMergeUpdate, SqlQueries.CellValuesRaw),
+            SqlQueryType.WeatherUpdateOnMerge => (SqlQueries.WeatherOnMergeUpdate, SqlQueries.WeatherValuesRaw),
             _ => throw new NotImplementedException(),
         };
     }

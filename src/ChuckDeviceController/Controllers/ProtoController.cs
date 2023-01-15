@@ -87,7 +87,7 @@ public class ProtoController : ControllerBase
 
     #endregion
 
-    #region Request Handlers
+    #region Route Handlers
 
     private async Task<ProtoResponse?> HandleProtoRequest(ProtoPayload payload)
     {

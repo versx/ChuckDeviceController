@@ -8,19 +8,19 @@ public enum SqlQueryType
     /// <summary>
     /// S2 cell insert and update
     /// </summary>
-    CellOnMergeUpdate,
+    CellUpdateOnMerge,
     /// <summary>
     /// Weather cell insert and update
     /// </summary>
-    WeatherOnMergeUpdate,
+    WeatherUpdateOnMerge,
     /// <summary>
     /// Spawnpoint insert and update
     /// </summary>
-    SpawnpointOnMergeUpdate,
+    SpawnpointUpdateOnMerge,
     /// <summary>
     /// Pokestop insert and update
     /// </summary>
-    PokestopOnMergeUpdate,
+    PokestopUpdateOnMerge,
     /// <summary>
     /// Pokestop update, ignore lure and quest values
     /// </summary>
@@ -28,11 +28,11 @@ public enum SqlQueryType
     /// <summary>
     /// Gym insert or update
     /// </summary>
-    GymOnMergeUpdate,
+    GymUpdateOnMerge,
     /// <summary>
     /// Pokemon insert
     /// </summary>
-    PokemonOnMergeUpdate,
+    PokemonUpdateOnMerge,
     /// <summary>
     /// Pokemon update, ignore pvp and IV values
     /// </summary>
@@ -40,25 +40,25 @@ public enum SqlQueryType
     /// <summary>
     /// Pokestop name and url update, ignore everything else
     /// </summary>
-    PokestopDetailsOnMergeUpdate,
+    PokestopDetailsUpdateOnMerge,
     /// <summary>
     /// Incident insert
     /// </summary>
-    IncidentOnMergeUpdate,
+    IncidentUpdateOnMerge,
     /// <summary>
     /// Gym name and url update, ignore everything else
     /// </summary>
-    GymDetailsOnMergeUpdate,
+    GymDetailsUpdateOnMerge,
     /// <summary>
     /// Gym trainer insert
     /// </summary>
-    GymTrainerOnMergeUpdate,
+    GymTrainerUpdateOnMerge,
     /// <summary>
     /// Gym defender insert
     /// </summary>
-    GymDefenderOnMergeUpdate,
+    GymDefenderUpdateOnMerge,
     /// <summary>
     /// Account insert and update
     /// </summary>
-    AccountOnMergeUpdate,
+    AccountUpdateOnMerge,
 }
