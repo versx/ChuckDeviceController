@@ -18,66 +18,35 @@ public static class GeofenceExtensions
     public static string? ConvertToIni(this IGeofence geofence)
     {
         var sb = new System.Text.StringBuilder();
-        if (geofence.Type == GeofenceType.Circle)
+        switch (geofence.Type)
         {
-            var coords = geofence.ConvertToCoordinates();
-            if (coords == null)
-            {
-                _logger.LogError($"Error: Unable to convert coordinates to INI format");
-                return null;
-            }
+            case nameof(GeofenceType.Circle):
+                var circles = geofence.ConvertToCoordinates();
+                if (circles == null)
+                {
+                    _logger.LogError($"Error: Unable to convert coordinates to INI format");
+                    return null;
+                }
 
-            sb.AppendLine($"[{geofence.Name}]");
-            foreach (var coord in coords)
-            {
-                sb.AppendLine($"{coord.Latitude},{coord.Longitude}");
-            }
-        }
-        else if (geofence.Type == GeofenceType.Geofence)
-        {
-            var (_, coordinates) = geofence.ConvertToMultiPolygons();
-            foreach (var coords in coordinates)
-            {
                 sb.AppendLine($"[{geofence.Name}]");
-                foreach (var coord in coords)
+                foreach (var coord in circles)
                 {
                     sb.AppendLine($"{coord.Latitude},{coord.Longitude}");
                 }
-            }
+                break;
+            case nameof(GeofenceType.Geofence):
+                var (_, coordinates) = geofence.ConvertToMultiPolygons();
+                foreach (var coords in coordinates)
+                {
+                    sb.AppendLine($"[{geofence.Name}]");
+                    foreach (var coord in coords)
+                    {
+                        sb.AppendLine($"{coord.Latitude},{coord.Longitude}");
+                    }
+                }
+                break;
         }
 
-        //switch (geofence.Type)
-        //{
-        //    case GeofenceType.Circle:
-        //        {
-        //            var coords = geofence.ConvertToCoordinates();
-        //            if (coords == null)
-        //            {
-        //                _logger.LogError($"Error: Unable to convert coordinates to INI format");
-        //                return null;
-        //            }
-
-        //            sb.AppendLine($"[{geofence.Name}]");
-        //            foreach (var coord in coords)
-        //            {
-        //                sb.AppendLine($"{coord.Latitude},{coord.Longitude}");
-        //            }
-        //            break;
-        //        }
-        //    case GeofenceType.Geofence:
-        //        {
-        //            var (_, coordinates) = geofence.ConvertToMultiPolygons();
-        //            foreach (var coords in coordinates)
-        //            {
-        //                sb.AppendLine($"[{geofence.Name}]");
-        //                foreach (var coord in coords)
-        //                {
-        //                    sb.AppendLine($"{coord.Latitude},{coord.Longitude}");
-        //                }
-        //            }
-        //            break;
-        //        }
-        //}
         return sb.ToString();
     }
 

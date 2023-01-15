@@ -64,48 +64,31 @@ public static class TypeExtensions
             { typeof(IReadOnlyList<IGeofence>), geofences }
         };
 
-        var attr = jobControllerType.GetCustomAttribute<GeofenceTypeAttribute>(false);
-        if (attr == null)
+        var geofenceType = jobControllerType.GetGeofenceTypeAttribute();
+        if (geofenceType == null)
         {
             // Failed to find 'GeofenceTypeAttribute' for job controller
             // Return dictionary of plugin services
             return dict;
         }
 
-        if (attr?.Type == GeofenceType.Circle)
+        switch (geofenceType)
         {
-            // Add list of coordinates to available parameters list
-            var circles = geofences.ConvertToCoordinates();
-            dict.Add(typeof(List<ICoordinate>), circles);
+            case nameof(GeofenceType.Circle):
+                // Add list of coordinates to available parameters list
+                var circles = geofences.ConvertToCoordinates();
+                dict.Add(typeof(List<ICoordinate>), circles);
+                break;
+            case nameof(GeofenceType.Geofence):
+                // Add list of geofence coordinates to available parameters list
+                var (multiPolygons, polyCoords) = geofences.ConvertToMultiPolygons();
+                var coords = polyCoords
+                    .Select(c => c.Select(coord => (ICoordinate)coord).ToList())
+                    .ToList();
+                dict.Add(typeof(List<List<ICoordinate>>), coords);
+                dict.Add(typeof(List<IMultiPolygon>), multiPolygons);
+                break;
         }
-        else if (attr?.Type == GeofenceType.Geofence)
-        {
-            // Add list of geofence coordinates to available parameters list
-            var (multiPolygons, polyCoords) = geofences.ConvertToMultiPolygons();
-            var coords = polyCoords
-                .Select(c => c.Select(coord => (ICoordinate)coord).ToList())
-                .ToList();
-            dict.Add(typeof(List<List<ICoordinate>>), coords);
-            dict.Add(typeof(List<IMultiPolygon>), multiPolygons);
-        }
-
-        //switch (attr?.Type)
-        //{
-        //    case GeofenceType.Circle:
-        //        // Add list of coordinates to available parameters list
-        //        var circles = geofences.ConvertToCoordinates();
-        //        dict.Add(typeof(List<ICoordinate>), circles);
-        //        break;
-        //    case GeofenceType.Geofence:
-        //        // Add list of geofence coordinates to available parameters list
-        //        var (multiPolygons, polyCoords) = geofences.ConvertToMultiPolygons();
-        //        var coords = polyCoords
-        //            .Select(c => c.Select(coord => (ICoordinate)coord).ToList())
-        //            .ToList();
-        //        dict.Add(typeof(List<List<ICoordinate>>), coords);
-        //        dict.Add(typeof(List<IMultiPolygon>), multiPolygons);
-        //        break;
-        //}
 
         return dict;
     }
@@ -204,5 +187,19 @@ public static class TypeExtensions
             .Where(t => t.GetType() == typeof(T))
             .FirstOrDefault() != null;
         return result;
+    }
+
+    public static GeofenceType GetGeofenceTypeAttribute(this Type type)
+    {
+        try
+        {
+            var geofenceType = type.GetCustomAttribute<GeofenceTypeAttribute>()?.Type ?? GeofenceType.Geofence;
+            return geofenceType;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex}");
+            return GeofenceType.Circle;
+        }
     }
 }

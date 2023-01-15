@@ -13,7 +13,7 @@ public sealed class GeofenceTypeAttribute : Attribute
     /// <summary>
     ///     Gets the specified geofence type expected.
     /// </summary>
-    public GeofenceType Type { get; set; }
+    public GeofenceType Type { get; }
 
     /// <summary>
     ///     Instantiates a new instance of the <see cref="GeofenceTypeAttribute"/>

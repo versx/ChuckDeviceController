@@ -5,9 +5,6 @@ using MySqlConnector;
 
 public class MySqlConnectionFactory : IMySqlConnectionFactory
 {
-    //private readonly IConfiguration _configuration;
-    //private readonly string? _connectionString;
-
     public string ConnectionString { get; }
 
     public MySqlConnectionFactory(string connectionString)
@@ -16,9 +13,8 @@ public class MySqlConnectionFactory : IMySqlConnectionFactory
     }
 
     public MySqlConnectionFactory(IConfiguration configuration)
+        : this(configuration.GetConnectionString("DefaultConnection")!)
     {
-        //_configuration = configuration;
-        ConnectionString = configuration.GetConnectionString("DefaultConnection")!;
     }
 
     public MySqlConnection CreateConnection(bool open = true)
