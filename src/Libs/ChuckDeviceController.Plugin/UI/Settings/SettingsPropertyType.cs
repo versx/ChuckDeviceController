@@ -30,4 +30,9 @@ public enum SettingsPropertyType
     /// Settings property type is a select item list element.
     /// </summary>
     Select,
+
+    /// <summary>
+    /// Settings property type is a multi-select item list element.
+    /// </summary>
+    MultiSelect,
 }

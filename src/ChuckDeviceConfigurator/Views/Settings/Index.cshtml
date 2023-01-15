@@ -10,68 +10,58 @@
 @{
     ViewData["Title"] = localizer["Settings"];
 
-    //var tabsJson = Html.RenderAction("GetSettingsTabs", "Helper");
-    //var tabs = Convert.ToString(tabsJson)?.FromJson<List<SettingsTab>>();
-    //var propertiesJson = Html.RenderAction("GetSettingsProperties", "Helper");
-    //var properties = Convert.ToString(propertiesJson)?.FromJson<Dictionary<string, List<SettingsProperty>>>();
+    var tabs = (List<ISettingsTab>)ViewBag.SettingsTabs;
+    var properties = (Dictionary<string, List<ISettingsProperty>>)ViewBag.SettingsProperties;
 
-    var tabs = (List<SettingsTab>)ViewBag.SettingsTabs;
-    var properties = (Dictionary<string, List<SettingsProperty>>)ViewBag.SettingsProperties;
-
-    async Task AddProperty(SettingsProperty property)
+    async Task AddProperty(ISettingsProperty property)
     {
         switch (property.Type)
         {
             case SettingsPropertyType.Text:
-                <div class="form-group">
+                <div class="form-group mb-3">
                     <label class="control-label">@property.Text</label>
                     <input type="text" id="@property.Name" name="@property.Name" value="@(Model.Get<string>(property.Name, property.DefaultValue))" class="@property.Class" style="@property.Style" />
                 </div>
                 break;
             case SettingsPropertyType.TextArea:
-                <div class="form-group">
+                <div class="form-group mb-3">
                     <label class="control-label">@property.Text</label>
                     <textarea id="@property.Name" name="@property.Name" class="@property.Class" style="@property.Style">@(Model.Get<string>(property.Name, property.DefaultValue))</textarea>
                 </div>
                 break;
             case SettingsPropertyType.Number:
-                <div class="form-group">
+                <div class="form-group mb-3">
                     <label class="control-label">@property.Text</label>
                     <input type="number" id="@property.Name" name="@property.Name" value="@(Model.Get<string>(property.Name, property.DefaultValue))" class="@property.Class" style="@property.Style" />
                 </div>
                 break;
             case SettingsPropertyType.CheckBox:
-                <div class="form-group">
-                    <div class="checkbox">
-                        <label class="control-label">
-                            <input type="checkbox" id="@property.Name" name="@property.Name" @(Model.Get<string>(property.Name, property.DefaultValue)) class="@property.Class" style="@property.Style" />
-                            @property.Text
-                        </label>
-                    </div>
+                <div class="form-check mb-3">
+                    <input type="checkbox" class="form-check-input @property.Class" id="@property.Name" name="@property.Name" @(Model.Get<string>(property.Name, property.DefaultValue)) style="@property.Style" />
+                    <label class="form-check-label">
+                        @property.Text
+                    </label>
                 </div>
                 break;
             case SettingsPropertyType.Select:
-                var jsonElement = (JsonElement)property?.Value!;
-                var items = jsonElement.EnumerateArray();
+            case SettingsPropertyType.MultiSelect:
+                var items = (IEnumerable<object>)(property.Value ?? new List<object>());
                 if (items.Any())
                 {
-                    <div class="form-group">
-                        <label class="control-label">@property.Text</label>
-                        <select id="@property.Name" name="@property.Name" class="@property.Class" style="@property.Style">
-                            <option value="" disabled selected>Please select one</option>
-                            @foreach (var item in items)
-                            {
-                                var settingsValue = Model.Get<string>(property.Name, property.DefaultValue);
-                                if (Convert.ToString(item) == settingsValue)
-                                {
-                                    <option value="@item" selected="selected">@item</option>
-                                }
-                                else
-                                {
-                                    <option value="@item">@item</option>
-                                }
-                            }
-                        </select>
+                    <div class="form-group mb-3">
+                        <label class="control-label">@property!.Text</label>
+                        @if (property.Type == SettingsPropertyType.MultiSelect)
+                        {
+                            <select id="@property.Name" name="@property.Name" class="@property.Class" style="@property.Style" multiple>
+                                @AddPropertySelectItems(property, items);
+                            </select>
+                        }
+                        else
+                        {
+                            <select id="@property.Name" name="@property.Name" class="@property.Class" style="@property.Style">
+                                @AddPropertySelectItems(property, items);
+                            </select>
+                        }
                     </div>
                 }
                 break;
@@ -80,6 +70,26 @@
         {
             <span asp-validation-for="@property.Name" class="text-danger"></span>
         }
+    }
+
+    async Task AddPropertySelectItems(ISettingsProperty property, IEnumerable<object> items)
+    {
+        <option value="" disabled>Please select one</option>
+        @foreach (var item in items)
+        {
+            var settingsValue = Model.Get<string>(property.Name, property.DefaultValue);
+            if (Convert.ToString(item) == settingsValue ||
+                (settingsValue == null && property.DefaultValue == item))
+            {
+                <option value="@item" selected="selected">@item</option>
+            }
+            else
+            {
+                <option value="@item">@item</option>
+            }
+        }
+
+        await Task.CompletedTask;
     }
 }
 

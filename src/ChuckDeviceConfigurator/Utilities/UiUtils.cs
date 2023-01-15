@@ -15,9 +15,9 @@ public static class UiUtils
             : url;
     }
 
-    public static async Task<Dictionary<SettingsPropertyGroup, List<SettingsProperty>>> GroupPropertiesAsync(IEnumerable<SettingsProperty> properties)
+    public static async Task<Dictionary<SettingsPropertyGroup, List<ISettingsProperty>>> GroupPropertiesAsync(IEnumerable<ISettingsProperty> properties)
     {
-        var dict = new Dictionary<SettingsPropertyGroup, List<SettingsProperty>>();
+        var dict = new Dictionary<SettingsPropertyGroup, List<ISettingsProperty>>();
         foreach (var property in properties)
         {
             var group = property.Group ?? new();

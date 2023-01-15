@@ -407,7 +407,7 @@ public class TestPlugin : IPlugin, IDatabaseEvents, IJobControllerServiceEvents,
 
         var settingsProperties = new List<SettingsProperty>
         {
-            new("Enabled", "test-enabled", SettingsPropertyType.CheckBox, true),
+            new("Enabled", "test-enabled", SettingsPropertyType.CheckBox, value: true),
             new("First Name", "FirstName", SettingsPropertyType.Text, "Jeremy", displayIndex: 1),
             new("TextAreaTest", "TextAreaTest", SettingsPropertyType.TextArea, "Testing", displayIndex: 2),
             new()
@@ -423,7 +423,8 @@ public class TestPlugin : IPlugin, IDatabaseEvents, IJobControllerServiceEvents,
                 Text = "Geofences",
                 Name = "Geofences",
                 Value = new List<string> { "Paris", "London", "Sydney" },
-                Type = SettingsPropertyType.Select,
+                DefaultValue = "London",
+                Type = SettingsPropertyType.MultiSelect,
                 DisplayIndex = 0,
             },
         };

@@ -38,7 +38,7 @@ public class SettingsController : Controller
         var model = new SettingsManager(settings);
 
         ViewBag.SettingsTabs = _uiHost.SettingsTabs;
-        ViewBag.SettingsProperties = _uiHost.SettingsProperties;
+        ViewBag.SettingsProperties = new Dictionary<string, List<ISettingsProperty>>(_uiHost.SettingsProperties);
         return View(model);
     }
 
@@ -112,7 +112,7 @@ public class SettingsController : Controller
 
     private static object FormatSettingValue(object value)
     {
-        if (value is StringValues checkbox && checkbox == "on")
+        if (value is StringValues checkbox && (checkbox == "on" || checkbox.ToString().Contains("true")))
         {
             return true;
         }
