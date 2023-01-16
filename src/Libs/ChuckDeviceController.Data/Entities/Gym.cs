@@ -95,7 +95,6 @@ public class Gym : BaseFort, IGym, IWebhookEntity
 
     public Gym()
     {
-        Id = string.Empty;
     }
 
     public Gym(dynamic data)

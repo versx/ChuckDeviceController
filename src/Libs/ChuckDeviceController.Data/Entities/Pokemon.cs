@@ -704,75 +704,92 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
         await Task.CompletedTask;
     }
 
-    public async Task<Spawnpoint?> ParseSpawnpointAsync(MySqlConnection connection, IMemoryCacheService memCache, int timeTillHiddenMs, ulong timestampMs)
+    public async Task<Spawnpoint?> ParseSpawnpointAsync(MySqlConnection connection, IMemoryCacheService memCache, int timeTillHiddenMs, ulong timestampMs, bool isTimestampAccurate)
     {
         var spawnId = SpawnId ?? 0;
-        if (spawnId == 0)
-        {
-            return null;
-        }
+        //if (spawnId == 0)
+        //{
+        //    return null;
+        //}
 
         var now = DateTime.UtcNow.ToTotalSeconds();
+        var oldSpawnpoint = await EntityRepository.GetEntityAsync<ulong, Spawnpoint>(connection, spawnId, memCache, skipCache: true, setCache: true);
+
         if (timeTillHiddenMs <= 90000 && timeTillHiddenMs > 0)
         {
-            ExpireTimestamp = Convert.ToUInt64((timestampMs + Convert.ToUInt64(timeTillHiddenMs)) / 1000);
             IsExpireTimestampVerified = true;
-            var date = ExpireTimestamp.FromMilliseconds();
-            var secondOfHour = date.Second + (date.Minute * 60);
-
-            var spawnpoint = new Spawnpoint
+            if (isTimestampAccurate)
             {
-                Id = spawnId,
-                Latitude = Latitude,
-                Longitude = Longitude,
-                DespawnSecond = Convert.ToUInt16(secondOfHour),
-                LastSeen = EntityConfiguration.Instance.SaveSpawnpointLastSeen ? now : null,
-                Updated = now,
-            };
-            await spawnpoint.UpdateAsync(connection, memCache, update: true, skipLookup: true);
-            return spawnpoint;
+                if (ExpireTimestamp == 0)
+                {
+                    ExpireTimestamp = Convert.ToUInt64(timestampMs + (ulong)timeTillHiddenMs) / 1000;
+                }
+
+                var date = ExpireTimestamp.FromMilliseconds();
+                var secondOfHour = date.Second + (date.Minute * 60);
+                var spawnpoint = new Spawnpoint
+                {
+                    Id = spawnId,
+                    Latitude = Latitude,
+                    Longitude = Longitude,
+                    DespawnSecond = Convert.ToUInt16(secondOfHour),
+                    LastSeen = EntityConfiguration.Instance.SaveSpawnpointLastSeen
+                        ? now
+                        : null,
+                    Updated = now,
+                };
+                await spawnpoint.UpdateAsync(oldSpawnpoint, memCache, update: true, isTimestampAccurate);
+                return spawnpoint;
+            }
         }
-
-        IsExpireTimestampVerified = false;
-
-        if (spawnId > 0)
+        else
         {
-            var oldSpawnpoint = await EntityRepository.GetEntityAsync<ulong, Spawnpoint>(connection, SpawnId ?? 0, memCache);
+            IsExpireTimestampVerified = false;
             if (oldSpawnpoint != null && oldSpawnpoint.DespawnSecond != null)
             {
-                var despawnSecond = oldSpawnpoint.DespawnSecond;
+                var despawnSecond = oldSpawnpoint.DespawnSecond ?? 0;
                 var timestampS = timestampMs / 1000;
                 var date = timestampS.FromMilliseconds();
-                var secondOfHour = date.Second + (date.Minute * 60);
+                var secondOfHour = date.Second + date.Minute * 60;
                 var despawnOffset = despawnSecond - secondOfHour;
                 if (despawnSecond < secondOfHour)
+                {
                     despawnOffset += 3600;
+                }
+
+                if (isTimestampAccurate || ExpireTimestamp == 0)
+                {
+                    ExpireTimestamp = now + Convert.ToUInt64(despawnOffset);
+                }
+
+                IsExpireTimestampVerified = true;
 
                 // Update spawnpoint last_seen if enabled
                 if (EntityConfiguration.Instance.SaveSpawnpointLastSeen)
                 {
                     oldSpawnpoint.LastSeen = now;
                 }
-
-                ExpireTimestamp = timestampS + (ulong)despawnOffset;
-                IsExpireTimestampVerified = true;
                 return oldSpawnpoint;
             }
-
-            var newSpawnpoint = new Spawnpoint
+            else
             {
-                Id = spawnId,
-                Latitude = Latitude,
-                Longitude = Longitude,
-                DespawnSecond = null,
-                LastSeen = EntityConfiguration.Instance.SaveSpawnpointLastSeen ? now : null,
-                Updated = now,
-            };
-            await newSpawnpoint.UpdateAsync(connection, memCache, update: true, skipLookup: true);
-            return newSpawnpoint;
+                var newSpawnpoint = new Spawnpoint
+                {
+                    Id = spawnId,
+                    Latitude = Latitude,
+                    Longitude = Longitude,
+                    DespawnSecond = null,
+                    LastSeen = EntityConfiguration.Instance.SaveSpawnpointLastSeen ? now : null,
+                    Updated = now,
+                };
+                await newSpawnpoint.UpdateAsync(oldSpawnpoint, memCache, update: true);
+                SetExpirationTimestamp();
+
+                return newSpawnpoint;
+            }
         }
 
-        return null;
+        return oldSpawnpoint;
     }
 
     public dynamic? GetWebhookData(string type)

@@ -51,6 +51,7 @@ public class AccountController : BaseMvcController
             .Select(x => x.GroupName)
             .Distinct()
             .Where(x => !string.IsNullOrEmpty(x))
+            .OrderBy(x => x)
             .ToList();
 
         var total = accounts.Count();

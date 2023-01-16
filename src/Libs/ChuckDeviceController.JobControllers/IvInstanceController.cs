@@ -133,17 +133,7 @@ public class IvInstanceController : IJobController, ILureInstanceController, ISc
             return scanNextTask;
         }
 
-        //Pokemon? pokemon = null;
-        //lock (_queueLock)
-        //{
-        //    if (_pokemonQueue.Count == 0)
-        //    {
-        //        return null;
-        //    }
-        //    pokemon = _pokemonQueue.Dequeue();
-        //}
-
-        if (!_pokemonQueue.Any())
+        async Task<ITask> GetSecondaryJobControllerTaskAsync()
         {
             if (string.IsNullOrEmpty(SecondaryInstanceName))
                 return null!;
@@ -157,10 +147,17 @@ public class IvInstanceController : IJobController, ILureInstanceController, ISc
             return secTask;
         }
 
+        if (!_pokemonQueue.Any())
+        {
+            var secTask = await GetSecondaryJobControllerTaskAsync();
+            return secTask;
+        }
+
         var pokemon = _pokemonQueue.Dequeue();
         if (pokemon == null)
         {
-            return null!;
+            var secTask = await GetSecondaryJobControllerTaskAsync();
+            return secTask;
         }
 
         // Check if Pokemon is close to expiring, if so fetch another
@@ -464,12 +461,10 @@ public class IvInstanceController : IJobController, ILureInstanceController, ISc
                 {
                     _logger.LogError("Error: {Message}", ex.InnerException?.Message ?? ex.Message);
                     Thread.Sleep(15 * 1000);
-                    //await Task.Delay(TimeSpan.FromSeconds(15));
                     continue;
                 }
 
                 Thread.Sleep(15 * 1000);
-                //await Task.Delay(TimeSpan.FromSeconds(15));
             }
 
             if (pokemonReal != null)

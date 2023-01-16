@@ -27,7 +27,7 @@ public class IdentityHostingStartup : IHostingStartup
             {
                 try
                 {
-                    var connectionString = context.Configuration.GetSection("ConnectionStrings:DefaultConnection").Get<string>();
+                    var connectionString = context.Configuration.GetConnectionString("DefaultConnection");
                     var serverVersion = ServerVersion.AutoDetect(connectionString);
                     options.UseMySql(connectionString, serverVersion);
                 }

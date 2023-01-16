@@ -116,6 +116,7 @@ public class InstanceController : Controller
             .Select(x => x.GroupName)
             .Distinct()
             .Where(x => !string.IsNullOrEmpty(x))
+            .OrderBy(x => x)
             .ToList();
         var geofences = await _uow.Geofences.FindAllAsync();
         ViewBag.AccountGroups = accountGroups;
@@ -205,6 +206,7 @@ public class InstanceController : Controller
             .Select(x => x.GroupName)
             .Distinct()
             .Where(x => !string.IsNullOrEmpty(x))
+            .OrderBy(x => x)
             .ToList();
         var geofences = await _uow.Geofences.FindAllAsync();
         ViewBag.AccountGroups = accountGroups;
