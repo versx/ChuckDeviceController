@@ -588,8 +588,9 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
                 var username = (string)wild.username;
                 var isEvent = (bool)wild.isEvent;
                 var pokemon = Pokemon.ParsePokemonFromWild(data, cellId, username, isEvent);
-                var spawnpoint = await pokemon.ParseSpawnpointAsync(connection, _memCache, data.TimeTillHiddenMs, timestampMs);
-                if (spawnpoint != null)
+
+                var spawnpoint = await pokemon.ParseSpawnpointAsync(connection, _memCache, data.TimeTillHiddenMs, timestampMs, isTimestampAccurate: true);
+                if (spawnpoint != null && spawnpoint.HasChanges)
                 {
                     AddEntity(SqlQueryType.SpawnpointUpdateOnMerge, spawnpoint);
                     ProtoDataStatistics.Instance.TotalSpawnpointsProcessed++;
@@ -1228,8 +1229,8 @@ public class DataProcessorService : TimedHostedService, IDataProcessorService
                     pokemon = Pokemon.ParsePokemonFromWild(data.Pokemon, cellId.Id, username, isEvent);
                 }
                 pokemon.AddEncounter(data, username, isEvent: false, setPvpRankings: new Action<Pokemon>(SetPvpRankings));
-                var spawnpoint = await pokemon.ParseSpawnpointAsync(connection, _memCache, data.Pokemon.TimeTillHiddenMs, timestampMs);
-                if (spawnpoint != null)
+                var spawnpoint = await pokemon.ParseSpawnpointAsync(connection, _memCache, data.Pokemon.TimeTillHiddenMs, timestampMs, isTimestampAccurate: false);
+                if (spawnpoint != null && spawnpoint.HasChanges)
                 {
                     AddEntity(SqlQueryType.SpawnpointUpdateOnMerge, spawnpoint);
                     ProtoDataStatistics.Instance.TotalSpawnpointsProcessed++;
