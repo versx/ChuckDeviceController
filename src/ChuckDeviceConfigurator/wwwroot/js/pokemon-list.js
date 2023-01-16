@@ -9,6 +9,16 @@ const PokemonGenerations = {
     gen8: { start: 810, end: 898 },
 };
 
+const listGroup = document.getElementById('pokemon-priority-list');
+const sortable = new Sortable(listGroup, {
+    animation: 150,
+    ghostClass: 'blue-background-class',
+    onEnd: function (evt) {
+        setSelectedPokemon();
+    },
+});
+
+
 /*
 let pokemonRarity = {};
 $.getJSON('/data/rarity.json', function(data) {
@@ -19,28 +29,28 @@ $.getJSON('/data/rarity.json', function(data) {
 function initButtons() {
     $('#select_rare').on('click', function () {
         $.each($('.item'), function (index, item) {
-            if (!pokemonRarity.common.includes(parseInt(item.id))) {
+            if (!pokemonRarity.common.includes(item.id)) {
                 selectItem(item);
             }
         });
     });
     $('#select_ultra').on('click', function () {
         $.each($('.item'), function (index, item) {
-            if (pokemonRarity.ultra.includes(parseInt(item.id))) {
+            if (pokemonRarity.ultra.includes(item.id)) {
                 selectItem(item);
             }
         });
     });
     $('#select_raid5star').on('click', function () {
         $.each($('.item'), function (index, item) {
-            if (pokemonRarity.raid5star.includes(parseInt(item.id))) {
+            if (pokemonRarity.raid5star.includes(item.id)) {
                 selectItem(item);
             }
         });
     });
     $('#select_raid6star').on('click', function () {
         $.each($('.item'), function (index, item) {
-            if ((pokemonRarity.raid6star || []).includes(parseInt(item.id))) {
+            if ((pokemonRarity.raid6star || []).includes(item.id)) {
                 selectItem(item);
             }
         });
@@ -78,7 +88,8 @@ function invertSelection() {
     const oldPokemon = value.split(',');
     const pokemon = document.getElementsByClassName('item');
     for (const pkmn of pokemon) {
-        const isSelected = pkmn.classList.value.includes('active');
+        //const isSelected = pkmn.classList.value.includes('active');
+        const isSelected = pkmn.classList.contains('active');
         if (!isSelected && !oldPokemon.includes(pkmn.id)) {
             selectItem(pkmn);
         } else {
@@ -123,26 +134,38 @@ function toggleAllPokemon(disable) {
 
 function selectItem(element) {
     const selectedPokemon = getSelectedPokemon().split(',');
-    if (selectedPokemon.includes(element.id)) {
+    const id = element.id;
+    if (selectedPokemon.includes(id)) {
         return;
     }
-    if (!element.classList.value.includes('active')) {
-        element.classList.value = element.classList.value += ' active';
-    }
+    const name = element.getAttribute('data-name');
+    const image = element.getAttribute('data-image');
+    $('#pokemon-priority-list').append(`
+<li data-id="${id}" class="list-group-item">
+    <div class="row">
+        <div class="col col-md-2 col-sm-2">
+            <img src="${image}" width="48" height="48" />
+        </div>
+        <div class="col col-md-10 col-sm-10">
+            <small class="caption">${name} <small>(#${id})</small></small>
+        </div>
+    </div>
+</li>`);
+    element.classList.toggle('active');
     element.style.background = 'dodgerblue';
-    appendId(element.id);
+    appendId(id);
 }
 
 function unselectItem(element) {
     const selectedPokemon = getSelectedPokemon().split(',');
-    if (!selectedPokemon.includes(element.id)) {
+    const id = element.id;
+    if (!selectedPokemon.includes(id)) {
         return;
     }
-    if (element.classList.value.includes('active')) {
-        element.classList.value = element.classList.value.replace(' active', '');
-    }
+    $(`#pokemon-priority-list [data-id='${id}']`).remove();
+    element.classList.toggle('active');
     element.style.background = $('.pokemon-list').css('background-color');
-    removeId(element.id);
+    removeId(id);
 }
 
 function appendId(id) {
@@ -176,5 +199,12 @@ function getSelectedPokemon() {
 
 function setSelectedPokemon(pokemon) {
     const pokemonIds = document.getElementById('PokemonIds');
-    pokemonIds.value = pokemon;
+    if (pokemon) {
+        pokemonIds.value = pokemon;
+    } else {
+        const sorted = sortable.toArray();
+        if (sorted) {
+            pokemonIds.value = sorted.join(',');
+        }
+    }
 }

@@ -76,22 +76,9 @@
 
   <ItemGroup>
     <Content Update="wwwroot\**\*.*">
-    </Content>
-    <Content Update="wwwroot\css\sidebar.css">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
-    <Content Update="wwwroot\data\auth_providers.json">
-      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
-    <Content Update="wwwroot\js\pokemon-list.js">
-      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
-    <Content Update="wwwroot\css\pokemon-list.css">
-      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Update="Views\**\*.*">
     </Content>
@@ -99,6 +86,7 @@
 
   <ItemGroup>
     <Watch Include="Views\**\*" />
+    <Watch Include="wwwroot\**\*" />
   </ItemGroup>
 
   <ItemGroup>

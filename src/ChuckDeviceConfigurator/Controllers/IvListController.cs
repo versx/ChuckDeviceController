@@ -144,6 +144,7 @@ public class IvListController : Controller
             return View();
         }
         ViewData["Pokemon"] = GeneratePokemonList(selectedPokemon: ivList.PokemonIds);
+        ViewData["PriorityList"] = ivList.PokemonIds;
         return View(ivList);
     }
 
@@ -259,7 +260,11 @@ public class IvListController : Controller
                 : $"{pkmnName} - {formName}";
             var image = GetPokemonIcon(pokemonId, formId);
             var selected = selectedPokemon?.Contains(id) ?? false;
-            pokemon.Add(new { id, pokemonId, name, image, selected });
+            var item = new { id, pokemonId, name, image, selected };
+            if (!pokemon.Contains(item))
+            {
+                pokemon.Add(item);
+            }
         }
 
         foreach (var (pokemonId, pkmn) in GameMaster.Instance.Pokedex)

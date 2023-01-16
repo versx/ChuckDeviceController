@@ -1,5 +1,9 @@
 ﻿@{
     var pokemon = (IEnumerable<dynamic>)(ViewData["Pokemon"] ?? new List<dynamic>());
+    var priorityList = (IEnumerable<string>)(ViewData["PriorityList"] ?? new List<string>());
+    var selectedPokemon = pokemon
+        .Where(x => x.selected)
+        .ToDictionary(x => x.id, x => x);
 }
 
 <link rel="stylesheet" href="~/css/pokemon-list.css" />
@@ -9,38 +13,70 @@
         <input id="search" class="form-control" placeholder="i.e Pikachu or 25" onkeyup="onPokemonSearch()" data-toggle="tooltip" data-html="true" title="Search by pokemon name and pokedex id." />
         <label for="search">@localizer["Search"]</label>
     </div>
-    @localizer["Pokemon"]
-    <div id="pokemon-list" name="pokemon-list" class="pokemon-list">
-        @foreach (var pkmn in pokemon)
-        {
-            <div class="pokemon-icon-sprite item @(pkmn.selected ? "active" : "")" style="@(pkmn.selected ? "background-color: dodgerblue;" : "")" id="@pkmn.id" name="@pkmn.name" data-value="@pkmn.id" onclick="onPokemonClicked(this)">
-                <img src="@pkmn.image" width="48" height="48" />
-                <span class="caption">#@pkmn.pokemonId</span>
+    <div class="row">
+        <div class="col col-lg-9 col-md-12 col-sm-12">
+            <div class="mb-3">
+                <label for="pokemon-list">@localizer["Pokemon"]</label>
+                <div id="pokemon-list" name="pokemon-list" class="pokemon-list">
+                    @foreach (var pkmn in pokemon)
+                    {
+                        <div class="pokemon-icon-sprite item @(pkmn.selected ? "active" : "")" style="@(pkmn.selected ? "background-color: dodgerblue;" : "")" id="@pkmn.id" data-name="@pkmn.name" data-image="@pkmn.image" data-value="@pkmn.id" onclick="onPokemonClicked(this)">
+                            <img src="@pkmn.image" width="48" height="48" />
+                            <span class="caption">#@pkmn.pokemonId</span>
+                        </div>
+                    }
+                </div>
             </div>
-        }
+            <div class="mb-3">
+                <label>@localizer["Select"]</label>
+                <br />
+                <button type="button" class="btn btn-primary btn-sm" onclick="selectAllPokemon(true);">@localizer["All"]</button>
+                <button type="button" class="btn btn-primary btn-sm" onclick="selectAllPokemon(false);">@localizer["None"]</button>
+                <button type="button" class="btn btn-primary btn-sm" onclick="invertSelection();">@localizer["Invert"]</button>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-warning btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        @localizer["Generation"]
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a href="#" class="dropdown-item" onclick="selectByGen(1);">@localizer["1st Generation"]</a></li>
+                        <li><a href="#" class="dropdown-item" onclick="selectByGen(2);">@localizer["2nd Generation"]</a></li>
+                        <li><a href="#" class="dropdown-item" onclick="selectByGen(3);">@localizer["3rd Generation"]</a></li>
+                        <li><a href="#" class="dropdown-item" onclick="selectByGen(4);">@localizer["4th Generation"]</a></li>
+                        <li><a href="#" class="dropdown-item" onclick="selectByGen(5);">@localizer["5th Generation"]</a></li>
+                        <li><a href="#" class="dropdown-item" onclick="selectByGen(6);">@localizer["6th Generation"]</a></li>
+                        <li><a href="#" class="dropdown-item" onclick="selectByGen(7);">@localizer["7th Generation"]</a></li>
+                        <li><a href="#" class="dropdown-item" onclick="selectByGen(8);">@localizer["8th Generation"]</a></li>
+                    </ul>
+                </div>
+                <button id="select_rare" type="button" class="btn btn-success btn-sm">@localizer["Rare"]</button>
+                <button id="select_ultra" type="button" class="btn btn-danger btn-sm">@localizer["Ultra Rare"]</button>
+            </div>
+        </div>
+        <div class="col col-lg-3 col-md-12 col-sm-12">
+            <label for="pokemon-priority-list">@localizer["Priority List"]</label>
+            <ul id="pokemon-priority-list" name="pokemon-priority-list" class="list-group" style="max-height: 500px; overflow: scroll; -webkit-overflow-scrolling: touch;">
+                @foreach (var id in priorityList)
+                {
+                    var pkmn = selectedPokemon[id];
+                    <li data-id="@id" class="list-group-item">
+                        <div class="row">
+                            <div class="col col-md-2 col-sm-2">
+                                <img src="@pkmn.image" width="48" height="48" />
+                            </div>
+                            <div class="col col-md-10 col-sm-10">
+                                <small class="caption">@pkmn.name <small>(#@pkmn.pokemonId)</small></small>
+                            </div>
+                        </div>
+                    </li>
+                }
+            </ul>
+        </div>
     </div>
-    <br>
-    <button type="button" class="btn btn-primary btn-sm" onclick="selectAllPokemon(true);">@localizer["Select All"]</button>
-    <button type="button" class="btn btn-primary btn-sm" onclick="selectAllPokemon(false);">@localizer["Select None"]</button>
-    <button type="button" class="btn btn-primary btn-sm" onclick="invertSelection();">@localizer["Invert Selection"]</button>
-    <div class="btn-group">
-        <button type="button" class="btn btn-warning btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-            @localizer["Select Generation"]
-        </button>
-        <ul class="dropdown-menu">
-            <li><a href="#" class="dropdown-item" onclick="selectByGen(1);">@localizer["Select Gen1"]</a></li>
-            <li><a href="#" class="dropdown-item" onclick="selectByGen(2);">@localizer["Select Gen2"]</a></li>
-            <li><a href="#" class="dropdown-item" onclick="selectByGen(3);">@localizer["Select Gen3"]</a></li>
-            <li><a href="#" class="dropdown-item" onclick="selectByGen(4);">@localizer["Select Gen4"]</a></li>
-            <li><a href="#" class="dropdown-item" onclick="selectByGen(5);">@localizer["Select Gen5"]</a></li>
-            <li><a href="#" class="dropdown-item" onclick="selectByGen(6);">@localizer["Select Gen6"]</a></li>
-            <li><a href="#" class="dropdown-item" onclick="selectByGen(7);">@localizer["Select Gen7"]</a></li>
-            <li><a href="#" class="dropdown-item" onclick="selectByGen(8);">@localizer["Select Gen8"]</a></li>
-        </ul>
-    </div>
-    <button id="select_rare" type="button" class="btn btn-success btn-sm">@localizer["Select Rare"]</button>
-    <button id="select_ultra" type="button" class="btn btn-danger btn-sm">@localizer["Select Ultra Rare"]</button>
 </div>
 
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/sortable-1.15.0/Sortable.min.js"></script>
 <script src="~/js/pokemon-list.js"></script>
+<script>
+    setSelectedPokemon('@priorityList');
+</script>
