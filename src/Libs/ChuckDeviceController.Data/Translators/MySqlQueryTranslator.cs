@@ -209,9 +209,12 @@ public class MySqlQueryTranslator : ExpressionVisitor
                     else
                     {
                         Write('(');
-                        Visit(node.Arguments[1]);
+                        //Visit(node.Arguments.Count > 1 ? node.Arguments[1] : node.Object);
+                        Visit(node.Arguments.Count > 1 ? node.Arguments[1] : node.Arguments[0]);
+                        //Visit(node.Arguments[0]);
                         Write(" IN (");
-                        Visit(node.Arguments[0]);
+                        //Visit(node.Arguments[0]);
+                        Visit(node.Arguments.Count > 1 ? node.Arguments[0] : node.Object);
                         Write("))");
                     }
                     return node;
@@ -604,7 +607,8 @@ public class MySqlQueryTranslator : ExpressionVisitor
                 case TypeCode.Object:
                     if (node.Value is IEnumerable list)
                     {
-                        var items = list.Cast<string>();
+                        //var items = list.Cast<string>();
+                        var items = list.Cast<object>().ToList();
                         //Write('(');
                         var str = "'" + string.Join("', '", items) + "'";
                         Write(str);

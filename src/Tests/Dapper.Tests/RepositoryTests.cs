@@ -162,12 +162,17 @@ internal class RepositoryTests
         var pokestopRepository = new PokestopRepository(factory);
         var pokestops = await pokestopRepository.FindAsync(x => x.QuestType != null || x.AlternativeQuestType != null);
         var pokestopIds = pokestops.Select(x => x.Id).ToList();
-        var contains = await pokestopRepository.FindAsync(x => pokestopIds.Contains("74507fb96150498d8b6a5bac14df8efc.16"));
-        var notContains = await pokestopRepository.FindAsync(x => pokestopIds.Contains("32uk3jkj23lkj2kl3rjl2k3rj"));
+        Assert.That(pokestopIds, Has.Count.GreaterThan(0));
+
+        //var contains = await pokestopRepository.FindAsync(x => pokestopIds.Contains("74507fb96150498d8b6a5bac14df8efc.16"));
+        var contains = await pokestopRepository.FindAsync(x => x.Id == "74507fb96150498d8b6a5bac14df8efc.16");
+        Assert.That(contains.Count, Is.GreaterThan(0));
+
+        //var notContains = await pokestopRepository.FindAsync(x => pokestopIds.Contains("32uk3jkj23lkj2kl3rjl2k3rj"));
+        var notContains = await pokestopRepository.FindAsync(x => x.Id == "32uk3jkj23lkj2kl3rjl2k3rj");
+        Assert.That(notContains.Count, Is.Not.GreaterThan(0));
 
         Console.WriteLine($"Contains: {contains}, NotContains: {notContains}");
-
-        Assert.Pass();
     }
 
     [Test]
