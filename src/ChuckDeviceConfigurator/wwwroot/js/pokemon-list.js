@@ -6,16 +6,19 @@ const PokemonGenerations = {
     gen5: { start: 495, end: 649 },
     gen6: { start: 650, end: 721 },
     gen7: { start: 722, end: 809 },
-    gen8: { start: 810, end: 898 },
+    gen8: { start: 810, end: 905 },
 };
 
 const listGroup = document.getElementById('pokemon-priority-list');
 const sortable = new Sortable(listGroup, {
     animation: 150,
+    scroll: true,
+    forceAutoscrollFallback: false,
+    scrollSensitivity: 30,
+    scrollSpeed: 10,
+    bubleScroll: true,
     ghostClass: 'blue-background-class',
-    onEnd: function (evt) {
-        setSelectedPokemon();
-    },
+    onEnd: (evt) => setSelectedPokemon(),
 });
 
 
@@ -58,7 +61,7 @@ function initButtons() {
 }
 
 function selectAllPokemon(select) {
-    const pokemon = document.getElementsByClassName('item');
+    const pokemon = getPokemonItems();
     const selectedPokemon = getSelectedPokemon().split(',');
     for (const pkmn of pokemon) {
         const isSelected = selectedPokemon.includes(pkmn.id);
@@ -74,7 +77,7 @@ function selectAllPokemon(select) {
 }
 
 function selectByGen(genNum) {
-    const pokemon = document.getElementsByClassName('item');
+    const pokemon = getPokemonItems();
     const generation = PokemonGenerations['gen' + genNum];
     for (const pkmn of pokemon) {
         if (pkmn.id >= generation.start && pkmn.id <= generation.end) {
@@ -84,9 +87,9 @@ function selectByGen(genNum) {
 }
 
 function invertSelection() {
-    const value = getSelectedPokemon() || '';
+    const value = getSelectedPokemon();
     const oldPokemon = value.split(',');
-    const pokemon = document.getElementsByClassName('item');
+    const pokemon = getPokemonItems();
     for (const pkmn of pokemon) {
         //const isSelected = pkmn.classList.value.includes('active');
         const isSelected = pkmn.classList.contains('active');
@@ -140,19 +143,10 @@ function selectItem(element) {
     }
     const name = element.getAttribute('data-name');
     const image = element.getAttribute('data-image');
-    $('#pokemon-priority-list').append(`
-<li data-id="${id}" class="list-group-item">
-    <div class="row">
-        <div class="col col-md-2 col-sm-2">
-            <img src="${image}" width="48" height="48" />
-        </div>
-        <div class="col col-md-10 col-sm-10">
-            <small class="caption">${name} <small>(#${id})</small></small>
-        </div>
-    </div>
-</li>`);
+    const pokemonId = element.getAttribute('data-pokemon-id');
+    addPriorityList(id, name, pokemonId, image);
     element.classList.toggle('active');
-    element.style.background = 'dodgerblue';
+    element.classList.toggle('pokemon-selected');
     appendId(id);
 }
 
@@ -162,9 +156,9 @@ function unselectItem(element) {
     if (!selectedPokemon.includes(id)) {
         return;
     }
-    $(`#pokemon-priority-list [data-id='${id}']`).remove();
+    removePriorityList(id);
     element.classList.toggle('active');
-    element.style.background = $('.pokemon-list').css('background-color');
+    element.classList.toggle('pokemon-selected');
     removeId(id);
 }
 
@@ -185,20 +179,20 @@ function appendId(id) {
 
 function removeId(id) {
     const value = getSelectedPokemon();
-    const list = (value || '').split(',')
+    const list = value.split(',')
     const newList = list.filter(x => x !== id);
     const newValue = newList.join(',');
     setSelectedPokemon(newValue);
 }
 
 function getSelectedPokemon() {
-    const pokemonIds = document.getElementById('PokemonIds');
+    const pokemonIds = getPokemonIdsElement();
     const value = pokemonIds.value;
     return value || '';
 }
 
 function setSelectedPokemon(pokemon) {
-    const pokemonIds = document.getElementById('PokemonIds');
+    const pokemonIds = getPokemonIdsElement();
     if (pokemon) {
         pokemonIds.value = pokemon;
     } else {
@@ -207,4 +201,36 @@ function setSelectedPokemon(pokemon) {
             pokemonIds.value = sorted.join(',');
         }
     }
+}
+
+function addPriorityList(id, name, pokemonId, image) {
+    $('#pokemon-priority-list').append(`
+<li data-id="${id}" class="list-group-item">
+    <div class="row">
+        <div class="col col-md-2 col-sm-2 px-1">
+            <img src="${image}" width="32" height="32" />
+        </div>
+        <div class="col col-md-10 col-sm-10">
+            <small class="caption">${name} <small>(#${pokemonId})</small></small>
+        </div>
+    </div>
+</li>`);
+}
+
+function removePriorityList(id) {
+    $(`#pokemon-priority-list [data-id='${id}']`).remove();
+}
+
+function getPokemonIdsElement() {
+    const pokemonIds = document.getElementById('PokemonIds');
+    return pokemonIds;
+}
+
+function getPokemonItems() {
+    const pokemon = document.getElementsByClassName('item');
+    return pokemon;
+}
+
+function getPokemonList() {
+    
 }

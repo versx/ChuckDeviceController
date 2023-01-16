@@ -15,3 +15,12 @@ div.item {
 .caption {
     display: block;
 }
+.pokemon-selected {
+    background-color: dodgerblue;
+}
+.pokemon-priority-list {
+    max-height: 500px;
+    /*max-width: 250px;*/
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
