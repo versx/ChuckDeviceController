@@ -90,8 +90,6 @@ public class Spawnpoint : BaseEntity, ISpawnpoint, ICoordinateEntity
                 // No changes between current and old spawnpoints
                 return;
             }
-
-            HasChanges = true;
         }
 
         if (!HasChanges)

@@ -134,7 +134,7 @@ public abstract class DapperGenericRepository<TKey, TEntity> : IDapperGenericRep
 
     public async Task<TEntity> FindAsync(TKey id, CancellationToken stoppingToken = default)
     {
-        var (primaryKeyProperty, primaryKeyColumnName) = GetPrimaryKey(GetProperties);
+        var (primaryKeyProperty, primaryKeyColumnName) = GetProperties.GetPrimaryKey();
         var parameters = new DynamicParameters();
         parameters.Add(primaryKeyColumnName, id);
 
@@ -336,14 +336,14 @@ public abstract class DapperGenericRepository<TKey, TEntity> : IDapperGenericRep
 
         foreach (var (columnKey, property) in properties)
         {
-            if (!IsPrimaryKey(property))
+            if (!property.IsPrimaryKey())
             {
                 var paramName = ParamTemplateFunc(property.Name);
                 updateQuery.Append($"{columnKey}={paramName},");
             }
         }
 
-        var (primaryKey, primaryColumnName) = GetPrimaryKey(properties.Values);
+        var (primaryKey, primaryColumnName) = properties.Values.GetPrimaryKey();
         updateQuery.Remove(updateQuery.Length - 1, 1); // Remove last comma
         updateQuery.Append(string.Format(WhereQuery, primaryColumnName, primaryKey?.Name));
 
@@ -365,7 +365,7 @@ public abstract class DapperGenericRepository<TKey, TEntity> : IDapperGenericRep
         {
             var property = properties[columnName];
             var paramName = ParamTemplateFunc(property.Name);
-            if (!IsPrimaryKey(property))
+            if (!property.IsPrimaryKey())
             {
                 columns.Add($"{columnName}={paramName}");
             }
@@ -385,7 +385,7 @@ public abstract class DapperGenericRepository<TKey, TEntity> : IDapperGenericRep
 
     private string GenerateDeleteQuery(TKey id, out DynamicParameters parameters)
     {
-        var (primaryKeyProperty, primaryKeyColumnName) = GetPrimaryKey(GetProperties);
+        var (primaryKeyProperty, primaryKeyColumnName) = GetProperties.GetPrimaryKey();
         var deleteQuery = new StringBuilder(string.Format(DeleteQuery, _tableName, primaryKeyColumnName, primaryKeyProperty?.Name));
         parameters = new DynamicParameters();
         parameters.Add(primaryKeyColumnName, id);
@@ -396,7 +396,7 @@ public abstract class DapperGenericRepository<TKey, TEntity> : IDapperGenericRep
 
     private string GenerateDeleteQuery(IEnumerable<TKey> ids, out DynamicParameters parameters)
     {
-        var (primaryKeyProperty, primaryKeyColumnName) = GetPrimaryKey(GetProperties);
+        var (primaryKeyProperty, primaryKeyColumnName) = GetProperties.GetPrimaryKey();
         var deleteQuery = new StringBuilder(string.Format(DeleteRangeQuery, _tableName, primaryKeyColumnName, primaryKeyProperty?.Name));
         var paramName = ParamTemplateFunc(primaryKeyProperty!.Name);
         parameters = new DynamicParameters();
@@ -410,24 +410,11 @@ public abstract class DapperGenericRepository<TKey, TEntity> : IDapperGenericRep
 
     #region Private Methods
 
-    private static bool IsPrimaryKey(PropertyInfo property)
-    {
-        return property.GetCustomAttribute<KeyAttribute>() != null;
-    }
-
     private static (string?, string?, object?) GetPrimaryKey(TEntity entity, IEnumerable<PropertyInfo> properties)
     {
-        var (primaryKeyProperty, primaryKeyColumnName) = GetPrimaryKey(properties);
+        var (primaryKeyProperty, primaryKeyColumnName) = properties.GetPrimaryKey();
         var primaryKeyValue = primaryKeyProperty?.GetValue(entity);
         return (primaryKeyProperty?.Name, primaryKeyColumnName, primaryKeyValue);
-    }
-
-    private static (PropertyInfo?, string?) GetPrimaryKey(IEnumerable<PropertyInfo> properties)
-    {
-        var key = properties.FirstOrDefault(IsPrimaryKey);
-        var colAttr = key?.GetCustomAttribute<ColumnAttribute>();
-        var colName = colAttr?.Name;
-        return (key, colName);
     }
 
     private async Task<MySqlConnection> CreateConnectionAsync(CancellationToken stoppingToken = default)
@@ -445,22 +432,21 @@ public abstract class DapperGenericRepository<TKey, TEntity> : IDapperGenericRep
         foreach (var property in properties)
         {
             // Ignore any properties not marked with column attribute
-            var attr = property.GetCustomAttribute<ColumnAttribute>();
-            if (attr?.Name == null)
+            var columnName = property.GetColumnAttribute();
+            if (string.IsNullOrEmpty(columnName))
                 continue;
 
             // Ignore any virtual/database generated properties marked via attribute
-            var genAttr = property.GetCustomAttribute<DatabaseGeneratedAttribute>();
-            if (genAttr?.DatabaseGeneratedOption == DatabaseGeneratedOption.Computed)
+            if (property.IsGeneratedColumn())
                 continue;
 
-            if (_reservedKeywords.Contains(attr.Name))
+            if (_reservedKeywords.Contains(columnName))
             {
-                result.Add($"`{attr.Name}`", property);
+                result.Add($"`{columnName}`", property);
             }
             else
             {
-                result.Add(attr.Name, property);
+                result.Add(columnName, property);
             }
         }
         return result;

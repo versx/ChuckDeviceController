@@ -139,9 +139,12 @@ public static class DapperUnitOfWorkExtensions
     public static bool HasPokestopQuestByType(this Pokestop pokestop, QuestMode mode)
     {
         var result = mode == QuestMode.Normal
+            // Return only normal quest types
             ? pokestop.QuestType != null
             : mode == QuestMode.Alternative
+                // Return only alternative quest types
                 ? pokestop.AlternativeQuestType != null
+                // Return normal and alternative quest types
                 : pokestop.QuestType != null || pokestop.AlternativeQuestType != null;
         return result;
     }

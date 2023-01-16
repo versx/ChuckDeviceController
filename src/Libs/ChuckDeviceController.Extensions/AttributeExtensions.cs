@@ -30,4 +30,30 @@ public static class AttributeExtensions
     {
         return GetKeyAttribute(typeof(TEntity));
     }
+
+    public static string? GetColumnAttribute(this PropertyInfo property)
+    {
+        var attr = property.GetCustomAttribute<ColumnAttribute>();
+        var name = attr?.Name;
+        return name;
+    }
+
+    public static bool IsGeneratedColumn(this PropertyInfo property)
+    {
+        var attr = property.GetCustomAttribute<DatabaseGeneratedAttribute>();
+        var result = (attr?.DatabaseGeneratedOption ?? DatabaseGeneratedOption.None) == DatabaseGeneratedOption.Computed;
+        return result;
+    }
+
+    public static bool IsPrimaryKey(this PropertyInfo property)
+    {
+        return property.GetCustomAttribute<KeyAttribute>() != null;
+    }
+
+    public static (PropertyInfo?, string?) GetPrimaryKey(this IEnumerable<PropertyInfo> properties)
+    {
+        var property = properties.FirstOrDefault(x => x.IsPrimaryKey());
+        var name = property?.GetColumnAttribute();
+        return (property, name);
+    }
 }
