@@ -6,8 +6,8 @@ using System.Text.Json.Serialization;
 
 public static class JsonExtensions
 {
-    private static readonly JsonSerializerOptions _jsonOptions = GetOptions(prettyPrint: false, converters: null);
-    private static JsonSerializerOptions _jsonConverterOptions = GetOptions(prettyPrint: false, converters: null);
+    //private static readonly JsonSerializerOptions _jsonOptions = GetOptions(prettyPrint: true, converters: null);
+    private static JsonSerializerOptions _jsonConverterOptions = GetOptions(prettyPrint: true, converters: null);
 
     public static T? FromJson<T>(this string json, bool prettyPrint = false, IEnumerable<JsonConverter>? converters = null)
     {
@@ -21,10 +21,10 @@ public static class JsonExtensions
                 }
             }
 
-            var options = converters != null
-                ? _jsonConverterOptions
-                : _jsonOptions;
-            var obj = JsonSerializer.Deserialize<T>(json, options);
+            //var options = converters != null
+            //    ? _jsonConverterOptions
+            //    : _jsonOptions;
+            var obj = JsonSerializer.Deserialize<T>(json, _jsonConverterOptions);
             return obj;
         }
         catch //(Exception ex)
@@ -45,10 +45,10 @@ public static class JsonExtensions
                 }
             }
 
-            var options = converters != null
-                ? _jsonConverterOptions
-                : _jsonOptions;
-            var json = JsonSerializer.Serialize(obj, options);
+            //var options = converters != null
+            //    ? _jsonConverterOptions
+            //    : _jsonOptions;
+            var json = JsonSerializer.Serialize(obj, _jsonConverterOptions);
             return json;
         }
         catch //(Exception ex)

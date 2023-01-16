@@ -20,7 +20,7 @@
                 <div id="pokemon-list" name="pokemon-list" class="pokemon-list">
                     @foreach (var pkmn in pokemon)
                     {
-                        <div class="pokemon-icon-sprite item @(pkmn.selected ? "active" : "")" style="@(pkmn.selected ? "background-color: dodgerblue;" : "")" id="@pkmn.id" data-name="@pkmn.name" data-image="@pkmn.image" data-value="@pkmn.id" onclick="onPokemonClicked(this)">
+                        <div class="pokemon-icon-sprite item @(pkmn.selected ? "active pokemon-selected" : "")" id="@pkmn.id" data-name="@pkmn.name" data-image="@pkmn.image" data-pokemon-id="@pkmn.pokemonId" data-value="@pkmn.id" onclick="onPokemonClicked(this)">
                             <img src="@pkmn.image" width="48" height="48" />
                             <span class="caption">#@pkmn.pokemonId</span>
                         </div>
@@ -54,14 +54,14 @@
         </div>
         <div class="col col-lg-3 col-md-12 col-sm-12">
             <label for="pokemon-priority-list">@localizer["Priority List"]</label>
-            <ul id="pokemon-priority-list" name="pokemon-priority-list" class="list-group" style="max-height: 500px; overflow: scroll; -webkit-overflow-scrolling: touch;">
+            <ul id="pokemon-priority-list" name="pokemon-priority-list" class="list-group pokemon-priority-list">
                 @foreach (var id in priorityList)
                 {
                     var pkmn = selectedPokemon[id];
                     <li data-id="@id" class="list-group-item">
                         <div class="row">
-                            <div class="col col-md-2 col-sm-2">
-                                <img src="@pkmn.image" width="48" height="48" />
+                            <div class="col col-md-2 col-sm-2 px-1">
+                                <img src="@pkmn.image" width="32" height="32" />
                             </div>
                             <div class="col col-md-10 col-sm-10">
                                 <small class="caption">@pkmn.name <small>(#@pkmn.pokemonId)</small></small>
