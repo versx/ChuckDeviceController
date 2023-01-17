@@ -299,8 +299,11 @@
     "6th Generation": "6th Generation",
     "7th Generation": "7th Generation",
     "8th Generation": "8th Generation",
+    "Rarity": "Rarity",
+    "Common": "Common",
     "Rare": "Rare",
     "Ultra Rare": "Ultra Rare",
+    "Epic": "Epic"
     "Priority List": "Priority List",
     "Generate": "Generate",
     "Edit IV List {0}": "Edit IV List {0}",
