@@ -31,7 +31,12 @@ function saveGeneratedList() {
 }
 
 function generateList() {
-    fetch('/IvList/GeneratePokemonPriorityList')
+    // Send ignore list with request
+    const pokemonIgnored = $('#pokemon-ignored').val() || '';
+    const ignoreList = pokemonIgnored.includes('\n')
+        ? pokemonIgnored.split('\n').join(',')
+        : pokemonIgnored.split(',').join(',');
+    fetch('/IvList/GeneratePokemonPriorityList?ignored=' + ignoreList) // &max_seen=10&limit=100
         .then(resp => resp.json())
         .then(resp => {
             //console.log('resp:', resp);

@@ -249,7 +249,7 @@ public class IvListController : Controller
         }
     }
 
-    public async Task<ActionResult> GeneratePokemonPriorityList(int maximumSeen = 1000, int limit = 100)
+    public async Task<ActionResult> GeneratePokemonPriorityList(string? ignored = null, int maximumSeen = 100, int limit = 100)
     {
         // TODO: Query pokedex pokemon (ignore legendary/mythical), return list with least seen and sort by count seen
         //var pokedexIds = GameMaster.Instance.Pokedex
@@ -261,10 +261,12 @@ public class IvListController : Controller
         var sw = new Stopwatch();
         sw.Start();
 
+        var pokemonIgnored = ignored?.Split(',', '\n');
         var pokemon = await _duow.PokemonIvStats.FindAllAsync();
         var grouped = pokemon
             .GroupBy(x => GetPokemonId(x.PokemonId, x.FormId))
             .ToDictionary(x => x.Key, x => x.Count())
+            .Where(x => !(pokemonIgnored?.Contains(x.Key) ?? false))
             .Where(x => x.Value <= maximumSeen);
         var sorted = grouped
             .OrderBy(x => x.Value)
