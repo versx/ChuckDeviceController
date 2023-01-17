@@ -56,4 +56,18 @@ public static class AttributeExtensions
         var name = property?.GetColumnAttribute();
         return (property, name);
     }
+
+    public static List<(PropertyInfo?, string?)> GetPrimaryKeys(this IEnumerable<PropertyInfo> properties)
+    {
+        var primaryKeys = new List<(PropertyInfo?, string?)>();
+        foreach (var property in properties)
+        {
+            if (!property.IsPrimaryKey())
+                continue;
+
+            var name = property?.GetColumnAttribute();
+            primaryKeys.Add((property, name));
+        }
+        return primaryKeys;
+    }
 }

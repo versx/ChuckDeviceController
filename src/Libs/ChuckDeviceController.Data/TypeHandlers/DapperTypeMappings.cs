@@ -32,6 +32,14 @@ public static class DapperTypeMappings
         SetTypeMap<Spawnpoint>();
         SetTypeMap<Weather>();
 
+        SetTypeMap<PokemonStats>();
+        SetTypeMap<PokemonIvStats>();
+        SetTypeMap<PokemonShinyStats>();
+        SetTypeMap<PokemonHundoStats>();
+        SetTypeMap<RaidStats>();
+        SetTypeMap<QuestStats>();
+        SetTypeMap<InvasionStats>();
+
         SqlMapper.AddTypeHandler(new JsonTypeHandler<List<Dictionary<string, dynamic>>>()); // Quest.Rewards / Quest.Conditions
         SqlMapper.AddTypeHandler(new JsonTypeHandler<Dictionary<string, dynamic>>()); // Pokemon.Pvp
 
