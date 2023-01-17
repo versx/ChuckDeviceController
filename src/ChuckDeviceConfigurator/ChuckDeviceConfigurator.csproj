@@ -132,6 +132,7 @@
     <Watch Remove="Views\User\EditorTemplates\EditUserRolesDetails.cshtml" />
     <Watch Remove="Views\Webhook\EditorTemplates\EditWebhookDataDetails.cshtml" />
     <Watch Remove="Views\Webhook\EditorTemplates\EditWebhookDetails.cshtml" />
+    <Watch Remove="wwwroot\js\priority-list-generator.js" />
   </ItemGroup>
 
   <ItemGroup>

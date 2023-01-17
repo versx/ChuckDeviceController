@@ -22,41 +22,17 @@ const sortable = new Sortable(listGroup, {
 });
 
 
-/*
 let pokemonRarity = {};
 $.getJSON('/data/rarity.json', function(data) {
     pokemonRarity = data;
 });
-*/
 
-function initButtons() {
-    $('#select_rare').on('click', function () {
-        $.each($('.item'), function (index, item) {
-            if (!pokemonRarity.common.includes(item.id)) {
-                selectItem(item);
-            }
-        });
-    });
-    $('#select_ultra').on('click', function () {
-        $.each($('.item'), function (index, item) {
-            if (pokemonRarity.ultra.includes(item.id)) {
-                selectItem(item);
-            }
-        });
-    });
-    $('#select_raid5star').on('click', function () {
-        $.each($('.item'), function (index, item) {
-            if (pokemonRarity.raid5star.includes(item.id)) {
-                selectItem(item);
-            }
-        });
-    });
-    $('#select_raid6star').on('click', function () {
-        $.each($('.item'), function (index, item) {
-            if ((pokemonRarity.raid6star || []).includes(item.id)) {
-                selectItem(item);
-            }
-        });
+function selectByRarity(rarity) {
+    $.each($('.item'), function (index, item) {
+        const id = item.id.split('_f')[0];
+        if (pokemonRarity[rarity].includes(parseInt(id))) {
+            selectItem(item);
+        }
     });
 }
 
@@ -71,8 +47,9 @@ function selectAllPokemon(select) {
             unselectItem(pkmn);
         }
     }
+    
     if (!select) {
-        setSelectedPokemon('');
+        setSelectedPokemon();
     }
 }
 
@@ -80,7 +57,8 @@ function selectByGen(genNum) {
     const pokemon = getPokemonItems();
     const generation = PokemonGenerations['gen' + genNum];
     for (const pkmn of pokemon) {
-        if (pkmn.id >= generation.start && pkmn.id <= generation.end) {
+        const id = pkmn.id.split('_f')[0];
+        if (id >= generation.start && id <= generation.end) {
             selectItem(pkmn);
         }
     }
@@ -116,8 +94,8 @@ function onPokemonSearch() {
     const pokemon = $('#pokemon-list').children();
     const search = $('#search').val().toLowerCase();
     for (let element of pokemon) {
-        const name = element.getAttribute('name');
         const id = element.getAttribute('id');
+        const name = element.getAttribute('data-name');
         let matches = false;
         if (search.includes(' ')) {
             matches = !search.includes(name.toLowerCase()) && !search.includes(id) && search;
@@ -141,13 +119,12 @@ function selectItem(element) {
     if (selectedPokemon.includes(id)) {
         return;
     }
-    const name = element.getAttribute('data-name');
-    const image = element.getAttribute('data-image');
-    const pokemonId = element.getAttribute('data-pokemon-id');
-    addPriorityList(id, name, pokemonId, image);
+    addPriorityList(element);
     element.classList.toggle('active');
     element.classList.toggle('pokemon-selected');
     appendId(id);
+    
+    setPriorityCount();
 }
 
 function unselectItem(element) {
@@ -160,6 +137,8 @@ function unselectItem(element) {
     element.classList.toggle('active');
     element.classList.toggle('pokemon-selected');
     removeId(id);
+    
+    setPriorityCount();
 }
 
 function appendId(id) {
@@ -201,9 +180,15 @@ function setSelectedPokemon(pokemon) {
             pokemonIds.value = sorted.join(',');
         }
     }
+    
+    setPriorityCount();
 }
 
-function addPriorityList(id, name, pokemonId, image) {
+function addPriorityList(element) {
+    const id = element.id;
+    const name = element.getAttribute('data-name');
+    const image = element.getAttribute('data-image');
+    const pokemonId = element.getAttribute('data-pokemon-id');
     $('#pokemon-priority-list').append(`
 <li data-id="${id}" class="list-group-item">
     <div class="row">
@@ -231,6 +216,7 @@ function getPokemonItems() {
     return pokemon;
 }
 
-function getPokemonList() {
-    
+function setPriorityCount() {
+    const count = document.getElementById('pokemon-priority-list').children.length;
+    document.getElementById('priority-count').innerText = `(${count})`;
 }

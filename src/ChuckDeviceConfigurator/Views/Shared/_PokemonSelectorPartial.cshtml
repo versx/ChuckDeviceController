@@ -1,8 +1,10 @@
 ﻿@{
     var pokemon = (IEnumerable<dynamic>)(ViewData["Pokemon"] ?? new List<dynamic>());
-    var priorityList = (IEnumerable<string>)(ViewData["PriorityList"] ?? new List<string>());
+    var priorityList = (List<string>)(ViewData["PriorityList"] ?? new List<string>());
+    var selected = string.Join(',', priorityList);
     var selectedPokemon = pokemon
-        .Where(x => x.selected)
+        //.Where(x => x.selected)
+        .Where(x => priorityList.Contains(x.id))
         .ToDictionary(x => x.id, x => x);
 }
 
@@ -48,12 +50,21 @@
                         <li><a href="#" class="dropdown-item" onclick="selectByGen(8);">@localizer["8th Generation"]</a></li>
                     </ul>
                 </div>
-                <button id="select_rare" type="button" class="btn btn-success btn-sm">@localizer["Rare"]</button>
-                <button id="select_ultra" type="button" class="btn btn-danger btn-sm">@localizer["Ultra Rare"]</button>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-success btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        @localizer["Rarity"]
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a href="#" class="dropdown-item" onclick="selectByRarity('common');">@localizer["Common"]</a></li>
+                        <li><a href="#" class="dropdown-item" onclick="selectByRarity('rare');">@localizer["Rare"]</a></li>
+                        <li><a href="#" class="dropdown-item" onclick="selectByRarity('ultra');">@localizer["Ultra Rare"]</a></li>
+                        <li><a href="#" class="dropdown-item" onclick="selectByRarity('epic');">@localizer["Epic"]</a></li>
+                    </ul>
+                </div>
             </div>
         </div>
         <div class="col col-lg-3 col-md-12 col-sm-12">
-            <label for="pokemon-priority-list">@localizer["Priority List"]</label>
+            <label for="pokemon-priority-list">@localizer["Priority List"] <span id="priority-count">(0)</span></label>
             <ul id="pokemon-priority-list" name="pokemon-priority-list" class="list-group pokemon-priority-list">
                 @foreach (var id in priorityList)
                 {
@@ -78,5 +89,5 @@
 <script src="~/lib/sortable-1.15.0/Sortable.min.js"></script>
 <script src="~/js/pokemon-list.js"></script>
 <script>
-    setSelectedPokemon('@priorityList');
+    setSelectedPokemon('@selected');
 </script>

@@ -1,5 +1,7 @@
 ﻿namespace ChuckDeviceConfigurator.Controllers;
 
+using System.Diagnostics;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -12,6 +14,7 @@ using ChuckDeviceConfigurator.ViewModels;
 using ChuckDeviceController.Common;
 using ChuckDeviceController.Data.Entities;
 using ChuckDeviceController.Data.Repositories;
+using ChuckDeviceController.Data.Repositories.Dapper;
 using ChuckDeviceController.Extensions;
 
 [Authorize(Roles = RoleConsts.IvListsRole)]
@@ -27,6 +30,7 @@ public class IvListController : Controller
     };
     private readonly ILogger<IvListController> _logger;
     private readonly IUnitOfWork _uow;
+    private readonly IDapperUnitOfWork _duow;
     private readonly IIvListControllerService _ivListService;
 
     #endregion
@@ -36,10 +40,12 @@ public class IvListController : Controller
     public IvListController(
         ILogger<IvListController> logger,
         IUnitOfWork uow,
+        IDapperUnitOfWork duow,
         IIvListControllerService ivListService)
     {
         _logger = logger;
         _uow = uow;
+        _duow = duow;
         _ivListService = ivListService;
     }
 
@@ -53,7 +59,6 @@ public class IvListController : Controller
         foreach (var ivList in ivLists)
         {
             var images = new List<string>();
-            ivList.PokemonIds.Sort();
             foreach (var pokemonId in ivList.PokemonIds)
             {
                 var split = pokemonId.Split(new[] { "_f" }, StringSplitOptions.RemoveEmptyEntries);
@@ -244,15 +249,45 @@ public class IvListController : Controller
         }
     }
 
+    public async Task<ActionResult> GeneratePokemonPriorityList(int maximumSeen = 1000, int limit = 100)
+    {
+        // TODO: Query pokedex pokemon (ignore legendary/mythical), return list with least seen and sort by count seen
+        //var pokedexIds = GameMaster.Instance.Pokedex
+        //    .Where(pair => !pair.Value.Legendary && !pair.Value.Mythical)
+        //    .Select(pair => pair.Key)
+        //    .ToList();
+        //var pokemon = await _duow.Pokemon.FindAsync(x => !pokedexIds.Contains(x.PokemonId));
+
+        var sw = new Stopwatch();
+        sw.Start();
+
+        var pokemon = await _duow.PokemonIvStats.FindAllAsync();
+        var grouped = pokemon
+            .GroupBy(x => GetPokemonId(x.PokemonId, x.FormId))
+            .ToDictionary(x => x.Key, x => x.Count())
+            .Where(x => x.Value <= maximumSeen);
+        var sorted = grouped
+            .OrderBy(x => x.Value)
+            .Take(limit)
+            .ToList();
+        var pokemonIds = sorted
+            .Select(x => x.Key.ToString())
+            .ToList();
+
+        sw.Stop();
+        var totalSeconds = Math.Round(sw.Elapsed.TotalSeconds, 4);
+        _logger.LogDebug($"Generate IV list time taken {totalSeconds}s");
+
+        return new JsonResult(pokemonIds);
+    }
+
     private static List<dynamic> GeneratePokemonList(uint maxPokemonId = Strings.MaxPokemonId, List<string>? selectedPokemon = null)
     {
         var pokemon = new List<dynamic>();
 
         void AddPokemon(uint pokemonId, uint formId = 0)
         {
-            var id = formId > 0
-                ? $"{pokemonId}_f{formId}"
-                : $"{pokemonId}";
+            var id = GetPokemonId(pokemonId, formId);
             var pkmnName = Translator.Instance.GetPokemonName(pokemonId);
             var formName = formId > 0 ? Translator.Instance.GetFormName(formId) : "";
             var name = string.IsNullOrEmpty(formName)
@@ -292,5 +327,13 @@ public class IvListController : Controller
         return html
             ? $"<img src='{url}' width='{width}' height='{height}' />"
             : url;
+    }
+
+    private static string GetPokemonId(uint pokemonId, uint formId = 0)
+    {
+        var id = formId > 0
+            ? $"{pokemonId}_f{formId}"
+            : $"{pokemonId}";
+        return id;
     }
 }
