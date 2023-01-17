@@ -43,6 +43,12 @@ public class MapDbContext : DbContext
 
     public DbSet<PokemonShinyStats> PokemonShinyStats { get; set; } = null!;
 
+    public DbSet<RaidStats> RaidStats { get; set; } = null!;
+
+    public DbSet<RaidStats> QuestStats { get; set; } = null!;
+
+    public DbSet<RaidStats> InvasionStats { get; set; } = null!;
+
     #endregion
 
     #endregion
@@ -330,6 +336,21 @@ public class MapDbContext : DbContext
         modelBuilder.Entity<PokemonShinyStats>(entity =>
         {
             entity.HasKey(p => new { p.Date, p.PokemonId, p.FormId });
+        });
+
+        modelBuilder.Entity<RaidStats>(entity =>
+        {
+            entity.HasKey(p => new { p.Date, p.PokemonId, p.FormId });
+        });
+
+        modelBuilder.Entity<QuestStats>(entity =>
+        {
+            entity.HasKey(p => new { p.Date, p.RewardType, p.PokemonId, p.ItemId, p.IsAlternative });
+        });
+
+        modelBuilder.Entity<InvasionStats>(entity =>
+        {
+            entity.HasKey(p => new { p.Date, p.GruntType });
         });
 
         base.OnModelCreating(modelBuilder);

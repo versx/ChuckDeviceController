@@ -111,4 +111,43 @@ public interface IDapperUnitOfWork : IBaseUnitOfWork<MySqlTransaction>
     IDapperGenericRepository<long, Weather> Weather { get; }
 
     #endregion
+
+    #region Stats Repositories
+
+    /// <summary>
+    /// 
+    /// </summary>
+    IDapperGenericRepository<string, PokemonStats> PokemonStats { get; }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    IDapperGenericRepository<string, PokemonIvStats> PokemonIvStats { get; }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    IDapperGenericRepository<string, PokemonShinyStats> PokemonShinyStats { get; }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    IDapperGenericRepository<string, PokemonHundoStats> PokemonHundoStats { get; }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    IDapperGenericRepository<string, RaidStats> RaidStats { get; }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    IDapperGenericRepository<string, QuestStats> QuestStats { get; }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    IDapperGenericRepository<string, InvasionStats> InvasionStats { get; }
+
+    #endregion
 }

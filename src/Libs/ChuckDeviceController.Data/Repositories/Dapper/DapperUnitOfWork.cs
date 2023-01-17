@@ -61,6 +61,24 @@ public class DapperUnitOfWork : IDapperUnitOfWork
 
     #endregion
 
+    #region Stats Entity Repositories
+
+    public IDapperGenericRepository<string, PokemonStats> PokemonStats { get; }
+
+    public IDapperGenericRepository<string, PokemonIvStats> PokemonIvStats { get; }
+
+    public IDapperGenericRepository<string, PokemonShinyStats> PokemonShinyStats { get; }
+
+    public IDapperGenericRepository<string, PokemonHundoStats> PokemonHundoStats { get; }
+
+    public IDapperGenericRepository<string, RaidStats> RaidStats { get; }
+
+    public IDapperGenericRepository<string, QuestStats> QuestStats { get; }
+
+    public IDapperGenericRepository<string, InvasionStats> InvasionStats { get; }
+
+    #endregion
+
     public MySqlTransaction? Transaction => throw new NotImplementedException();
 
     #endregion
@@ -91,6 +109,14 @@ public class DapperUnitOfWork : IDapperUnitOfWork
         Pokestops = new PokestopRepository(_factory);
         Spawnpoints = new SpawnpointRepository(factory);
         Weather = new WeatherRepository(factory);
+
+        PokemonStats = new PokemonStatsRepository(factory);
+        PokemonIvStats = new PokemonIvStatsRepository(factory);
+        PokemonShinyStats = new PokemonShinyStatsRepository(factory);
+        PokemonHundoStats = new PokemonHundoStatsRepository(factory);
+        RaidStats = new RaidStatsRepository(factory);
+        QuestStats = new QuestStatsRepository(factory);
+        InvasionStats = new InvasionStatsRepository(factory);
     }
 
     #endregion
@@ -289,6 +315,66 @@ public class WeatherRepository : DapperGenericRepository<long, Weather>
 {
     public WeatherRepository(IMySqlConnectionFactory factory)
         : base("weather", factory)
+    {
+    }
+}
+
+#endregion
+
+#region Stats Entity Repositories
+
+public class PokemonStatsRepository : DapperGenericRepository<string, PokemonStats>
+{
+    public PokemonStatsRepository(IMySqlConnectionFactory factory)
+        : base("pokemon_stats", factory)
+    {
+    }
+}
+
+public class PokemonIvStatsRepository : DapperGenericRepository<string, PokemonIvStats>
+{
+    public PokemonIvStatsRepository(IMySqlConnectionFactory factory)
+        : base("pokemon_iv_stats", factory)
+    {
+    }
+}
+
+public class PokemonShinyStatsRepository : DapperGenericRepository<string, PokemonShinyStats>
+{
+    public PokemonShinyStatsRepository(IMySqlConnectionFactory factory)
+        : base("pokemon_shiny_stats", factory)
+    {
+    }
+}
+
+public class PokemonHundoStatsRepository : DapperGenericRepository<string, PokemonHundoStats>
+{
+    public PokemonHundoStatsRepository(IMySqlConnectionFactory factory)
+        : base("pokemon_hundo_stats", factory)
+    {
+    }
+}
+
+public class RaidStatsRepository : DapperGenericRepository<string, RaidStats>
+{
+    public RaidStatsRepository(IMySqlConnectionFactory factory)
+        : base("raid_stats", factory)
+    {
+    }
+}
+
+public class QuestStatsRepository : DapperGenericRepository<string, QuestStats>
+{
+    public QuestStatsRepository(IMySqlConnectionFactory factory)
+        : base("quest_stats", factory)
+    {
+    }
+}
+
+public class InvasionStatsRepository : DapperGenericRepository<string, InvasionStats>
+{
+    public InvasionStatsRepository(IMySqlConnectionFactory factory)
+        : base("invasion_stats", factory)
     {
     }
 }

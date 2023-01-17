@@ -3,26 +3,17 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-public class BasePokemonStats
+public class BasePokemonStats : BaseStats
 {
     [
-        Key,
-        Column("date"),
-    ]
-    public string Date { get; set; } = null!;
-
-    [
-        Key,
         Column("pokemon_id"),
+        Key,
     ]
     public uint PokemonId { get; set; }
 
     [
-        Key,
         Column("form_id"),
+        Key,
     ]
     public ushort FormId { get; set; }
-
-    [Column("count")]
-    public ulong Count { get; set; }
 }
