@@ -485,5 +485,7 @@
     "Secondary Instance Name": "Secondary Instance Name",
     "Generate Pokemon Priority List": "Generate Pokemon Priority List",
     "Generate a Pokemon priority list based on database statistics of least seen Pokemon.": "Generate a Pokemon priority list based on database statistics of least seen Pokemon.",
-    "Clear": "Clear"
+    "Clear": "Clear",
+    "Ignored Pokemon": "Ignored Pokemon",
+    "i.e. event Pokemon, etc": "i.e. event Pokemon, etc"
 }
