@@ -28,12 +28,13 @@ $.getJSON('/data/rarity.json', function(data) {
 });
 
 function selectByRarity(rarity) {
-    $.each($('.item'), function (index, item) {
-        const id = item.id.split('_f')[0];
+    const pokemon = getPokemonItems();
+    for (const pkmn of pokemon) {
+        const id = pkmn.id.split('_f')[0];
         if (pokemonRarity[rarity].includes(parseInt(id))) {
-            selectItem(item);
+            selectItem(pkmn);
         }
-    });
+    }
 }
 
 function selectAllPokemon(select) {
@@ -69,7 +70,6 @@ function invertSelection() {
     const oldPokemon = value.split(',');
     const pokemon = getPokemonItems();
     for (const pkmn of pokemon) {
-        //const isSelected = pkmn.classList.value.includes('active');
         const isSelected = pkmn.classList.contains('active');
         if (!isSelected && !oldPokemon.includes(pkmn.id)) {
             selectItem(pkmn);
@@ -133,7 +133,7 @@ function unselectItem(element) {
     if (!selectedPokemon.includes(id)) {
         return;
     }
-    removePriorityList(id);
+    removePriorityList(id, true);
     element.classList.toggle('active');
     element.classList.toggle('pokemon-selected');
     removeId(id);
@@ -192,18 +192,26 @@ function addPriorityList(element) {
     $('#pokemon-priority-list').append(`
 <li data-id="${id}" class="list-group-item">
     <div class="row">
-        <div class="col col-md-2 col-sm-2 px-1">
+        <div class="col col-lg-2 col-md-2 col-sm-2 px-1">
             <img src="${image}" width="32" height="32" />
         </div>
-        <div class="col col-md-10 col-sm-10">
+        <div class="col col-lg-8 col-md-8 col-sm-8">
             <small class="caption">${name} <small>(#${pokemonId})</small></small>
         </div>
+        <div class="col col-lg-2 col-md-2 col-sm-2">
+            <button type="button" class="btn btn-danger btn-sm" onclick="removePriorityList('${id}');"><i class="fa-solid fa-trash-can"></i></button>
+        </div>
     </div>
-</li>`);
+</li>
+`);
 }
 
-function removePriorityList(id) {
+function removePriorityList(id, ignoreSelection) {
     $(`#pokemon-priority-list [data-id='${id}']`).remove();
+    if (!ignoreSelection) {
+        const element = document.querySelector(`#pokemon-list div.item[id='${id}']`);
+        unselectItem(element);
+    }
 }
 
 function getPokemonIdsElement() {

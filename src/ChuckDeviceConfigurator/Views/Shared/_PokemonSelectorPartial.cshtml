@@ -16,7 +16,7 @@
         <label for="search">@localizer["Search"]</label>
     </div>
     <div class="row">
-        <div class="col col-lg-9 col-md-12 col-sm-12">
+        <div class="col col-lg-8 col-md-12 col-sm-12">
             <div class="mb-3">
                 <label for="pokemon-list">@localizer["Pokemon"]</label>
                 <div id="pokemon-list" name="pokemon-list" class="pokemon-list">
@@ -63,7 +63,7 @@
                 </div>
             </div>
         </div>
-        <div class="col col-lg-3 col-md-12 col-sm-12">
+        <div class="col col-lg-4 col-md-12 col-sm-12">
             <label for="pokemon-priority-list">@localizer["Priority List"] <span id="priority-count">(0)</span></label>
             <ul id="pokemon-priority-list" name="pokemon-priority-list" class="list-group pokemon-priority-list">
                 @foreach (var id in priorityList)
@@ -71,11 +71,14 @@
                     var pkmn = selectedPokemon[id];
                     <li data-id="@id" class="list-group-item">
                         <div class="row">
-                            <div class="col col-md-2 col-sm-2 px-1">
+                            <div class="col col-lg-2 col-md-2 col-sm-2 px-1">
                                 <img src="@pkmn.image" width="32" height="32" />
                             </div>
-                            <div class="col col-md-10 col-sm-10">
+                            <div class="col col-lg-8 col-md-8 col-sm-8">
                                 <small class="caption">@pkmn.name <small>(#@pkmn.pokemonId)</small></small>
+                            </div>
+                            <div class="col col-lg-2 col-md-2 col-sm-2">
+                                <button type="button" class="btn btn-danger btn-sm" onclick="removePriorityList('@id');"><i class="fa-solid fa-trash-can"></i></button>
                             </div>
                         </div>
                     </li>
