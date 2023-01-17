@@ -482,5 +482,8 @@
     "Leveling": "Leveling",
     "Custom Job Controller": "Custom Job Controller",
     
-    "Secondary Instance Name"
+    "Secondary Instance Name": "Secondary Instance Name",
+    "Generate Pokemon Priority List": "Generate Pokemon Priority List",
+    "Generate a Pokemon priority list based on database statistics of least seen Pokemon.": "Generate a Pokemon priority list based on database statistics of least seen Pokemon.",
+    "Clear": "Clear"
 }

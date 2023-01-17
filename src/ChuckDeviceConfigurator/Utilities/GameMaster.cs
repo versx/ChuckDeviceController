@@ -9,6 +9,8 @@ using ChuckDeviceController.Net.Utilities;
 
 public class GameMaster
 {
+    private static readonly object _lock = new();
+
     [JsonPropertyName("pokemon")]
     public IReadOnlyDictionary<uint, PokedexPokemon> Pokedex { get; set; }
 
@@ -19,10 +21,7 @@ public class GameMaster
         {
             if (_instance == null)
             {
-                ReloadMasterFileAsync()
-                    .ConfigureAwait(false)
-                    .GetAwaiter()
-                    .GetResult();
+                Task.Run(ReloadMasterFileAsync).Wait();
             }
             return _instance;
         }
@@ -88,12 +87,15 @@ public class GameMaster
     private static async Task DownloadLatestMasterFile()
     {
         var data = await NetUtils.GetAsync(Strings.MasterFileEndpoint);
-        if (string.IsNullOrEmpty(data))
+        lock (_lock)
         {
-            return;
-        }
+            if (string.IsNullOrEmpty(data))
+            {
+                return;
+            }
 
-        File.WriteAllText(Strings.MasterFilePath, data);
+            File.WriteAllText(Strings.MasterFilePath, data);
+        }
     }
 }
 
