@@ -119,7 +119,7 @@ function selectItem(element) {
     if (selectedPokemon.includes(id)) {
         return;
     }
-    addPriorityList(element);
+    addPriorityList(element, '#pokemon-priority-list');
     element.classList.toggle('active');
     element.classList.toggle('pokemon-selected');
     appendId(id);
@@ -133,7 +133,7 @@ function unselectItem(element) {
     if (!selectedPokemon.includes(id)) {
         return;
     }
-    removePriorityList(id, true);
+    removePriorityList(id, true, '#pokemon-priority-list');
     element.classList.toggle('active');
     element.classList.toggle('pokemon-selected');
     removeId(id);
@@ -184,12 +184,12 @@ function setSelectedPokemon(pokemon) {
     setPriorityCount();
 }
 
-function addPriorityList(element) {
+function addPriorityList(element, listGroupName) {
     const id = element.id;
     const name = element.getAttribute('data-name');
     const image = element.getAttribute('data-image');
     const pokemonId = element.getAttribute('data-pokemon-id');
-    $('#pokemon-priority-list').append(`
+    $(listGroupName).append(`
 <li data-id="${id}" class="list-group-item">
     <div class="row">
         <div class="col col-lg-2 col-md-2 col-sm-2 px-1">
@@ -198,16 +198,16 @@ function addPriorityList(element) {
         <div class="col col-lg-8 col-md-8 col-sm-8">
             <small class="caption">${name} <small>(#${pokemonId})</small></small>
         </div>
-        <div class="col col-lg-2 col-md-2 col-sm-2">
-            <button type="button" class="btn btn-danger btn-sm" onclick="removePriorityList('${id}');"><i class="fa-solid fa-trash-can"></i></button>
+        <div class="col col-lg-2 col-md-2 col-sm-2 px-1">
+            <button type="button" class="btn btn-danger btn-sm float-end" onclick="removePriorityList('${id}', false, '${listGroupName}');"><i class="fa-solid fa-trash-can"></i></button>
         </div>
     </div>
 </li>
 `);
 }
 
-function removePriorityList(id, ignoreSelection) {
-    $(`#pokemon-priority-list [data-id='${id}']`).remove();
+function removePriorityList(id, ignoreSelection, listGroupName) {
+    $(`${listGroupName} [data-id='${id}']`).remove();
     if (!ignoreSelection) {
         const element = document.querySelector(`#pokemon-list div.item[id='${id}']`);
         unselectItem(element);

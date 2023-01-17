@@ -77,13 +77,38 @@
                             <div class="col col-lg-8 col-md-8 col-sm-8">
                                 <small class="caption">@pkmn.name <small>(#@pkmn.pokemonId)</small></small>
                             </div>
-                            <div class="col col-lg-2 col-md-2 col-sm-2">
-                                <button type="button" class="btn btn-danger btn-sm" onclick="removePriorityList('@id');"><i class="fa-solid fa-trash-can"></i></button>
+                            <div class="col col-lg-2 col-md-2 col-sm-2 px-1">
+                                <button type="button" class="btn btn-danger btn-sm float-end" onclick="removePriorityList('@id', false, '#pokemon-priority-list');"><i class="fa-solid fa-trash-can"></i></button>
                             </div>
                         </div>
                     </li>
                 }
             </ul>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="generateModal" tabindex="-1" aria-labelledby="generateModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="generateModalLabel">@localizer["Generate Pokemon Priority List"]</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>@localizer["Generate a Pokemon priority list based on database statistics of least seen Pokemon."]</p>
+                <div class="btn-toolbar float-end" role="toolbar">
+                    <button type="button" class="btn btn-primary btn-sm mx-1" onclick="generateList();">@localizer["Generate"]</button>
+                    <button type="button" class="btn btn-danger btn-sm mx-1" onclick="clearList();">@localizer["Clear"]</button>
+                </div>
+                <br />
+                <ul id="modal-priority-list" class="list-group pokemon-priority-list mt-4">
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@localizer["Close"]</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="saveGeneratedList();">@localizer["Save"]</button>
+            </div>
         </div>
     </div>
 </div>

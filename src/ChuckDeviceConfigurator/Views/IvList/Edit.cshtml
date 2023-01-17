@@ -16,8 +16,8 @@
             <h4>@localizer["IV List '{0}'", Model!.Name]</h4>
         </div>
         <div class="float-end">
-            <button type="button" class="btn btn-primary btn-sm" onclick="generateIvList();">
-                <i class="fa-solid fa-cog"></i>&nbsp;@localizer["Generate"]
+            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#generateModal">
+                <i class="fa-solid fa-shuffle"></i>&nbsp;@localizer["Generate"]
             </button>
             &nbsp;
             <a asp-action="Delete" asp-route-id="@Model?.Name" class="btn btn-danger btn-sm">
@@ -41,5 +41,5 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-    <script src="/js/priority-list-generator.js"></script>
+    <script src="~/js/priority-list-generator.js"></script>
 }
