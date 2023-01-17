@@ -5,11 +5,10 @@ using System.Text.Json.Serialization;
 using static POGOProtos.Rpc.BelugaPokemonProto.Types;
 
 using ChuckDeviceController.Extensions.Json;
+using ChuckDeviceController.Net.Utilities;
 
 public class GameMaster
 {
-    private const string MasterFileName = "masterfile.json";
-
     [JsonPropertyName("pokemon")]
     public IReadOnlyDictionary<uint, PokedexPokemon> Pokedex { get; set; }
 
@@ -20,7 +19,10 @@ public class GameMaster
         {
             if (_instance == null)
             {
-                ReloadMasterFile();
+                ReloadMasterFileAsync()
+                    .ConfigureAwait(false)
+                    .GetAwaiter()
+                    .GetResult();
             }
             return _instance;
         }
@@ -31,14 +33,14 @@ public class GameMaster
         Pokedex = new Dictionary<uint, PokedexPokemon>();
     }
 
-    public static PokedexPokemon GetPokemon(uint pokemonId, uint formId = 0)
+    public PokedexPokemon GetPokemon(uint pokemonId, uint formId = 0)
     {
         if (pokemonId == 0)
             return null;
 
         if (!Instance.Pokedex.ContainsKey(pokemonId))
         {
-            Console.WriteLine($"[Warning] Pokemon {pokemonId} does not exist in {MasterFileName}, please use an updated version.");
+            Console.WriteLine($"[Warning] Pokemon {pokemonId} does not exist in {Strings.MasterFileName}, please use an updated version.");
             return null;
         }
 
@@ -53,10 +55,17 @@ public class GameMaster
         return pkmnForm;
     }
 
-    public static void ReloadMasterFile()
+    public static async Task ReloadMasterFileAsync()
     {
-        var path = Path.Combine(Strings.DataFolder, MasterFileName);
-        _instance = LoadInit<GameMaster>(path);
+        await DownloadLatestMasterFile();
+        try
+        {
+            _instance = LoadInit<GameMaster>(Strings.MasterFilePath);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex}");
+        }
     }
 
     public static T LoadInit<T>(string filePath)
@@ -69,11 +78,22 @@ public class GameMaster
         var data = File.ReadAllText(filePath);
         if (string.IsNullOrEmpty(data))
         {
-            Console.WriteLine($"{filePath} database is empty.");
+            Console.WriteLine($"{filePath} file is empty.");
             return default;
         }
 
         return data.FromJson<T>();
+    }
+
+    private static async Task DownloadLatestMasterFile()
+    {
+        var data = await NetUtils.GetAsync(Strings.MasterFileEndpoint);
+        if (string.IsNullOrEmpty(data))
+        {
+            return;
+        }
+
+        File.WriteAllText(Strings.MasterFilePath, data);
     }
 }
 
@@ -83,7 +103,7 @@ public class PokedexPokemon
     public uint PokedexId { get; set; }
 
     [JsonPropertyName("name")]
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 
     [JsonPropertyName("forms")]
     public IReadOnlyDictionary<uint, PokedexPokemon> Forms { get; set; }

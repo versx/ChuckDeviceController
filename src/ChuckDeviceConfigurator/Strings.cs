@@ -37,6 +37,14 @@ public static partial class Strings
 
     #endregion
 
+    #region GameMasterFile Properties
+
+    public const string MasterFileName = "masterfile.json";
+    public static readonly string MasterFilePath = Path.Combine(DataFolder, MasterFileName);
+    public const string MasterFileEndpoint = "https://raw.githubusercontent.com/WatWowMap/Masterfile-Generator/master/master-latest.json";
+
+    #endregion
+
     #region Default User Properties
 
     public const string DefaultUserName = "root";
