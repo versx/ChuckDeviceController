@@ -97,13 +97,13 @@
             </div>
             <div class="modal-body">
                 <p>@localizer["Generate a Pokemon priority list based on database statistics of least seen Pokemon."]</p>
-                <div class="btn-toolbar float-end" role="toolbar">
+                <div class="btn-toolbar mb-3 float-end" role="toolbar">
                     <button type="button" class="btn btn-primary btn-sm mx-1" onclick="generateList();">@localizer["Generate"]</button>
                     <button type="button" class="btn btn-danger btn-sm mx-1" onclick="clearList();">@localizer["Clear"]</button>
                 </div>
                 <br />
                 <label>@localizer["Ignored Pokemon"] <small>(@localizer["i.e. event Pokemon, etc"])</small></label>
-                <textarea id="pokemon-ignored" class="form-control" rows="5"></textarea>
+                <textarea id="pokemon-ignored" class="form-control" rows="3"></textarea>
                 <ul id="modal-priority-list" class="list-group pokemon-priority-list mt-4">
                 </ul>
             </div>

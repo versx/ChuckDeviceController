@@ -620,22 +620,24 @@ public class Pokemon : BaseEntity, IPokemon, ICoordinateEntity, IWebhookEntity, 
             var weatherChanged = HasWeatherBoostChanged(oldPokemon?.Weather, Weather);
             if (oldPokemon?.AttackIV != null && AttackIV == null && !weatherChanged)
             {
+                // Weather boost changed
                 setIvForWeather = false;
                 AttackIV = oldPokemon.AttackIV;
                 DefenseIV = oldPokemon.DefenseIV;
                 StaminaIV = oldPokemon.StaminaIV;
-                CP = oldPokemon.CP;
-                Weight = oldPokemon.Weight;
-                Height = oldPokemon.Height;
-                Size = oldPokemon.Size;
-                Move1 = oldPokemon.Move1;
-                Move2 = oldPokemon.Move2;
                 Level = oldPokemon.Level;
-                Capture1 = oldPokemon.Capture1;
-                Capture2 = oldPokemon.Capture2;
-                Capture3 = oldPokemon.Capture3;
-                IsShiny = oldPokemon.IsShiny;
-                SeenType = oldPokemon.SeenType;
+                CP = null;// oldPokemon.CP;
+                Weight = null;// oldPokemon.Weight;
+                Height = null;// oldPokemon.Height;
+                Size = null;// oldPokemon.Size;
+                Move1 = null;// oldPokemon.Move1;
+                Move2 = null;// oldPokemon.Move2;
+                Capture1 = null;// oldPokemon.Capture1;
+                Capture2 = null;// oldPokemon.Capture2;
+                Capture3 = null;// oldPokemon.Capture3;
+                IsShiny = null;// oldPokemon.IsShiny;
+                PvpRankings = null;
+                //SeenType = oldPokemon.SeenType;
                 IsDitto = _dittoDetector.IsDisguised(oldPokemon);
 
                 if (IsDitto)
