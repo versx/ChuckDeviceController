@@ -21,6 +21,9 @@
             <th>
                 @Html.DisplayNameFor(model => model.Items[0].DeviceUuids)
             </th>
+            <th width="5%">
+                @localizer["Count"]
+            </th>
             <th width="5%">@localizer["Action"]</th>
         </tr>
     </thead>
@@ -33,6 +36,9 @@
                 </th>
                 <td>
                     @string.Join(", ", item.DeviceUuids)
+                </td>
+                <td>
+                    @item.DeviceUuids.Count.ToString("N0")
                 </td>
                 <td>
                     <div class="dropdown">
@@ -57,7 +63,8 @@
             $('#table-device-groups').DataTable({
                 columnDefs: [
                     { responsivePriority: 0, targets: 0 },
-                    { responsivePriority: 2, targets: 1, render: $.fn.dataTable.render.ellipsis(25) },
+                    { responsivePriority: 3, targets: 1, render: $.fn.dataTable.render.ellipsis(25) },
+                    { responsivePriority: 2, targets: 2 },
                     { responsivePriority: 1, targets: -1, orderable: false },
                 ],
                 order: [[0, 'asc']],

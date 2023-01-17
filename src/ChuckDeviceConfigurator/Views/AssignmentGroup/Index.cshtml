@@ -22,7 +22,10 @@
             <th>
                 @Html.DisplayNameFor(model => model.Items[0].AssignmentIds)
             </th>
-            <th>
+            <th width="5%">
+                @localizer["Count"]
+            </th>
+            <th width="5%">
                 @Html.DisplayNameFor(model => model.Items[0].Enabled)
             </th>
             <th width="5%">@localizer["Action"]</th>
@@ -37,6 +40,9 @@
                 </th>
                 <td>
                     @string.Join(", ", item.AssignmentIds)
+                </td>
+                <td>
+                    @item.AssignmentIds.Count.ToString("N0")
                 </td>
                 <td>
                     @Html.Raw(Utils.FormatBoolean(item.Enabled, html: true))
@@ -69,8 +75,9 @@
             $('#table-assignment-groups').DataTable({
                 columnDefs: [
                     { responsivePriority: 0, targets: 0 },
-                    { responsivePriority: 3, targets: 1, render: $.fn.dataTable.render.ellipsis(25) },
-                    { responsivePriority: 2, targets: 2 },
+                    { responsivePriority: 4, targets: 1, render: $.fn.dataTable.render.ellipsis(25) },
+                    { responsivePriority: 3, targets: 2 },
+                    { responsivePriority: 2, targets: 3 },
                     { responsivePriority: 1, targets: -1, orderable: false },
                 ],
                 order: [[0, 'asc']],

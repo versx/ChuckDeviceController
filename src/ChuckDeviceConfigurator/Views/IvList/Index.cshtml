@@ -20,6 +20,9 @@
             <th>
                 @Html.DisplayNameFor(model => model.Items[0].Pokemon)
             </th>
+            <th width="5%">
+                @localizer["Count"]
+            </th>
             <th width="5%">@localizer["Action"]</th>
         </tr>
     </thead>
@@ -39,6 +42,9 @@
                     {
                         @Html.Raw(string.Join(" ", item.Pokemon))
                     }
+                </td>
+                <td>
+                    @item.Pokemon.Count.ToString("N0")
                 </td>
                 <td>
                     <div class="dropdown">
@@ -63,7 +69,8 @@
             $('#table-ivlists').DataTable({
                 columnDefs: [
                     { responsivePriority: 0, targets: 0 },
-                    { responsivePriority: 2, targets: 1 },
+                    { responsivePriority: 3, targets: 1 },
+                    { responsivePriority: 2, targets: 2 },
                     { responsivePriority: 1, targets: -1, orderable: false },
                 ],
                 order: [[0, 'asc']],
