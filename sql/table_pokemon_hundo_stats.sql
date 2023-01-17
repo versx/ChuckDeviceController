@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS `pokemon_hundo_stats` (
 );
 
 INSERT INTO pokemon_hundo_stats (date, pokemon_id, form_id, count)
-SELECT DATE(FROM_UNIXTIME(expire_timestamp)) AS date, pokemon_id, form_id, COUNT(*) AS count
+SELECT DATE(FROM_UNIXTIME(expire_timestamp)) AS date, pokemon_id, form, COUNT(*) AS count
 FROM pokemon
 WHERE iv = 100
-GROUP BY pokemon_id, form_id, date;
+GROUP BY pokemon_id, form, date;
