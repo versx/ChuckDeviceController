@@ -4,7 +4,7 @@ using Microsoft.Extensions.Configuration;
 
 public static class Config
 {
-    private const string BasePath = "./bin/debug/";
+    private const string BasePath = "./";
     private const string AppSettings = "appsettings.json";
     private const string AppSettingsFormat = "appsettings.{0}.json";
 

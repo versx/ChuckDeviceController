@@ -24,7 +24,7 @@ public static partial class Strings
 
     #region Folder & File Path Properties
 
-    public const string BasePath = "./bin/debug/";
+    public const string BasePath = "./";
     public const string WebRootFolder = "wwwroot";
     public const string WebRoot = BasePath + "wwwroot";
     public static readonly string DataFolder = Path.Combine(WebRoot, "data");
